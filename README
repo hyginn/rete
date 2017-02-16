@@ -1,5 +1,12 @@
 ekplektoR
 
+Network topology analysis
+
+The 2017 BCB420 / JTB2020 class project in computational systems biology
+/ applied bioinformatics at the University of Toronto. If you are not enrolled
+in this class, this code is unlikely to be useful to you.
+
+
 ----------------------------------------------
 This package follows the structure and process
 suggested by Hadley Wickham in:
@@ -20,3 +27,4 @@ Run before every commit:
    library(devtools)
    devtools::check()  # or Cmd + Shift + E
 DO NOT SUBMIT CODE that does not pass without error, warnings and notes.
+
