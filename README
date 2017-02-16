@@ -1,0 +1,22 @@
+ekplektoR
+
+----------------------------------------------
+This package follows the structure and process
+suggested by Hadley Wickham in:
+
+
+  R Packages
+  http://r-pkgs.had.co.nz/
+
+-----------------------------------------------
+Some useful keyboard shortcuts for package authoring:
+
+  Build and Reload Package:  'Cmd + Shift + B'
+  Check Package:             'Cmd + Shift + E'
+  Test Package:              'Cmd + Shift + T'
+-----------------------------------------------
+
+Run before every commit:
+   library(devtools)
+   devtools::check()  # or Cmd + Shift + E
+DO NOT SUBMIT CODE that does not pass without error, warnings and notes.
