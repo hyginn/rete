@@ -7,7 +7,7 @@ hello()
 \description{
 Writes 'Hello, world!' to console.
 
-Returns first seven Fibonecci numbers.
+Returns first seven Fibonacci numbers.
 }
 \examples{
 hello()
