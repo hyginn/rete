@@ -5,7 +5,9 @@
 hello()
 }
 \description{
-Prints 'Hello, world!'.
+Writes 'Hello, world!' to console.
+
+Returns first seven Fibonacci numbers.
 }
 \examples{
 hello()
