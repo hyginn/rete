@@ -28,3 +28,9 @@ Run before every commit:
    devtools::check()  # or Cmd + Shift + E
 DO NOT SUBMIT CODE that does not pass without error, warnings and notes.
 
+-----------------------------------------------
+
+Load the package (outside of this project) with:
+   devtools::install_github("hyginn/ekplektoR")
+
+
