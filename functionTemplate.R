@@ -1,23 +1,27 @@
 # functionTemplate.R
 
-#
-
-#' Title
+#' Title.
 #'
-#' @param nDuck
-#' @param nCrow
-#' @param nGoose
+#' \code{<function>} description.
 #'
-#' @return
-#' @export
+#' Details.
+#' @section <title>: Additional explanation.
+#'
+#' @param <p> <description>.
+#' @param <q> <description>.
+#' @return <description>.
+#'
+#' @family <optional description of family>
+#'
+#' @seealso \code{\link{<function>}} <describe related function>, ... .
 #'
 #' @examples
-myFunction <- function(nDuck, nCrow, nGoose) {
-    # ...
+#' multiply(1, 1)
+#' multiply(1i, 1i)
+#' multiply(13, 3)
+functionName <- function(p, q) {
 
-    collective <- c(plump = nDuck, murder = nCrow, gaggle = nGoose)
-    return(collective)
+    return(value)
 }
-
 
 # [END]
