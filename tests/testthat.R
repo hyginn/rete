@@ -1,4 +1,4 @@
 library(testthat)
-library(ekplektoR)
+library(rete)
 
-test_check("ekplektoR")
+test_check("rete")

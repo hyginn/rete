@@ -24,6 +24,7 @@
 #' multiply(1, 1)
 #' multiply(1i, 1i)
 #' multiply(13, 3)
+#' @export
 multiply <- function(a, b) {
     return(a * b)
 }
