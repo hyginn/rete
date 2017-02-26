@@ -7,6 +7,12 @@
 #' @param ID an unmapped ID.
 #' @param type the type of the unmapped ID.
 #' @return The HUGO gene symbol of \code{ID}
+#'
+#' @family fastMap functions
+#'
+#' @examples
+#' fastmap("ENSG00000121410", type="ENSP")
+#' fastmap(c("Q9NQ94", "P01023"))
 #' @export
 fastMap <- function(ID, type = "UniProt") {
 
@@ -24,7 +30,7 @@ fastMap <- function(ID, type = "UniProt") {
         if (type == "UniProt") {
             lookUp <- fastMapUniProt[[ID[i]]]
         } else {
-            lookUp <- fastMapEnsp[[ID[i]]]
+            lookUp <- fastMapENSP[[ID[i]]]
         }
         # TODO: Handle this case
         # To log or not to log
