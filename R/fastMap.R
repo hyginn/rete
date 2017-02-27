@@ -32,11 +32,12 @@ fastMap <- function(ID, type = "UniProt") {
         } else {
             lookUp <- fastMapENSP[[ID[i]]]
         }
-        # TODO: Handle this case
-        # To log or not to log
+
         if (is.null(lookUp)) {
             unmappedCount <- unmappedCount + 1
-            out[i] <- "NA"
+            # append to rete.unmapped option
+            options(rete.unmapped=c(getOption("rete.unmapped"), ID[i]))
+            out[i] <- ID[i]
         } else {
             out[i] <- lookUp
         }
@@ -45,7 +46,7 @@ fastMap <- function(ID, type = "UniProt") {
     if (unmappedCount) {
         warningMessage <- paste(unmappedCount, "of", IDLength,
                                 "IDs could not be mapped, see
-                                getOptions(rete.unmapped) to list them all.")
+                                getOptions('rete.unmapped') to list them all.")
         warning(warningMessage)
     }
     return(out)

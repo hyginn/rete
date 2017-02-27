@@ -20,7 +20,7 @@ fastMapUpdate <- function(hashTable, key, value) {
     if (is.character(key)) {
         # Check for invalid characters
         # Alphanumeric, _, - only
-        if (!grepl("^[a-zA-Z0-9_-]+", key)) {
+        if (!grepl("^[a-zA-Z0-9_-]+$", key)) {
             errorMessage <- "Value contains an illegal character."
             stop(errorMessage)
         }
@@ -35,7 +35,7 @@ fastMapUpdate <- function(hashTable, key, value) {
     } else if (is.character(value)) {
         # Check for invalid characters
         # Alphanumeric, _, - only
-        if (!grepl("^[a-zA-Z0-9_-]+", value)) {
+        if (!grepl("^[a-zA-Z0-9_-]+$", value)) {
             errorMessage <- "Value contains an illegal character."
             stop(errorMessage)
         }
