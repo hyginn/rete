@@ -2,13 +2,21 @@
 
 #' Modify a fastMap hash table.
 #'
-#' \code{fastMapUpdate} Update, add, or delete entries in the fastMap hash table.
+#' \code{fastMapUpdate} Update, add, or delete entries in the fastMap
+#' hash table. Adding and updating are the same; if a key does/doesn't
+#' exist, will set the key's value to \code{value}. If a lookup is made
+#' for a non-existant, NULL will be returned; setting a key's value to
+#' NULL is essentially deleting. Sanity checks are included to only allow
+#' acceptable characters for both \code{key} and \code{value}. \code{value}
+#' can only be a string or NULL.
 #'
-#' @param hashTable the fastMap hash table.
-#' @param key an unmapped ID.
-#' @param value the mapped HUGO gene symbol to update.
+#' @param hashTable The fastMap hash table.
+#' @param key The key to update.
+#' @param value The value to insert to the associated key.
 #'
 #' @family fastMap functions
+#'
+#' @seealso \code{\link{fastMapGenerate}} on how the hash table is structured.
 #'
 #' @examples
 #' fastMapUpdate(fastMapUniprot, "P01023", "A2M")

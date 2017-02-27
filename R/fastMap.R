@@ -1,11 +1,15 @@
 # fastMap.R
 
-#' Map a UniProt or Ensemble Protein ID to its associated HUGO gene symbol.
+#' Map an ID to its associated HUGO gene symbol.
 #'
-#' \code{fastMap} return the associated HUGO gene symbol.
+#' \code{fastMap} accesses the associated hash table
+#' (\code{fastMapUniProt} for UniProt IDs or
+#' \code{fastMapUniENSP} for Ensembl protein IDs) and return the
+#' associated HUGO gene symbol. Unmapped IDs will be return as is and
+#' will be stored in an global option \code{rete.unmapped}.
 #'
-#' @param ID an unmapped ID.
-#' @param type the type of the unmapped ID.
+#' @param ID An unmapped ID.
+#' @param type The type of the unmapped ID.
 #' @return The HUGO gene symbol of \code{ID}
 #'
 #' @family fastMap functions
