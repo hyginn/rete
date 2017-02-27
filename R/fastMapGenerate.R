@@ -7,9 +7,9 @@
 #' saves the generated hash table as an .rda which can be
 #' loaded in future sessions.
 #'
-#' @param fName the path to the HUGO gene symbol data set.
-#' @param type the type to parse for.
-#' @param saveHT boolean whether to save the hash table as an rda.
+#' @param fName The path to the HUGO gene symbol data set.
+#' @param type The type to parse for.
+#' @param saveHashTable Boolean whether to save the hash table as an rda.
 #'
 #' @family fastMap functions
 #' @export
