@@ -15,27 +15,24 @@
 #' @param noLog Boolean. Default: FALSE. Whether or not to log results.
 #' @export
 
-# Load the expression RDS file
-.filter.unimportant_genes.loadExpression <- function(filename, vital_status, rT, pT, cT) {
-    readhash <- new.env(hash=TRUE)
+### Small utility functions.  Possibly of use elsewhere
 
-    stored <- readRDS(filename)
-    for (foo in stored) {
-        df = data.frame(ignore = FALSE, numReads = foo$reads)
+# Extract the patient portion of a tumor sample barcode
+.filter.unimportant_genes.patientFromBarcode <- function(
+        barcode, separator="-") {
 
-        readhash[[foo$gene]] <- df
+    if (typeof(barcode) != "character") {
+        stop("Barcode must be of type character")
     }
 
-    return readhash
-}
+    bits <- strsplit(barcode, separator, fixed=TRUE)[[1]]
+    if (length(bits) < 3) {
+        stop("Barcode does not contain a patient identifier")
+    }
 
-# Load the clinical data RDS file
-.filter.unimportant_genes.loadVitalStatus <- function(filename) {
-    readhash <- new.env(hash=TRUE)
+    patient <- paste(bits[1:3], collapse=separator)
 
-    stored <- readRDS(filename)
-
-    return readhash
+    return(patient)
 }
 
 # Get the first byte of a file, return MAF if it starts with a hash
@@ -65,29 +62,12 @@
     return(outName)
 }
 
-# Scan an rMUT MAF file, outputting into the output directory a new MAF
-#   file that has only the records for which the filter says not to ignore
-.filter.unimportant_genes.processrMUT <- function(filename, dOut, filter) {
-    outName <- .filter.unimportant_genes.outputFilename(dOut, filename)
+### Module-specific utility functions.
 
-    rMUT <- file(filename, "r")
-    close(rMUT)
-}
-
-# Scan an rCNA RDS object, outputting into the output directory a new RDS
-#   file that has only the records for which the filter says not to ignore
-.filter.unimportant_genes.processrCNA <- function(filename, dOut, expression) {
-    outName <- .filter.unimportant_genes.outputFilename(dOut, filename)
-
-    rCNA <- readRDS(filename)
-    saveRDS(rCNA, file=outName)
-}
-
-# Main function
-filter.unimportant_genes <- function(exprData, clinData, fNames, dOut,
-        rT, pT, cT, silent = FALSE, noLog = FALSE
+# Validate basic file status
+.filter.unimportant_genes.validFiles <- function(
+        exprData, clinData, fNames, dOut
     ) {
-    # Validate file existence
     if (file.exists(exprData) == FALSE) {
         stop(paste('ERROR: Expression data file', exprData, 'does not exist.'))
     }
@@ -110,14 +90,7 @@ filter.unimportant_genes <- function(exprData, clinData, fNames, dOut,
         stop(paste('ERROR: Output directory', dOut, 'is not writable.'))
     }
 
-    # Survival time data
-    vitalStatus <- .filter.unimportant_genes.loadVitalStatus(clinData)
-
-    # Count the reads per gene and sample in the gene expression file
-    # while filtering for expression
-    expression <- .filter.unimportant_genes.loadExpression(exprData, vitalStatus, rT, pT, cT)
-
-    # Process rMUT and rCNA files
+    toFilter <- c()
     for (filename in fNames) {
         if (file.exists(filename) == FALSE) {
             .appendToLog(paste('WARN: Data file', filename,
@@ -130,15 +103,190 @@ filter.unimportant_genes <- function(exprData, clinData, fNames, dOut,
             next
         }
 
-        fType <- .filter.unimportant_genes.getMagic(filename)
-        if (fType  == 'MAF') {
-            rMUT <- .filter.unimportant_genes.processrMUT(filename, dOut, expression)
-        } else {
-            rCNA <- .filter.unimportant_genes.processrCNA(filename, dOut, expression)
+        toFilter <- c(toFilter, filename)
+    }
+
+    return(toFilter)
+}
+
+# Load the expression rCNA file
+.filter.unimportant_genes.loadExpression <- function(filename, rT) {
+    genehash <- new.env(hash=TRUE)
+    numSampleReads <- 0
+
+    samples <- readRDS(filename)
+    for (genename in rownames(samples)) {
+        for (s in colnames(samples)) {
+            # Preset everything for the sample's hashtable record
+            df <- data.frame(ignore = FALSE, numReads = 0)
+
+            if (samples[gene, s] != NA) {
+                df$numReads <- df$numReads + 1
+
+                if (df$numReads > rT) {
+                    numSampleReads <- numSampleReads + 1
+                }
+
+                # Store the number of reads
+                genehash[[sample]] <- df
+            }
         }
     }
 
-    return(TRUE)
+    return(list("numSampleReads"=numSampleReads, "samples"=genehash))
+}
+
+# Filter the expression RDS data
+.filter.unimportant_genes.filterExpression <- function(
+        filter, survivalTime, rT, pT, cT
+    ) {
+
+    samples <- filter$samples
+    numSampleReads <- filter$numSampleReads
+
+    # Operate over all elements in the environment hash filter
+    #   This is /not/ a copy.  Changes to filter persist are
+    #   visible out of this scope.
+    for (s in ls(samples)) {
+        numReads <- samples[[s]]$numReads
+
+        if (numReads < rT) {
+            samples[[s]]$ignore <- TRUE
+        } else if (numSampleReads < (pT * numReads)) {
+            samples[[s]]$ignore <- TRUE
+        }
+
+        # Note that survivalTime keys are not the full length
+        #   of a full sample barcode key.
+        patient <- toupper(.filter.unimportant_genes.patientFromBarcode(s))
+        if (survivalTime[[patient]] < cT) {
+            samples[[s]]$ignore <- FALSE
+        }
+    }
+
+    return(samples)
+}
+
+# Load the clinical data RDS file, text format?
+.filter.unimportant_genes.loadVitalStatus <- function(filename) {
+    readhash <- new.env(hash=TRUE)
+
+    clin <- readRDS(filename) # XXX
+
+    # Select cases to consider
+    samples <- colnames(clin)
+    for (s in samples) {
+        vs <- clin["vital_status", s]
+        survivalTime <- -1
+
+        if (vs == 1) { # dead
+            survivalTime <- clin["days_to_death", s]
+        } else if (vs == 0) { # alive
+            dtd <- clin["days_to_death", s]
+            if (dtd != NA) {
+                next # exclude, a living dead person
+            }
+
+            dtlf <- clin["days_to_last_followup", s]
+            if (dtlf != NA) {
+                survivalTime <- dtlf
+            }
+        } else if (vs == NA) { # don't know
+            next # exclude
+        } else {
+            stop("Invalid vital_status value in clinical data")
+        }
+
+        readhash[[s]] <- survivalTime
+    }
+
+    return(readhash)
+}
+
+# Scan an rMUT MAF file, outputting into the output directory a new MAF
+#   file that has only the records for which the filter says not to ignore
+.filter.unimportant_genes.processrMUT <- function(filename, dOut, filter) {
+    outName <- .filter.unimportant_genes.outputFilename(dOut, filename)
+
+    rMUT <- file(filename, "r")
+    MUT <- file(outName, "w")
+
+    # Duplicate the header
+    line <- readLines(con=rMut, n=1)
+    while (line) {
+        if (!startsWith(line, "#")) {
+            break
+        }
+        writeLines(line, con=MUT)
+        line <- readLines(con=rMut, n=1)
+    }
+    
+    # Filter the data
+    while (line) {
+        fields <- strsplit(line, "\t", fixed=TRUE)
+        if (filter[fields[11]]$ignore == TRUE) {
+            next
+        }
+        writeLines(line, con=MUT)
+        line <- readLines(con=rMut, n=1)
+    }
+
+    close(MUT)
+    close(rMUT)
+}
+
+# Scan an rCNA RDS object, outputting into the output directory a new RDS
+#   file that has only the records for which the filter says not to ignore
+.filter.unimportant_genes.processrCNA <- function(filename, dOut, filter) {
+    outName <- .filter.unimportant_genes.outputFilename(dOut, filename)
+
+    rCNA <- readRDS(filename)
+
+    # Filter rCNA data
+    samples <- intersect(colnames(rCNA), ls(filter))
+    keep <- c()
+    for (gene in genes) {
+        if (filter[[gene]]$ignore == FALSE) {
+             keep <- c(keep, gene)
+        }
+    }
+    CNA <- rCNA[, keep]
+
+    saveRDS(rCNA, file=outName)
+}
+
+### Main function
+filter.unimportant_genes <- function(exprData, clinData, fNames, dOut,
+        rT=3, pT=0.7, cT=5, silent = FALSE, noLog = FALSE
+    ) {
+    # Validate file existence
+    toFilter <- .filter.unimportant_genes.validFiles(
+        exprData, clinData, fNames, dOut)
+
+    # Count the reads per gene and sample in the gene expression file
+    expression <- .filter.unimportant_genes.loadExpression(exprData, rT)
+
+    # Survival time data
+    survivalTime <- .filter.unimportant_genes.loadVitalStatus(clinData)
+    
+    # Filter the expression data
+    expression <- .filter.unimportant_genes.filterExpression(
+        readhash, expression, survivalTime, rT, pT, cT)
+    # expression is now an environment hash
+
+    # Process rMUT and rCNA files
+    for (filename in toFilter) {
+        fType <- .filter.unimportant_genes.getMagic(filename)
+        if (fType  == 'MAF') {
+            rMUT <- .filter.unimportant_genes.processrMUT(
+                filename, dOut, expression)
+        } else {
+            rCNA <- .filter.unimportant_genes.processrCNA(
+                filename, dOut, expression)
+        }
+    }
+
+    return(NA)
 }
 
 # [END]
