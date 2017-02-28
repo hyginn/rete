@@ -25,6 +25,34 @@ test_that("Patient correctly extracted from barcode", {
         .filter.unimportant_genes.patientFromBarcode(c("TCGA", "A3", "3307")))
 })
 
+test_that("Barcode correctly extracted from hashkey", {
+    expect_equal("TCGA-A3-3307",
+        .filter.unimportant_genes.barcodeFromHashkey(
+        "HFE|TCGA-A3-3307"))
+
+    expect_equal("TCGA.A3.3307",
+        .filter.unimportant_genes.barcodeFromHashkey(
+        "ZNF660^TCGA.A3.3307", separator="^"))
+
+    expect_error(
+        .filter.unimportant_genes.barcodeFromHashkey("|TCGA-A3"))
+
+    expect_error(
+        .filter.unimportant_genes.barcodeFromHashkey("TCGA-A3"))
+
+    expect_error(
+        .filter.unimportant_genes.barcodeFromHashkey(""))
+
+    expect_error(
+        .filter.unimportant_genes.barcodeFromHashkey(NULL))
+
+    expect_error(
+        .filter.unimportant_genes.barcodeFromHashkey(3))
+
+    expect_error(
+        .filter.unimportant_genes.barcodeFromHashkey(c("TCGA", "A3", "3307")))
+})
+
 test_that("Path correctly concatenated on Linux", {
     skip_on_os(c("windows", "mac", "solaris"))
 
@@ -133,4 +161,48 @@ test_that("Loading expression rCNA data", {
 
     writeLines(text=c("blah", "blah"), con=rCNApath)
     expect_error(.filter.unimportant_genes.loadExpression(rCNApath, 1))
+})
+
+test_that("Filtering expression data", {
+    rCNApath <- tempfile()
+    listy <- data.frame(row.names = c("HFE", "FTO", "ZNF66"),
+        "TCGA-A3-0001-123" = c(0.0, 130.4, 1.5),
+        "TCGA-A3-0001-124" = c(2.9, 1.3, 0.5),
+        "TCGA-A3-0002-123" = c(1.0, 1.6, 3.0))
+    expect_is(listy, "data.frame", info="Test setup (raw data)")
+
+    saveRDS(listy, file=rCNApath)
+    expect_true(file.exists(rCNApath), info="Test setup (RDS)")
+
+    expression <- .filter.unimportant_genes.loadExpression(rCNApath, 2)
+    expect_equal(expression$numSampleReads, 2)
+   
+    vital <- new.env(hash=TRUE)
+    vital[["TCGA.A3.0001"]] <- 5
+    vital[["TCGA.A3.0002"]] <- 500
+
+    filter <- .filter.unimportant_genes.filterExpression(
+        expression, vital, rT=2, pT=0.75, cT=10)
+
+    expect_equal(filter$"HFE|TCGA.A3.0001.123",
+        list(ignore=FALSE, numReads=0))
+    expect_equal(filter$"HFE|TCGA.A3.0001.124",
+        list(ignore=FALSE, numReads=2.9))
+    expect_equal(filter$"HFE|TCGA.A3.0002.123",
+        list(ignore=TRUE, numReads=1.0))
+
+    expect_equal(filter$"FTO|TCGA.A3.0001.123",
+        list(ignore=FALSE, numReads=130.4))
+    expect_equal(filter$"FTO|TCGA.A3.0001.124",
+        list(ignore=FALSE, numReads=1.3))
+    expect_equal(filter$"FTO|TCGA.A3.0002.123",
+        list(ignore=TRUE, numReads=1.6))
+
+    expect_equal(filter$"ZNF66|TCGA.A3.0001.123",
+        list(ignore=FALSE, numReads=1.5))
+    expect_equal(filter$"ZNF66|TCGA.A3.0001.124",
+        list(ignore=FALSE, numReads=0.5))
+    expect_equal(filter$"ZNF66|TCGA.A3.0002.123",
+        list(ignore=FALSE, numReads=3.0))
+
 })

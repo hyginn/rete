@@ -64,6 +64,26 @@
 
 ### Module-specific utility functions.
 
+# Extract the barcode from the hash key
+.filter.unimportant_genes.barcodeFromHashkey <- function(
+        hashkey, separator="|") {
+
+    if (typeof(hashkey) != "character") {
+        stop("Hashkey must be of type character")
+    }
+
+    bits <- strsplit(hashkey, separator, fixed=TRUE)[[1]]
+    if (length(bits) != 2) {
+        stop("Hashkey incorrectly formatted")
+    }
+
+    if (length(bits[[2]]) == 0) {
+        stop("Hashkey too short")
+    }
+
+    return(bits[[2]])
+}
+
 # Validate basic file status
 .filter.unimportant_genes.validFiles <- function(
         exprData, clinData, fNames, dOut
@@ -139,7 +159,6 @@
 .filter.unimportant_genes.filterExpression <- function(
         filter, survivalTime, rT, pT, cT
     ) {
-    # XXX: need tests
 
     samples <- filter$samples
     numSampleReads <- filter$numSampleReads
@@ -153,12 +172,15 @@
         if (numReads < rT) {
             samples[[s]]$ignore <- TRUE
         } else if (numSampleReads < (pT * numReads)) {
+# XXX: Still need test for this case
             samples[[s]]$ignore <- TRUE
         }
 
         # Note that survivalTime keys are not the full length
         #   of a full sample barcode key.
-        patient <- toupper(.filter.unimportant_genes.patientFromBarcode(s))
+        patient <- toupper(.filter.unimportant_genes.patientFromBarcode(
+            .filter.unimportant_genes.barcodeFromHashkey(s),
+            separator="."))
         if (survivalTime[[patient]] < cT) {
             samples[[s]]$ignore <- FALSE
         }
@@ -175,20 +197,20 @@
     clin <- readRDS(filename) # XXX: is this really an RDS file?
 
     # Select cases to consider
-    samples <- colnames(clin)
-    for (s in samples) {
-        vs <- clin["vital_status", s]
+    patients <- colnames(clin)
+    for (patient in patients) {
+        vs <- clin["vital_status", patient]
         survivalTime <- -1
 
         if (vs == 1) { # dead
-            survivalTime <- clin["days_to_death", s]
+            survivalTime <- clin["days_to_death", patient]
         } else if (vs == 0) { # alive
-            dtd <- clin["days_to_death", s]
+            dtd <- clin["days_to_death", patient]
             if (dtd != NA) {
                 next # exclude, a living dead person
             }
 
-            dtlf <- clin["days_to_last_followup", s]
+            dtlf <- clin["days_to_last_followup", patient]
             if (dtlf != NA) {
                 survivalTime <- dtlf
             }
@@ -198,7 +220,7 @@
             stop("Invalid vital_status value in clinical data")
         }
 
-        readhash[[s]] <- survivalTime
+        readhash[[patient]] <- survivalTime
     }
 
     return(readhash)
