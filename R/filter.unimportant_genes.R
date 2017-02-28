@@ -199,41 +199,62 @@
        } else if (survivalTime[[patient]] < cT) {
            samples[[s]]$ignore <- FALSE
        }
-
-###    # Operate over all elements in the environment hash filter
-###    #   This is /not/ a copy.  Changes to filter persist are
-###    #   visible out of this scope.
-###   for (s in ls(samples)) {
-###       numReads <- samples[[s]]$numReads
-###
-###       if (numReads < rT) {
-###           samples[[s]]$ignore <- TRUE
-###       } else if (numSampleReads < (pT * numReads)) {
-### #XXX: Still need test for this case
-###           samples[[s]]$ignore <- TRUE
-###       }
-###
-###       # Note that survivalTime keys are not the full length
-###       #   of a full sample barcode.
-###       patient <- toupper(.filter.unimportant_genes.patientFromBarcode(
-###           .filter.unimportant_genes.barcodeFromHashkey(s),
-###           separator="."))
-###       if (!exists(patient, envir=survivalTime)) {
-###           samples[[s]]$ignore <- TRUE
-###       } else if (survivalTime[[patient]] < cT) {
-###           samples[[s]]$ignore <- FALSE
-###       }
    }
 
     return(samples)
 }
 
-# Load the clinical data RDS file, text format?
+# Parse the clinical data file
+.filter.unimportant_genes.parseClinicalFile <- function(filename) {
+    clin <- file(filename, open="r")
+   
+    # Get the header
+    line <- readLines(con=clin, n=1)
+    if (length(line) == 0) {
+        stop("Clinical data file empty")
+    }
+
+    # Save the patient ids
+    patients <- strsplit(line, "\t")[[1]]
+    colcount <- length(patients)
+
+    if (colcount < 2) {
+        stop("Clinical data file lacks patients")
+    }
+
+    # Prepare to load the data
+    data <- data.frame(row.names =
+        c("vital_status", "days_to_death", "days_to_last_followup"))
+
+    # Process records
+    line <- readLines(con=clin, n=1)
+    while (length(line) != 0) {
+        fields <- strsplit(line, "\t")[[1]]
+
+        field = fields[1]
+        if (field %in% 
+            c("vital_status", "days_to_death", "days_to_last_followup")) {
+            for (val in 2:colcount) {
+                data[field, patients[val]] <- fields[val]
+            }
+        }
+
+        line <- readLines(con=clin, n=1)
+    }
+    close(clin)
+
+    # Name the columns for the patient ids
+    colnames(data) <- patients[2:colcount]
+
+    return(data)
+}
+
+# Load the clinical data 
 .filter.unimportant_genes.loadVitalStatus <- function(filename) {
     # XXX: need tests
     readhash <- new.env(hash=TRUE)
 
-    clin <- readRDS(filename) # XXX: is this really an RDS file?
+    clin <- parseClinicalFile(filename)
 
     # Select cases to consider
     patients <- colnames(clin)
@@ -245,7 +266,7 @@
             survivalTime <- clin["days_to_death", patient]
         } else if (vs == 0) { # alive
             dtd <- clin["days_to_death", patient]
-            if (dtd != NA) {
+            if (!is.na(dtd)) {
                 next # exclude, a living dead person
             }
 

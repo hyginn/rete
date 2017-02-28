@@ -103,6 +103,36 @@ test_that("Magic check for hash character using raw vectors", {
     expect_error(.filter.unimportant_genes.getMagic("/dev/null"))
 })
 
+test_that("Parsing clinical expression data", {
+    clinName <- tempfile()
+    clinData <- c(
+        paste(c("Hybridization REF", "TCGA-A0-0001", "TCGA-A0-0002", "TCGA-A0-0003"), collapse="\t"),
+        paste(c("Composite Element REF", "value", "value", "value"), collapse="\t"),
+        paste(c("years_to_birth", "42", "12", "68"), collapse="\t"),
+        paste(c("vital_status", "0", "1", "1"), collapse="\t"),
+        paste(c("days_to_death", "NA", "4", "1000"), collapse="\t"),
+        paste(c("days_to_last_followup", "100", "NA", "NA"), collapse="\t")
+        )
+    writeLines(clinData, con=clinName)
+    expect_true(file.exists(clinName), info="Test setup (clinical data)")
+
+    data <- .filter.unimportant_genes.parseClinicalFile(clinName)
+    expect_equal(nrow(data), 3)
+    expect_equal(ncol(data), 3)
+    expect_false('TCGA.A3.0001.124' %in% colnames(data))
+    expect_false('Hybridization REF' %in% colnames(data))
+    expect_true('TCGA-A0-0002' %in% colnames(data))
+    expect_equal(data['vital_status', 'TCGA-A0-0003'], '1')
+    expect_equal(data['days_to_death', 'TCGA-A0-0001'], 'NA')
+    expect_equal(data['days_to_last_followup', 'TCGA-A0-0002'], 'NA')
+    expect_false('years_to_birth' %in% rownames(data))
+
+    clinData <- c("Hybridization REF", "vital_status",
+        "days_to_death", "days_to_last_followup")
+    writeLines(clinData, con=clinName)
+    expect_error(.filter.unimportant_genes.parseClinicalFile(clinName))
+})
+
 test_that("Loading expression rCNA data", {
     rCNApath <- tempfile()
     listy <- data.frame(row.names = c("HFE", "FTO", "ZNF66"),
@@ -393,4 +423,38 @@ test_that("Processing an rCNA RDS file", {
     expect_equal(nrow(filtered), 3)
     expect_equal(ncol(filtered), 2)
     expect_false('TCGA.A3.0001.124' %in% colnames(filtered))
+})
+
+test_that("A full run of the main function", {
+    dOut <- tempfile()
+    dir.create(dOut)
+    expect_true(dir.exists(dOut), info="Test setup (dOut)")
+
+    rCNAName <- tempfile()
+    rCNAData <- data.frame(row.names = c("HFE", "FTO", "ZNF66"),
+        "TCGA-A3-0001-123" = c(0.0, 130.4, 1.5),
+        "TCGA-A3-0001-124" = c(2.9, 1.3, 0.5),
+        "TCGA-A3-0002-123" = c(1.0, 1.6, 3.0))
+    saveRDS(rCNAData, file=rCNAName)
+    expect_true(file.exists(rCNAName), info="Test setup (rCNA)")
+    
+    rMutName <- tempfile()
+    rMutData <- c(
+        "#version 2.2",
+        paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
+            "Strand", "Variant_Classification", "Variant_Type",
+            "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
+            "Tumor_Sample_Barcode", "UUID"), collapse="\t"),
+        paste(c("HFE", "6", "123", "456", "+", "Missense_Mutation", "SNP",
+            "C", "T", "T",
+            "TCGA-A3-0001-123-01W-0615-10",
+            "F813F0B2-CE88-41FB-805E-40997E0E0309"), collapse="\t"),
+        paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
+            "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 
+            "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
+    writeLines(rMutData, con=rMutName)
+    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+
+    filter.unimportant_genes(exprData, clinData, c(rMutName, rCNAName),
+        dOut, rT=2, pT=0.7, cT=5, silent=TRUE, noLog=TRUE)
 })
