@@ -15,7 +15,7 @@
 #' @family fastMap functions
 #'
 #' @examples
-#' fastmap("ENSG00000121410", type="ENSP")
+#' fastmap("ENSG00000121410", type = "ENSP")
 #' fastmap(c("Q9NQ94", "P01023"))
 #' @export
 fastMap <- function(ID, type = "UniProt") {
@@ -40,7 +40,7 @@ fastMap <- function(ID, type = "UniProt") {
         if (is.null(lookUp)) {
             unmappedCount <- unmappedCount + 1
             # append to rete.unmapped option
-            options(rete.unmapped=c(getOption("rete.unmapped"), ID[i]))
+            options(rete.unmapped = c(getOption("rete.unmapped"), ID[i]))
             out[i] <- ID[i]
         } else {
             out[i] <- lookUp
@@ -49,8 +49,7 @@ fastMap <- function(ID, type = "UniProt") {
 
     if (unmappedCount) {
         warningMessage <- paste(unmappedCount, "of", IDLength,
-                                "IDs could not be mapped, see
-                                getOptions('rete.unmapped') to list them all.")
+                                "IDs could not be mapped, see getOptions('rete.unmapped') to list them all.")
         warning(warningMessage)
     }
     return(out)

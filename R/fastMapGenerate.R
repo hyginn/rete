@@ -2,10 +2,10 @@
 
 #' Generate the fastMap hash tables.
 #'
-#' \code{fastMapGenerate} will parse through an hgnc file
-#' and create a hash table depending on \code{type}. Also
-#' saves the generated hash table as an .rda which can be
-#' loaded in future sessions.
+#' \code{fastMapGenerate} will parse through an hgnc file and create a hash
+#' table depending on \code{type}. Also saves the generated hash table as an
+#' .rda which can be loaded in future sessions. If there conflicting keys, only
+#' keep the first instance.
 #'
 #' @param fName The path to the HUGO gene symbol data set.
 #' @param type The type to parse for.
@@ -23,8 +23,8 @@ fastMapGenerate <- function(fName, type, saveHashTable=TRUE) {
         errorMessage <- "Type can only be UniProt or ENSP"
         stop(errorMessage)
     }
-    hashTable <- new.env(hash=TRUE)
-    nonUnique <- new.env(hash=TRUE)
+    hashTable <- new.env(hash = TRUE)
+    listedUnique <- new.env(hash = TRUE)
 
     hgncFile <- file(fName, open = "r")
 
@@ -38,7 +38,6 @@ fastMapGenerate <- function(fName, type, saveHashTable=TRUE) {
 
     totalCount <- 0
     nonUniqueKeysCount <- 0
-    nonUniqueValuesCount <- 0
     # Read line by line
     while(length(entry <- readLines(hgncFile, n = 1)) > 0) {
         entryVector <- (strsplit(entry, "\t"))
@@ -48,26 +47,34 @@ fastMapGenerate <- function(fName, type, saveHashTable=TRUE) {
             next
         }
         value <- entryVector[[1]][symbolCol]
-        # TODO: Address non-unique keys
+        # Handle non unique keys
         if (!is.null(hashTable[[key]])) {
             nonUniqueKeysCount <- nonUniqueKeysCount + 1
+            # If we included the original non conflicted key
+            if (is.null(listedUnique[[key]])) {
+                nonUniqueKeysCount <- nonUniqueKeysCount + 1
+                listedUnique[[key]] <- TRUE
+                initialPair <- paste0(key, "->", hashTable[[key]])
+                # insert first instance of the key with conflict
+                options(rete.conflictingKeys =
+                            c(getOption("rete.conflictingKeys"), initialPair))
+            }
+            # insert the other instance of they key with conflict
+            pair <- paste0(key, "->", value)
+            options(rete.conflictingKeys =
+                        c(getOption("rete.conflictingKeys"), pair))
+        } else {
+            hashTable[[key]] <- value
         }
-        # TODO: Address non-unique values
-        if (!is.null(nonUnique[[value]])) {
-            nonUniqueValuesCount <- nonUniqueValuesCount + 1
-        }
-        hashTable[[key]] <- value
-        nonUnique[[value]] <- key
         totalCount <- totalCount + 1
     }
 
-    if (nonUniqueKeysCount) {
-        warningMessage <- paste(nonUniqueKeysCount, "keys out of", totalCount, "are the same.")
-        warning(warningMessage)
-    }
+    close(hgncFile)
 
-    if (nonUniqueValuesCount) {
-        warningMessage <- paste(nonUniqueValuesCount, "values out of", totalCount, "are the same.")
+    if (nonUniqueKeysCount) {
+        warningMessage <- paste(nonUniqueKeysCount, "of",
+                                totalCount,
+                                "keys are non-unique. See getOption('rete.conflictingKeys') to list them all")
         warning(warningMessage)
     }
 
@@ -83,7 +90,6 @@ fastMapGenerate <- function(fName, type, saveHashTable=TRUE) {
             save(fastMapENSP, file = "fastMapENSP.rda")
         }
     }
-
 }
 
 # [END]
