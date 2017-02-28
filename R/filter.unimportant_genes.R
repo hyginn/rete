@@ -229,34 +229,49 @@
 # Scan an rMUT MAF file, outputting into the output directory a new MAF
 #   file that has only the records for which the filter says not to ignore
 .filter.unimportant_genes.processrMUT <- function(filename, dOut, filter) {
-    # XXX: need tests
     outName <- .filter.unimportant_genes.outputFilename(dOut, filename)
 
-    rMUT <- file(filename, "r")
-    MUT <- file(outName, "w")
+    rMUT <- file(filename, open="r")
+    MUT <- file(outName, open="w")
 
     # Duplicate the header
-    line <- readLines(con=rMut, n=1)
-    while (line) {
-        if (!startsWith(line, "#")) {
+    hasHeader <- FALSE
+    line <- readLines(con=rMUT, n=1)
+    while (length(line) != 0) {
+        if (!startsWith(line[[1]], "#")) {
             break
         }
+        hasHeader <- TRUE
         writeLines(line, con=MUT)
-        line <- readLines(con=rMut, n=1)
+        line <- readLines(con=rMUT, n=1)
     }
-    
+   
+    if (!hasHeader) {
+        stop("Malformed rMUT file: missing header")
+    }
+ 
     # Filter the data
-    while (line) {
-        fields <- strsplit(line, "\t", fixed=TRUE)
-        if (filter[fields[11]]$ignore == TRUE) {
+    while (length(line) != 0) {
+        fields <- strsplit(line[[1]], "\t", fixed=TRUE)[[1]]
+        if (length(fields) != 12) {
+            stop("Malformed rMUT file: incorrect field count")
+        }
+
+        record <- paste(c(fields[1],
+            gsub('-', '.', fields[11])), collapse="|")
+        if (exists(record, envir=filter) &&
+            filter[[record]]$ignore == TRUE) {
+            line <- readLines(con=rMUT, n=1)
             next
         }
         writeLines(line, con=MUT)
-        line <- readLines(con=rMut, n=1)
+        line <- readLines(con=rMUT, n=1)
     }
 
     close(MUT)
     close(rMUT)
+
+    return(outName)
 }
 
 # Scan an rCNA RDS object, outputting into the output directory a new RDS

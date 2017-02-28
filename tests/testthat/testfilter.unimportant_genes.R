@@ -175,7 +175,7 @@ test_that("Filtering expression data", {
     expect_true(file.exists(rCNApath), info="Test setup (RDS)")
 
     expression <- .filter.unimportant_genes.loadExpression(rCNApath, 2)
-    expect_equal(expression$numSampleReads, 2)
+    expect_equal(expression$numSampleReads, 3)
    
     vital <- new.env(hash=TRUE)
     vital[["TCGA.A3.0001"]] <- 5
@@ -204,5 +204,109 @@ test_that("Filtering expression data", {
         list(ignore=FALSE, numReads=0.5))
     expect_equal(filter$"ZNF66|TCGA.A3.0002.123",
         list(ignore=FALSE, numReads=3.0))
+
+})
+
+test_that("Processing an rMUT MAF file", {
+    dOut <- tempfile()
+    dir.create(dOut)
+    expect_true(dir.exists(dOut), info="Test setup (dOut)")
+
+    rMutName <- tempfile()
+    rMutData <- c(
+        "#version 2.2",
+        paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
+            "Strand", "Variant_Classification", "Variant_Type",
+            "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
+            "Tumor_Sample_Barcode", "UUID"), collapse="\t"),
+        paste(c("HFE", "6", "123", "456", "+", "Missense_Mutation", "SNP",
+            "C", "T", "T",
+            "TCGA-A3-0001-123-01W-0615-10",
+            "F813F0B2-CE88-41FB-805E-40997E0E0309"), collapse="\t"),
+        paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
+            "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 
+            "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
+    writeLines(rMutData, con=rMutName)
+    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    
+    filter <- new.env(hash=TRUE)
+    filter[["HFE|TCGA.A3.0001.123.01W.0615.10"]] <-
+        list(ignore=TRUE, numReads=0)
+    filter[["HFE|TCGA.A3.0001.124.01W.0615.10"]] <-
+        list(ignore=FALSE, numReads=5)
+
+    output <- .filter.unimportant_genes.processrMUT(rMutName, dOut, filter)
+    filtered <- readLines(output)
+    expect_equal(filtered, c(
+        "#version 2.2",
+        paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
+            "Strand", "Variant_Classification", "Variant_Type",
+            "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
+            "Tumor_Sample_Barcode", "UUID"), collapse="\t"),
+        paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
+            "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 
+            "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t")),
+        info=paste(c("Contents of output file", output)))
+
+    rMutName <- tempfile()
+    rMutData <- c(
+        "#version 2.2",
+        paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
+            "Strand", "Variant_Classification", "Variant_Type",
+            "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
+            "Tumor_Sample_Barcode", "UUID"), collapse="\t")
+        )
+    writeLines(rMutData, con=rMutName)
+    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    
+    output <- .filter.unimportant_genes.processrMUT(rMutName, dOut, filter)
+    filtered <- readLines(output)
+    expect_equal(filtered, c(
+        "#version 2.2",
+        paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
+            "Strand", "Variant_Classification", "Variant_Type",
+            "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
+            "Tumor_Sample_Barcode", "UUID"), collapse="\t")
+            ),
+        info=paste(c("Contents of output file", output)))
+
+    rMutName <- tempfile()
+    rMutData <- c(
+        paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
+            "Strand", "Variant_Classification", "Variant_Type",
+            "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
+            "Tumor_Sample_Barcode", "UUID"), collapse="\t"))
+    writeLines(rMutData, con=rMutName)
+    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    
+    expect_error(.filter.unimportant_genes.processrMUT(rMutName, dOut, filter))
+
+    rMutName <- tempfile()
+    rMutData <- c(
+        paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
+            "Strand", "Variant_Classification", "Variant_Type",
+            "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
+            "Tumor_Sample_Barcode", "UUID"), collapse="\t"),
+        paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation",
+            "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 
+            "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
+    writeLines(rMutData, con=rMutName)
+    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    
+    expect_error(.filter.unimportant_genes.processrMUT(rMutName, dOut, filter))
+
+    rMutName <- tempfile()
+    rMutData <- c(
+        paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
+            "Strand", "Variant_Classification", "Variant_Type",
+            "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
+            "Tumor_Sample_Barcode", "UUID", "extra"), collapse="\t"),
+        paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
+            "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 
+            "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
+    writeLines(rMutData, con=rMutName)
+    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    
+    expect_error(.filter.unimportant_genes.processrMUT(rMutName, dOut, filter))
 
 })
