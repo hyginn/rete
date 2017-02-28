@@ -5,7 +5,7 @@
 #' \code{fastMapUpdate} Update, add, or delete entries in the fastMap
 #' hash table. Adding and updating are the same; if a key does/doesn't
 #' exist, will set the key's value to \code{value}. If a lookup is made
-#' for a non-existant, NULL will be returned; setting a key's value to
+#' for a non-existant key, NULL will be returned; setting a key's value to
 #' NULL is essentially deleting. Sanity checks are included to only allow
 #' acceptable characters for both \code{key} and \code{value}. \code{value}
 #' can only be a string or NULL.
