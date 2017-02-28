@@ -5,7 +5,7 @@ Version: 0.1.0
 Author: Boris Steipe et al.
 Maintainer: Boris Steipe <boris.steipe@utoronto.ca>
 Description: rete combines a workflow for affected-subnetwork discovery in
-    cancer genome data and analysis tools.
+    cancer genome data, and analysis tools.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
