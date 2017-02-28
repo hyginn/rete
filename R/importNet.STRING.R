@@ -2,28 +2,64 @@
 
 #' Import network data from a STRING database file.
 #'
-#' \code{importNet.STRING} description.
+#' \code{importNet.STRING} imports network edges from a STRING database file,
+#' selects the highest confidence edges, maps ENSP IDs to HGNC gene symbols, and
+#' returns a weighted, directed igraph graph object of a rete gG type.
 #'
-#' Details.
-#' @section <title>: Additional explanation.
+#' @section Selecting edges:
+#'   STRING scores are p-values * 1000, rounded to
+#'   integer. The function can retrieve  the highest scored edges according to
+#'   three different cutoff type. Type "xN" (default: 10000) retrieves the xN
+#'   highest scored edges. Type xQ (default 0.9) retrieves the edges with scores
+#'   larger than the xQ quantile. Type "xS" (default 950) retrieves all edges
+#'   with scores larger or equal to xS. If different values are requested, they
+#'   are passed in the parameter val. To read all edges, cutoff type should be
+#'   (the default) xN, val = Inf.
+#' @section Networks:
+#'   STRING "protein.links.detailed.v10.txt" files contain
+#'   several protein networks: neighborhood, fusion, cooccurence, coexpression,
+#'   experimental, database, textmining, and combined_score. However this
+#'   function is not restricted to these types, but will read one network for
+#'   which the column name is requested in the function's net parameter. This
+#'   allows users to define their own column.
+#' @section Tax ID:
+#'   The taxID parameter is used as a sanity check on the file
+#'   contents. Currently only the first data record protein IDs are checked for
+#'   being prefixed with the tax ID. During processing all numbers and one
+#'   period prefixed to the ENSP ID are removed.
+#' @section Console and log:
+#'   The taxID parameter is used as a sanity check on the
+#'   file contents. Currently only the first data
+#' @section The gG object:
+#'   The function returns a rete gG object, a weighted,
+#'   directed, simple igraph graph in which HGNC gene symbols are vertex names,
+#'   and the edge attributes $weight hold the network scores. Graph attributes
+#'   hold metadata; use igraph::graph_attr(gG) to return: $gGversion: the gG
+#'   object version; $logFile: the filename to which log information was
+#'   written; $inFile: the input filename of STRING data; $call: the complete
+#'   function call with expanded arguments; and $date: when the gG object was
+#'   created.
 #'
-#' @param <fName> <description>.
-#' @param <net> <description>.
-#' @param <cutoffType> <description>.
-#' @param <val> <description>.
-#' @param <taxID> <description>.
-#' @param <silent> <description>.
-#' @param <noLog> <description>.
-#' @return <description>.
+#' @param fName Filename of a STRING protein.links.detailed.v10.txt file.
+#' @param net The requested network. This must be a string that exists in the
+#'   header. The default is "combined_score".
+#' @param cutoffType one of xN, xQ or xS (see Details).
+#' @param val A number, quantile or score appropriate to the requested cutoff
+#'   type.
+#' @param taxID The NCBI tax ID prefix of the protein1 and protein2 IDs.
+#'   Defaults to "9606" (homo sapiens)
+#' @param silent Controls whether output to console should be suppressed. FALSE
+#'   by default.
+#' @param noLog Controls whether writing the result to the global logfile should
+#'   be suppressed. FALSE by default.
+#' @return a weighted, directed, simple igraph graph which is a rete gG object.
 #'
 #' @family ImportNet.STRING, importNet.MultiNet, importNet.MITAB
 #'
-#' ## @seealso \code{\link{<function>}} <describe related function>, ... .
+#'   ## @seealso \code{\link{fastMap}} fastMap() is used internally to map ENSP
+#'   IDs to gene symbols.
 #'
-#' ## @examples
-#' ## \dontrun{
-#' ## importNet.STRING(IN, OUT)
-#' ## }
+#'   ## @examples ## \dontrun{ ## importNet.STRING(IN, OUT) ## }
 #' @export
 importNet.STRING <- function(fName,
                              net = "combined_score",
@@ -32,6 +68,8 @@ importNet.STRING <- function(fName,
                              taxID = "9606",
                              silent = FALSE,
                              noLog = FALSE) {
+
+    # ToDo: can we select the number of vertices ?
 
     # ==== PARAMETERS ==========================================================
 
@@ -42,7 +80,7 @@ importNet.STRING <- function(fName,
         val <- defaultValues[cutoffType]
     }
 
-    # Read header and 1 contents line
+    # Read header and one contents line
     tmp <- readLines(fName, n = 2)
 
     # Parse for requested column. STRING data is " "-delimited.
@@ -94,26 +132,37 @@ importNet.STRING <- function(fName,
     netDF <- readr::read_delim(file = fName,
                                delim = " ",
                                col_types = readMask,
-                               n_max = 10)
+                               n_max = Inf)
 
     colnames(netDF) <- c("a", "b", "weight")
 
-    # Fix vertex names
+    # Remove taxID prefix
     netDF$a <- gsub("^[0-9]*\\.{0,1}", "", netDF$a)
     netDF$b <- gsub("^[0-9]*\\.{0,1}", "", netDF$b)
 
+    # map ID to gene names
     netDF$a <- fastMap(netDF$a, type = "ENSP")
     netDF$b <- fastMap(netDF$b, type = "ENSP")
 
-    # Remove duplicates
-    #   TODO
-
     # Remove values below cutoff
-    #   TODO
+    if (cutoffType == "xS") {
+        # select all rows with weight >= val
+        sel <- netDF$weight >= val
+    } else if (cutoffType == "xQ") {
+        # select all rows with weight >= the val-quantile
+        x <- stats::quantile(netDF$weight, probs = val)
+        sel <- netDF$weight >= x
+    } else if (cutoffType == "xN") {
+        # select the val highest scores, or all, whichever is fewer
+        x <- order(netDF$weight, decreasing = TRUE)
+        sel <- x[1:min(val, length(x))]
+    }
+
+    netDF <- netDF[sel, ]
+
 
     # Compile argument string
     fCall    <- "importNet.STRING("
-    fCall[2] <- sprintf('fname = "%s", ', fName)
     fCall[2] <- sprintf("fname = \"%s\", ", fName)
     fCall[3] <- sprintf("net = \"%s\", ", net)
     fCall[4] <- sprintf("cutoffType = \"%s\", ", cutoffType)
@@ -124,7 +173,7 @@ importNet.STRING <- function(fName,
     fCall <- paste(fCall, collapse = "")
 
     # ==== MAKE GRAPH ==========================================================
-    gG <- .df2gG(fName, fCall, isDirected = TRUE)
+    gG <- .df2gG(fName, call = fCall, isDirected = TRUE)
 
     # ==== WRITE LOG ===========================================================
     if(! noLog) {
