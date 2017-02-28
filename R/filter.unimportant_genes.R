@@ -251,13 +251,13 @@
 
 # Load the clinical data 
 .filter.unimportant_genes.loadVitalStatus <- function(filename) {
-    # XXX: need tests
     readhash <- new.env(hash=TRUE)
 
-    clin <- parseClinicalFile(filename)
+    clin <- .filter.unimportant_genes.parseClinicalFile(filename)
 
     # Select cases to consider
     patients <- colnames(clin)
+
     for (patient in patients) {
         vs <- clin["vital_status", patient]
         survivalTime <- -1
@@ -266,15 +266,12 @@
             survivalTime <- clin["days_to_death", patient]
         } else if (vs == 0) { # alive
             dtd <- clin["days_to_death", patient]
-            if (!is.na(dtd)) {
+            if (dtd != "NA") {
                 next # exclude, a living dead person
             }
 
-            dtlf <- clin["days_to_last_followup", patient]
-            if (dtlf != NA) {
-                survivalTime <- dtlf
-            }
-        } else if (vs == NA) { # don't know
+            survivalTime <- clin["days_to_last_followup", patient]
+        } else if (vs == "NA") { # don't know
             next # exclude
         } else {
             stop("Invalid vital_status value in clinical data")

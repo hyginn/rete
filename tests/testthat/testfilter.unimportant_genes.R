@@ -133,6 +133,29 @@ test_that("Parsing clinical expression data", {
     expect_error(.filter.unimportant_genes.parseClinicalFile(clinName))
 })
 
+test_that("Loading vital status", {
+    clinName <- tempfile()
+    clinData <- c(
+        paste(c("Hybridization REF", "TCGA-A0-0001", "TCGA-A0-0002", "TCGA-A0-0003", "TCGA-A0-0004", "TCGA-A0-0005"), collapse="\t"),
+        paste(c("Composite Element REF", "value", "value", "value", "value", "value"), collapse="\t"),
+        paste(c("years_to_birth", "42", "12", "68", "2", "100"), collapse="\t"),
+        paste(c("vital_status", "0", "1", "1", "0", "NA"), collapse="\t"),
+        paste(c("days_to_death", "NA", "4", "1000", "3", "5"), collapse="\t"),
+        paste(c("days_to_last_followup", "100", "NA", "NA", "NA", "6"), collapse="\t")
+        )
+    writeLines(clinData, con=clinName)
+    expect_true(file.exists(clinName), info="Test setup (clinical data)")
+
+    data <- .filter.unimportant_genes.loadVitalStatus(clinName)
+    patients <- ls(data)
+    expect_equal(length(patients), 3)
+    expect_equal(data[["TCGA-A0-0001"]], "100")
+    expect_equal(data[["TCGA-A0-0002"]], "4")
+    expect_equal(data[["TCGA-A0-0003"]], "1000")
+    expect_false("TCGA-A0-0004" %in% patients)
+    expect_false("TCGA-A0-0005" %in% patients)
+})
+
 test_that("Loading expression rCNA data", {
     rCNApath <- tempfile()
     listy <- data.frame(row.names = c("HFE", "FTO", "ZNF66"),
