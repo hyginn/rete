@@ -68,6 +68,7 @@
 .filter.unimportant_genes.validFiles <- function(
         exprData, clinData, fNames, dOut
     ) {
+    # XXX: need tests
     if (file.exists(exprData) == FALSE) {
         stop(paste('ERROR: Expression data file', exprData, 'does not exist.'))
     }
@@ -115,21 +116,19 @@
     numSampleReads <- 0
 
     samples <- readRDS(filename)
-    for (genename in rownames(samples)) {
+    for (gene in rownames(samples)) {
         for (s in colnames(samples)) {
             # Preset everything for the sample's hashtable record
-            df <- data.frame(ignore = FALSE, numReads = 0)
+            df <- list(ignore = FALSE, numReads = 0)
 
-            if (samples[gene, s] != NA) {
-                df$numReads <- df$numReads + 1
+            df$numReads <- df$numReads + samples[gene, s]
 
-                if (df$numReads > rT) {
-                    numSampleReads <- numSampleReads + 1
-                }
-
-                # Store the number of reads
-                genehash[[sample]] <- df
+            if (df$numReads > rT) {
+                numSampleReads <- numSampleReads + 1
             }
+
+            # Store the number of reads
+            genehash[[paste(gene, s, sep='|')]] <- df
         }
     }
 
@@ -140,6 +139,7 @@
 .filter.unimportant_genes.filterExpression <- function(
         filter, survivalTime, rT, pT, cT
     ) {
+    # XXX: need tests
 
     samples <- filter$samples
     numSampleReads <- filter$numSampleReads
@@ -169,9 +169,10 @@
 
 # Load the clinical data RDS file, text format?
 .filter.unimportant_genes.loadVitalStatus <- function(filename) {
+    # XXX: need tests
     readhash <- new.env(hash=TRUE)
 
-    clin <- readRDS(filename) # XXX
+    clin <- readRDS(filename) # XXX: is this really an RDS file?
 
     # Select cases to consider
     samples <- colnames(clin)
@@ -206,6 +207,7 @@
 # Scan an rMUT MAF file, outputting into the output directory a new MAF
 #   file that has only the records for which the filter says not to ignore
 .filter.unimportant_genes.processrMUT <- function(filename, dOut, filter) {
+    # XXX: need tests
     outName <- .filter.unimportant_genes.outputFilename(dOut, filename)
 
     rMUT <- file(filename, "r")
@@ -238,6 +240,7 @@
 # Scan an rCNA RDS object, outputting into the output directory a new RDS
 #   file that has only the records for which the filter says not to ignore
 .filter.unimportant_genes.processrCNA <- function(filename, dOut, filter) {
+    # XXX: need tests
     outName <- .filter.unimportant_genes.outputFilename(dOut, filename)
 
     rCNA <- readRDS(filename)
@@ -259,6 +262,7 @@
 filter.unimportant_genes <- function(exprData, clinData, fNames, dOut,
         rT=3, pT=0.7, cT=5, silent = FALSE, noLog = FALSE
     ) {
+    # XXX: need tests
     # Validate file existence
     toFilter <- .filter.unimportant_genes.validFiles(
         exprData, clinData, fNames, dOut)
