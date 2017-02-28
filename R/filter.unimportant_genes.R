@@ -13,7 +13,6 @@
 #' @param cT Threshold: only samples with "days_to_death_or_fup" < cT are retained in the output.
 #' @param silent Boolean. Default: FALSE. Whether or not to write progress information to the console.
 #' @param noLog Boolean. Default: FALSE. Whether or not to log results.
-#' @export
 
 ### Small utility functions.  Possibly of use elsewhere
 
