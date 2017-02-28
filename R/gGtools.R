@@ -2,7 +2,7 @@
 #
 # Utility functions for gG objects
 
-.df2gG <- function(inFile, arguments, isDirected = TRUE) {
+.df2gG <- function(inFile, call, isDirected = TRUE, simplify = TRUE) {
     # Purpose:
     #     Creates a gG object from a dataframe
     #
@@ -11,6 +11,7 @@
     #     arguments: string - values of calling arguments
     #     isDirected: default TRUE - whether the data frame contains
     #                 directed edges.
+    #     simplify: default TRUE - whether or not to collapse multiple edges
     # Details:
     #     The data frame netDF is expected to exist in the calling environment
     #     (i.e. the parent.frame()). igraph expects columns 1 and 2 to contain
@@ -19,7 +20,9 @@
     #     isDirected is true, absent edges are implied to have weight 0 but they
     #     are not explicitly added. If is Directed is false,
     #     igraph::as.directed() expands the graph to have directed edges.
-    #     Metadata is attached as a graph attribute.
+    #     Metadata is attached as a graph attribute. If simplify is true
+    #     multiple edges and loops are collapsed and the max() of the weights
+    #     is the attribute of the combined edge.
     # Value:
     #     gG: igraph graph object
     # ToDo:
@@ -27,14 +30,14 @@
     #     igraph::as.directed() is called on a network.
 
 
-    # setup metadata
+    # ==== SETUP METADATA ======================================================
     meta <- list(gGversion = "1.0",
                  logFile = getOption("rete.logFile"),
                  inFile = inFile,
-                 args = arguments,
+                 call = call,
                  date = Sys.Date())
 
-    # create iGraph object
+    # ==== CREATE IGRAPH GRAPH =================================================
     if (isDirected) {
         gG <- igraph::graph_from_data_frame(get("netDF", parent.frame()),
                                             directed = TRUE)
@@ -44,6 +47,18 @@
         gG <- igraph::as.directed(gG, mode = "mutual")
     }
 
+    # ==== SIMPLIFY GRAPH ======================================================
+    if (simplify) {
+        gG <- igraph::simplify(gG,
+                               remove.multiple = TRUE,
+                               remove.loops = TRUE,
+                               edge.attr.comb = "max")
+    }
+    # ToDo - post log message if edges were simplified away since this
+    # may give us less than the requested number xN of edges.
+
+
+    # ==== ATTACH METADATA =====================================================
     for (name in names(meta)) {
         gG <- igraph::set_graph_attr(gG, name, meta[[name]])
     }
