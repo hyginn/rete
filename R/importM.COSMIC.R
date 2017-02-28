@@ -36,14 +36,48 @@ importM.COSMIC <- function(fName,
     types <- c("CNV", "NCV") # fName must store either CNV or NCV data
 
 
-    # ==== PARAMETER VALIDATION ===============================================
+    # ==== PARAMETER TYPE VALIDATION ==========================================
+
+    # Check that fName is a string.
+    if(!is.character(fName)) {
+        stop("fName is not a valid string.")
+    }
+
+    # Check that type is a string.
+    if(!is.character(type)) {
+        stop("type is not a valid string.")
+    }
 
     # If range is not provided, return all columns
-    if (missing(range) || length(range) == 0) {
+    if (missing(range)) {
         noRange <- TRUE
     } else {
         noRange <- FALSE
+
+        # Check that range is a vector.
+        if(!is.vector(range)) {
+            stop("range is not a valid vector.")
+        }
+
+        # Check that every index in range is a numeric.
+        for (index in range) {
+            if (!is.numeric(index)) {
+                stop("range contains an invalid index.")
+            }
+        }
+
+        # if range is empty, return all columns.
+        if (length(range) == 0) {
+            noRange <- TRUE
+        }
     }
+
+    if (!is.logical(verbose)) {
+        stop("verbose is not a valid logicial.")
+    }
+
+
+    # ==== PARAMETER VALUE VALIDATION =========================================
 
     # Validate type parameter
     if (!type %in% types) {
@@ -66,7 +100,8 @@ importM.COSMIC <- function(fName,
     cosmicData <- read.table(
         fName,
         sep="\t",
-        header=TRUE
+        header=TRUE,
+        check.names = FALSE
     )
 
 
