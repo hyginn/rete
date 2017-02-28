@@ -173,7 +173,7 @@ importNet.STRING <- function(fName,
     fCall <- paste(fCall, collapse = "")
 
     # ==== MAKE GRAPH ==========================================================
-    gG <- .df2gG(fName, call = fCall, isDirected = TRUE)
+    gG <- .df2gG(fName, call = fCall, isDirected = TRUE, simplify = TRUE)
 
     # ==== WRITE LOG ===========================================================
     if(! noLog) {
