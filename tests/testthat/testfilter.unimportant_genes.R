@@ -116,6 +116,11 @@ test_that("Loading expression rCNA data", {
 
     expression <- .filter.unimportant_genes.loadExpression(rCNApath, 2)
     expect_equal(expression$numSampleReads, 2)
+    expect_equal(expression$sampleCount, 3)
+
+    expect_equal(expression$genes$"HFE", 2)
+    expect_equal(expression$genes$"FTO", 3)
+    expect_equal(expression$genes$"ZNF66", 2)
 
     expect_equal(expression$samples$"HFE|a", list(ignore=FALSE, numReads=0.0))
     expect_equal(expression$samples$"FTO|a", list(ignore=FALSE, numReads=130.4))
@@ -131,6 +136,11 @@ test_that("Loading expression rCNA data", {
 
     expression <- .filter.unimportant_genes.loadExpression(rCNApath, 500)
     expect_equal(expression$numSampleReads, 0)
+    expect_equal(expression$sampleCount, 3)
+
+    expect_equal(expression$genes$"HFE", 2)
+    expect_equal(expression$genes$"FTO", 3)
+    expect_equal(expression$genes$"ZNF66", 2)
 
     expect_equal(expression$samples$"HFE|a", list(ignore=FALSE, numReads=0.0))
     expect_equal(expression$samples$"FTO|a", list(ignore=FALSE, numReads=130.4))
@@ -146,6 +156,11 @@ test_that("Loading expression rCNA data", {
 
     expression <- .filter.unimportant_genes.loadExpression(rCNApath, 1)
     expect_equal(expression$numSampleReads, 5)
+    expect_equal(expression$sampleCount, 3)
+
+    expect_equal(expression$genes$"HFE", 2)
+    expect_equal(expression$genes$"FTO", 3)
+    expect_equal(expression$genes$"ZNF66", 2)
 
     expect_equal(expression$samples$"HFE|a", list(ignore=FALSE, numReads=0.0))
     expect_equal(expression$samples$"FTO|a", list(ignore=FALSE, numReads=130.4))
@@ -176,6 +191,7 @@ test_that("Filtering expression data", {
 
     expression <- .filter.unimportant_genes.loadExpression(rCNApath, 2)
     expect_equal(expression$numSampleReads, 3)
+    expect_equal(expression$sampleCount, 3)
    
     vital <- new.env(hash=TRUE)
     vital[["TCGA.A3.0001"]] <- 5
@@ -202,6 +218,33 @@ test_that("Filtering expression data", {
         list(ignore=FALSE, numReads=1.5))
     expect_equal(filter$"ZNF66|TCGA.A3.0001.124",
         list(ignore=FALSE, numReads=0.5))
+    expect_equal(filter$"ZNF66|TCGA.A3.0002.123",
+        list(ignore=FALSE, numReads=3.0))
+
+    vital <- new.env(hash=TRUE)
+    vital[["TCGA.A3.0002"]] <- 500
+
+    filter <- .filter.unimportant_genes.filterExpression(
+        expression, vital, rT=2, pT=0.75, cT=10)
+
+    expect_equal(filter$"HFE|TCGA.A3.0001.123",
+        list(ignore=TRUE, numReads=0))
+    expect_equal(filter$"HFE|TCGA.A3.0001.124",
+        list(ignore=TRUE, numReads=2.9))
+    expect_equal(filter$"HFE|TCGA.A3.0002.123",
+        list(ignore=TRUE, numReads=1.0))
+
+    expect_equal(filter$"FTO|TCGA.A3.0001.123",
+        list(ignore=TRUE, numReads=130.4))
+    expect_equal(filter$"FTO|TCGA.A3.0001.124",
+        list(ignore=TRUE, numReads=1.3))
+    expect_equal(filter$"FTO|TCGA.A3.0002.123",
+        list(ignore=TRUE, numReads=1.6))
+
+    expect_equal(filter$"ZNF66|TCGA.A3.0001.123",
+        list(ignore=TRUE, numReads=1.5))
+    expect_equal(filter$"ZNF66|TCGA.A3.0001.124",
+        list(ignore=TRUE, numReads=0.5))
     expect_equal(filter$"ZNF66|TCGA.A3.0002.123",
         list(ignore=FALSE, numReads=3.0))
 

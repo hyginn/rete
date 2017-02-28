@@ -133,26 +133,37 @@
 # Load the expression rCNA file
 .filter.unimportant_genes.loadExpression <- function(filename, rT) {
     genehash <- new.env(hash=TRUE)
+    genesummary <- new.env(hash=TRUE)
     numSampleReads <- 0
 
     samples <- readRDS(filename)
+    sc <- length(colnames(samples))
     for (gene in rownames(samples)) {
-        for (s in colnames(samples)) {
-            # Preset everything for the sample's hashtable record
-            df <- list(ignore = FALSE, numReads = 0)
+        numSamples <- 0
 
-            df$numReads <- df$numReads + samples[gene, s]
+        for (barcode in colnames(samples)) {
+            # Count the number of samples that express this gene
+            if (!is.na(samples[gene, barcode]) &&
+                samples[gene, barcode] > 0.0) {
+                numSamples <- numSamples + 1
+            }
+
+            # Preset everything for the sample's hashtable record
+            df <- list(ignore = FALSE, numReads = samples[gene, barcode])
 
             if (df$numReads > rT) {
                 numSampleReads <- numSampleReads + 1
             }
 
             # Store the number of reads
-            genehash[[paste(gene, s, sep='|')]] <- df
+            genehash[[paste(gene, barcode, sep='|')]] <- df
         }
+
+        genesummary[[gene]] = numSamples
     }
 
-    return(list("numSampleReads"=numSampleReads, "samples"=genehash))
+    return(list("numSampleReads"=numSampleReads, "samples"=genehash, 
+        "genes"=genesummary, "sampleCount"=sc))
 }
 
 # Filter the expression RDS data
@@ -160,31 +171,59 @@
         filter, survivalTime, rT, pT, cT
     ) {
 
+    genes <- filter$genes
     samples <- filter$samples
     numSampleReads <- filter$numSampleReads
+    sampleCount <- filter$sampleCount
 
     # Operate over all elements in the environment hash filter
     #   This is /not/ a copy.  Changes to filter persist are
     #   visible out of this scope.
-    for (s in ls(samples)) {
-        numReads <- samples[[s]]$numReads
+   for (s in ls(samples)) {
+       # s is in the form "gene|barcode"
+       gene <- strsplit(s, "|", fixed=TRUE)[[1]][1]
+       barcode <- strsplit(s, "|", fixed=TRUE)[[1]][2]
 
-        if (numReads < rT) {
-            samples[[s]]$ignore <- TRUE
-        } else if (numSampleReads < (pT * numReads)) {
-# XXX: Still need test for this case
-            samples[[s]]$ignore <- TRUE
-        }
+       if (samples[[s]]$numReads < rT) {
+           samples[[s]]$ignore <- TRUE
+       } else if (genes[[gene]] < (pT * sampleCount)) {
+           samples[[s]]$ignore <- TRUE
+       }
 
-        # Note that survivalTime keys are not the full length
-        #   of a full sample barcode key.
-        patient <- toupper(.filter.unimportant_genes.patientFromBarcode(
-            .filter.unimportant_genes.barcodeFromHashkey(s),
-            separator="."))
-        if (survivalTime[[patient]] < cT) {
-            samples[[s]]$ignore <- FALSE
-        }
-    }
+       # Note that survivalTime keys are not the full length
+       #   of a full sample barcode.
+       patient <- toupper(.filter.unimportant_genes.patientFromBarcode(
+           barcode, separator="."))
+       if (!exists(patient, envir=survivalTime)) {
+           samples[[s]]$ignore <- TRUE
+       } else if (survivalTime[[patient]] < cT) {
+           samples[[s]]$ignore <- FALSE
+       }
+
+###    # Operate over all elements in the environment hash filter
+###    #   This is /not/ a copy.  Changes to filter persist are
+###    #   visible out of this scope.
+###   for (s in ls(samples)) {
+###       numReads <- samples[[s]]$numReads
+###
+###       if (numReads < rT) {
+###           samples[[s]]$ignore <- TRUE
+###       } else if (numSampleReads < (pT * numReads)) {
+### #XXX: Still need test for this case
+###           samples[[s]]$ignore <- TRUE
+###       }
+###
+###       # Note that survivalTime keys are not the full length
+###       #   of a full sample barcode.
+###       patient <- toupper(.filter.unimportant_genes.patientFromBarcode(
+###           .filter.unimportant_genes.barcodeFromHashkey(s),
+###           separator="."))
+###       if (!exists(patient, envir=survivalTime)) {
+###           samples[[s]]$ignore <- TRUE
+###       } else if (survivalTime[[patient]] < cT) {
+###           samples[[s]]$ignore <- FALSE
+###       }
+   }
 
     return(samples)
 }
@@ -257,6 +296,7 @@
             stop("Malformed rMUT file: incorrect field count")
         }
 
+        # RDS converts the "-" in the barcodes to "."
         record <- paste(c(fields[1],
             gsub('-', '.', fields[11])), collapse="|")
         if (exists(record, envir=filter) &&
@@ -283,16 +323,28 @@
     rCNA <- readRDS(filename)
 
     # Filter rCNA data
-    samples <- intersect(colnames(rCNA), ls(filter))
     keep <- c()
-    for (gene in genes) {
-        if (filter[[gene]]$ignore == FALSE) {
-             keep <- c(keep, gene)
+    for (barcode in colnames(rCNA)) {
+        ignore <- TRUE
+
+        for (gene in rownames(rCNA)) {
+            key = paste(c(gene, barcode), collapse='|')
+            
+            if (exists(key, envir=filter)) {
+                if (filter[[key]]$ignore == FALSE) {
+                    ignore <- FALSE
+                    break
+                }
+            }
+        }
+
+        if (ignore) {
+             keep <- c(keep, barcode)
         }
     }
     CNA <- rCNA[, keep]
 
-    saveRDS(rCNA, file=outName)
+    saveRDS(CNA, file=outName)
 }
 
 ### Main function
