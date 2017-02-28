@@ -353,3 +353,44 @@ test_that("Processing an rMUT MAF file", {
     expect_error(.filter.unimportant_genes.processrMUT(rMutName, dOut, filter))
 
 })
+
+test_that("Processing an rCNA RDS file", {
+    dOut <- tempfile()
+    dir.create(dOut)
+    expect_true(dir.exists(dOut), info="Test setup (dOut)")
+
+    rCNAName <- tempfile()
+    rCNAData <- data.frame(row.names = c("HFE", "FTO", "ZNF66"),
+        "TCGA-A3-0001-123" = c(0.0, 130.4, 1.5),
+        "TCGA-A3-0001-124" = c(2.9, 1.3, 0.5),
+        "TCGA-A3-0002-123" = c(1.0, 1.6, 3.0))
+    saveRDS(rCNAData, file=rCNAName)
+    expect_true(file.exists(rCNAName), info="Test setup (rCNA)")
+    
+    filter <- new.env(hash=TRUE)
+    filter[["HFE|TCGA.A3.0001.123"]] <-
+        list(ignore=TRUE, numReads=0)
+    filter[["HFE|TCGA.A3.0001.124"]] <-
+        list(ignore=TRUE, numReads=5)
+    filter[["HFE|TCGA.A3.0002.123"]] <-
+        list(ignore=TRUE, numReads=0)
+    filter[["FTO|TCGA.A3.0001.123"]] <-
+        list(ignore=FALSE, numReads=7)
+    filter[["FTO|TCGA.A3.0001.124"]] <-
+        list(ignore=TRUE, numReads=5)
+    filter[["FTO|TCGA.A3.0002.123"]] <-
+        list(ignore=FALSE, numReads=8)
+    filter[["ZNF66|TCGA.A3.0001.123"]] <-
+        list(ignore=FALSE, numReads=0)
+    filter[["ZNF66|TCGA.A3.0001.124"]] <-
+        list(ignore=TRUE, numReads=5)
+    filter[["ZNF66|TCGA.A3.0002.123"]] <-
+        list(ignore=FALSE, numReads=0)
+
+    output <- .filter.unimportant_genes.processrCNA(rCNAName, dOut, filter)
+    filtered <- readRDS(output)
+
+    expect_equal(nrow(filtered), 3)
+    expect_equal(ncol(filtered), 2)
+    expect_false('TCGA.A3.0001.124' %in% colnames(filtered))
+})

@@ -317,7 +317,6 @@
 # Scan an rCNA RDS object, outputting into the output directory a new RDS
 #   file that has only the records for which the filter says not to ignore
 .filter.unimportant_genes.processrCNA <- function(filename, dOut, filter) {
-    # XXX: need tests
     outName <- .filter.unimportant_genes.outputFilename(dOut, filename)
 
     rCNA <- readRDS(filename)
@@ -338,13 +337,15 @@
             }
         }
 
-        if (ignore) {
+        if (!ignore) {
              keep <- c(keep, barcode)
         }
     }
     CNA <- rCNA[, keep]
 
     saveRDS(CNA, file=outName)
+
+    return(outName)
 }
 
 ### Main function
