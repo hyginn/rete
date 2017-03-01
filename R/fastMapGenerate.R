@@ -3,23 +3,26 @@
 #' Generate the fastMap hash tables.
 #'
 #' \code{fastMapGenerate} will parse through an HGNC file and create a hash
-#' table depending on \code{type}. Also saves the generated hash table as an
-#' .rds which can be loaded in future sessions. If there conflicting keys, only
-#' keep the first instance.
+#' table. Keys are the IDs found in \code{unmappedColName} and associated values
+#' are IDs found in \code{hgncSymbolColName}. The type attribute of the hash
+#' table will be set to \code{type}. Hash table can be saved and can be loaded
+#' in future sessions. If there conflicting keys or a tab delimited key, keep
+#' the first instance of the key or only store the first key respectively.
 #'
 #' @param fName The path to the HGNC gene symbol data set.
 #' @param hgncSymbolColName The column name of the HGNC symbol.
 #' @param unmappedColName The column name the unmapped symbol.
 #' @param type The type of the gene database of unmappedColName.
 #' @param saveHashTable Boolean whether to save the hash table as an rda.
-#' @param outputName The path to save the RDS.
+#' @param outputPath The path to save the RDS.
 #'
 #' @seealso \code{\link{fastMapSanity}} on acceptable keys and values.
 #'
 #' @family fastMap functions
 #'
 #' @examples
-#' fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids", type = "UniProt", outPath = "fastMapUniProt.rds")
+#' fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids",
+#' type = "UniProt", outPath = "fastMapUniProt.rds")
 #' @export
 fastMapGenerate <- function(fName, hgncSymbolColName, unmappedColName,
                             type, saveHashTable = TRUE, outputPath = NULL) {
@@ -45,7 +48,7 @@ fastMapGenerate <- function(fName, hgncSymbolColName, unmappedColName,
     # Check if columns have been found
     if (length(symbolCol) == 0) {
         errorMessage <- sprintf("Symbol column: %s, is not found.",
-                                hgncSymbolCol)
+                                hgncSymbolColName)
         stop(errorMessage)
     } else if (length(unmappedCol) == 0) {
         errorMessage <- sprintf("Unmapped column: %s, is not found.",

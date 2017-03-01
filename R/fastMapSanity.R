@@ -2,10 +2,11 @@
 
 #' Check if given input is a valid key or valid value
 #'
-#' \code{fastMapSanity} Checks if the key is a string and doesn not contain
-#' an illegal character (allowed are alphanumeric, -, _). Check sif the value is
-#' a string or NULL. If it is a string, it also checks if value does not contain
-#' an illegl character.
+#' \code{fastMapSanity} If the \code{type} is key, this will check if
+#' \code{toCheck} is a string and does not contain an illegal character
+#' (allowed characters are alphanumeric, -, _). If the \code{type} is value,
+#' this will check if \code{toCheck} is a string or NULL. If it is a string,
+#' it will check if \code{toCheck} does not contain an illegal character.
 #'
 #' @param toCheck Given input to check.
 #' @param type The type of \code{toCheck}
@@ -14,7 +15,7 @@
 #'
 #' @examples
 #' fastMapSanity("ENSP00000245105", "key")
-#' fastMapSAnity(""A2M", "value")
+#' fastMapSanity("A2M", "value")
 fastMapSanity <- function(toCheck, type) {
     # Check types of the input
     if (type == "key") {
