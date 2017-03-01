@@ -5,8 +5,10 @@ context("fastMap functions")
 
 test_that("fastMap maps an ID properly", {
     # Generate a small hash table data set
-    fastMapUniProt <<- new.env(hash = TRUE)
-    fastMapENSP <<- new.env(hash = TRUE)
+    fastMapUniProt <- new.env(hash = TRUE)
+    attr(fastMapUniProt, "type")  <- "UniProt"
+    fastMapENSP <- new.env(hash = TRUE)
+    attr(fastMapENSP, "type")  <- "ENSP"
     fastMapUniProt[["P04217"]] <- "A1BG"
     fastMapUniProt[["Q9NQ94"]] <- "A1CF"
     fastMapUniProt[["P01023"]] <- "A2M"
@@ -14,19 +16,41 @@ test_that("fastMap maps an ID properly", {
     fastMapENSP[["ENSG00000245105"]] <- "A2M-AS1"
 
     # Single lookup
-    expect_equal(fastMap("P04217"), "A1BG")
-    expect_equal(fastMap("ENSG00000268895", type = "ENSP"), "A1BG-AS1")
+    expect_equal(fastMap("P04217", fastMapUniProt), "A1BG")
+    expect_equal(fastMap("ENSG00000268895", fastMapENSP, type = "ENSP"), "A1BG-AS1")
 
     # Vectorized lookup
-    expect_identical(fastMap(c("Q9NQ94", "P01023")), c("A1CF", "A2M"))
+    expect_identical(fastMap(c("Q9NQ94", "P01023"), fastMapUniProt), c("A1CF", "A2M"))
 
     # ID not found
-    expect_warning(x <- fastMap(c("P1234", "Q321")))
+    expect_warning(x <- fastMap(c("P1234", "Q321"), fastMapUniProt))
     expect_identical(x, c("P1234", "Q321"))
+
+    # Expected hash table and supplied hash table does not match
+    expect_error(fastMap("P04217", fastMapUniProt, type = "ENSP"))
+})
+
+test_that("fastMapSanity checks if a key or value is appropriate", {
+    # Valid key
+    expect_true(fastMapSanity("P04217", "key"))
+    expect_true(fastMapSanity("P0_4217", "key"))
+
+    # Valid value
+    expect_true(fastMapSanity("A1BG", "value"))
+    expect_true(fastMapSanity(NULL, "value"))
+
+    # Invalid key
+    expect_false(fastMapSanity("P123$", "key"))
+    expect_false(fastMapSanity("", "key"))
+    expect_false(fastMapSanity(NULL, "key"))
+
+    # Invalid value
+    expect_false(fastMapSanity("A1 BG", "value"))
 })
 
 test_that("fastMapUpdate modifies a fastMap hash table correctly", {
-    fastMapUniProt <<- new.env(hash = TRUE)
+    fastMapUniProt <- new.env(hash = TRUE)
+    attr(fastMapUniProt, "type")  <- "UniProt"
 
     # Insert
     fastMapUpdate(fastMapUniProt, "P04217", "A1BG")
@@ -38,12 +62,12 @@ test_that("fastMapUpdate modifies a fastMap hash table correctly", {
 
     # Delete
     fastMapUpdate(fastMapUniProt, "P04217", NULL)
-    expect_equal(fastMapUniProt[["P04217"]], NULL)
+    expect_null(fastMapUniProt[["P04217"]])
 
     # Insert multicase
     fastMapUpdate(fastMapUniProt, "Q9nQ94", "a1cF")
     expect_equal(fastMapUniProt[["Q9nQ94"]], "A1CF")
-    expect_equal(fastMapUniProt[["Q9NQ94"]], NULL)
+    expect_null(fastMapUniProt[["Q9NQ94"]])
 
     # Insert with acceptable special symbol (- and _)
     fastMapUpdate(fastMapUniProt, "A3-1B", "Z_A92")
@@ -71,8 +95,11 @@ test_that("fastMapGenerate imports from an HGNC dataset", {
     ensp[["ENSG00000175899"]] <- "A2M"
     ensp[["ENSG00000245105"]] <- "A2M-AS1"
 
-    fastMapGenerate("hgnc_subset.txt", type = "UniProt", saveHashTable = FALSE)
-    fastMapGenerate("hgnc_subset.txt", type = "ENSP", saveHashTable = FALSE)
+    fastMapUniProt <- fastMapGenerate("hgnc_subset.txt", "symbol",
+                                      "uniprot_ids", type = "UniProt",
+                                      saveHashTable = FALSE)
+    fastMapENSP <- fastMapGenerate("hgnc_subset.txt", "symbol", "ensembl_gene_id",
+                                   type = "ENSP", saveHashTable = FALSE)
 
     expect_equal(uniprot[["P04217"]], fastMapUniProt[["P04217"]])
     expect_equal(uniprot[["Q9NQ94"]], fastMapUniProt[["Q9NQ94"]])
@@ -85,20 +112,29 @@ test_that("fastMapGenerate imports from an HGNC dataset", {
     expect_equal(ensp[["ENSG0"]], fastMapENSP[["ENSG0"]])
 
     # Conflicting keys
-    expect_warning(fastMapGenerate("hgnc_with_conflict.txt", type = "UniProt",
+    expect_warning(fastMapUniProt <- fastMapGenerate("hgnc_with_conflict.txt", "symbol",
+                                   "uniprot_ids", type = "UniProt",
                                    saveHashTable = FALSE))
     expect_equal(fastMapUniProt[["Q9NQ94"]], "A1BG")
+
+    # Path not specified
+    expect_error(fastMapGenerate("hgnc_subset.txt", "symbol",
+                                 "uniprot_ids", type = "UniProt",
+                                 saveHashTable = TRUE))
 })
 
 test_that("fastMap functions integrate together", {
     # Generate the hash table
-    fastMapGenerate("hgnc_subset.txt", type = "UniProt", saveHashTable = FALSE)
+    fastMapUniProt <- fastMapGenerate("hgnc_subset.txt", "symbol",
+                                      "uniprot_ids", type = "UniProt",
+                                      saveHashTable = FALSE)
     # fastMap and fastMapGenerate interaction
     expected <- c("A1BG", "A1CF", "A2M")
-    expect_identical(fastMap(c("P04217", "Q9NQ94", "P01023")), expected)
+    expect_identical(fastMap(c("P04217", "Q9NQ94", "P01023"), fastMapUniProt), expected)
     # fastMap and fastMapUpdate interaction
     fastMapUpdate(fastMapUniProt, "P04217", NULL)
     fastMapUpdate(fastMapUniProt, "Q9NQ94", "PTEST")
-    expect_identical(fastMap("P04217"), "P04217")
-    expect_identical(fastMap("Q9NQ94"), "PTEST")
+    expect_warning(x <- fastMap("P04217", fastMapUniProt))
+    expect_identical(x, "P04217")
+    expect_identical(fastMap("Q9NQ94", fastMapUniProt), "PTEST")
 })

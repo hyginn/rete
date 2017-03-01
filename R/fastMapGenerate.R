@@ -2,26 +2,32 @@
 
 #' Generate the fastMap hash tables.
 #'
-#' \code{fastMapGenerate} will parse through an hgnc file and create a hash
+#' \code{fastMapGenerate} will parse through an HGNC file and create a hash
 #' table depending on \code{type}. Also saves the generated hash table as an
-#' .rda which can be loaded in future sessions. If there conflicting keys, only
+#' .rds which can be loaded in future sessions. If there conflicting keys, only
 #' keep the first instance.
 #'
-#' @param fName The path to the HUGO gene symbol data set.
-#' @param type The type to parse for.
+#' @param fName The path to the HGNC gene symbol data set.
+#' @param hgncSymbolColName The column name of the HGNC symbol.
+#' @param unmappedColName The column name the unmapped symbol.
+#' @param type The type of the gene database of unmappedColName.
 #' @param saveHashTable Boolean whether to save the hash table as an rda.
+#' @param outputName The path to save the RDS.
+#'
+#' @seealso \code{\link{fastMapSanity}} on acceptable keys and values.
 #'
 #' @family fastMap functions
+#'
+#' @examples
+#' fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids", type = "UniProt", outPath = "fastMapUniProt.rds")
 #' @export
-fastMapGenerate <- function(fName, type, saveHashTable=TRUE) {
-
-    if (type == "UniProt") {
-        unmappedColName <- "uniprot_ids"
-    } else if (type == "ENSP") {
-        unmappedColName <- "ensembl_gene_id"
-    } else {
-        errorMessage <- "Type can only be UniProt or ENSP"
-        stop(errorMessage)
+fastMapGenerate <- function(fName, hgncSymbolColName, unmappedColName,
+                            type, saveHashTable = TRUE, outputPath = NULL) {
+    if (saveHashTable) {
+        if (!is.character(outputPath)) {
+            errorMessage <- "saveHashTable is set to TRUE but outputPath is not valid."
+            stop(errorMessage)
+        }
     }
     hashTable <- new.env(hash = TRUE)
     listedUnique <- new.env(hash = TRUE)
@@ -32,21 +38,52 @@ fastMapGenerate <- function(fName, type, saveHashTable=TRUE) {
     tmp <- readLines(hgncFile, n = 1)
     header <- unlist(strsplit(tmp, "\t"))
 
-    # Locate col for symbol and associated ID
-    symbolCol <- which(header == "symbol")
+    # Locate column for hgnc symbol and unmapped column
+    symbolCol <- which(header == hgncSymbolColName)
     unmappedCol <- which(header == unmappedColName)
+
+    # Check if columns have been found
+    if (length(symbolCol) == 0) {
+        errorMessage <- sprintf("Symbol column: %s, is not found.",
+                                hgncSymbolCol)
+        stop(errorMessage)
+    } else if (length(unmappedCol) == 0) {
+        errorMessage <- sprintf("Unmapped column: %s, is not found.",
+                                unmappedColName)
+        stop(errorMessage)
+    }
 
     totalCount <- 0
     nonUniqueKeysCount <- 0
+    unsanitizedKeys <- 0
+    unsanitizedValues <- 0
     # Read line by line
-    while(length(entry <- readLines(hgncFile, n = 1)) > 0) {
+    while (length(entry <- readLines(hgncFile, n = 1)) > 0) {
         entryVector <- (strsplit(entry, "\t"))
         key <- entryVector[[1]][unmappedCol]
+        value <- entryVector[[1]][symbolCol]
+        # Check if the key is a pipe delimited. Choose the first entry.
         # skip if there is no id for the specified type
         if (key == "") {
             next
         }
-        value <- entryVector[[1]][symbolCol]
+        # Check key and value sanity
+        keySanity <- fastMapSanity(key, "key")
+        if (!keySanity) {
+            # Check if it was pipe delimited
+            key <- (strsplit(value, "|", fixed = TRUE))[[1]][1]
+            keySanity <- fastMapSanity(key, "key")
+            if (!keySanity) {
+                unsanitizedKeys <- unsanitizedKeys + 1
+            }
+        }
+        valueSanity <- fastMapSanity(value, "value")
+        if (!valueSanity) {
+            unsanitizedValues <- unsanitizedValues + 1
+        }
+        if (!keySanity || !valueSanity) {
+            next
+        }
         # Handle non unique keys
         if (!is.null(hashTable[[key]])) {
             nonUniqueKeysCount <- nonUniqueKeysCount + 1
@@ -54,13 +91,13 @@ fastMapGenerate <- function(fName, type, saveHashTable=TRUE) {
             if (is.null(listedUnique[[key]])) {
                 nonUniqueKeysCount <- nonUniqueKeysCount + 1
                 listedUnique[[key]] <- TRUE
-                initialPair <- paste0(key, "->", hashTable[[key]])
+                initialPair <- sprintf("%s->%s", key, hashTable[[key]])
                 # insert first instance of the key with conflict
                 options(rete.conflictingKeys =
                             c(getOption("rete.conflictingKeys"), initialPair))
             }
             # insert the other instance of they key with conflict
-            pair <- paste0(key, "->", value)
+            pair <- sprintf("%s->%s", key, value)
             options(rete.conflictingKeys =
                         c(getOption("rete.conflictingKeys"), pair))
         } else {
@@ -71,25 +108,30 @@ fastMapGenerate <- function(fName, type, saveHashTable=TRUE) {
 
     close(hgncFile)
 
+    if (unsanitizedKeys) {
+        warningMessage <- sprintf("%d of %d keys are unsanitized and skipped.",
+                                  unsanitizedKeys, totalCount)
+        warning(warningMessage)
+    }
+
+    if (unsanitizedValues) {
+        warningMessage <- sprintf("%d of %d values are unsanitized and skipped.",
+                                  unsanitizedValues, totalCount)
+        warning(warningMessage)
+    }
+
     if (nonUniqueKeysCount) {
-        warningMessage <- paste(nonUniqueKeysCount, "of",
-                                totalCount,
-                                "keys are non-unique. See getOption('rete.conflictingKeys') to list them all")
+        warningMessage <- sprintf("%d of %d keys are not unique. See getOption('rete.conflictingKeys') to list them all.",
+                                  nonUniqueKeysCount, totalCount)
         warning(warningMessage)
     }
 
     # Store hash table as a global variable and save an RDS.
-    if (type == "UniProt") {
-        fastMapUniProt <<- hashTable
-        if (saveHashTable) {
-            save(fastMapUniProt, file = "fastMapUniProt.rda")
-        }
-    } else {
-        fastMapENSP <<- hashTable
-        if (saveHashTable) {
-            save(fastMapENSP, file = "fastMapENSP.rda")
-        }
+    attr(hashTable, "type")  <- type
+    if (saveHashTable) {
+        saveRDS(hashTable, outputPath)
     }
+    return(hashTable)
 }
 
 # [END]
