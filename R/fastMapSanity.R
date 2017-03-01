@@ -2,7 +2,7 @@
 
 #' Check if given input is a valid key or valid value
 #'
-#' \code{fastMapUpdate} Checks if the key is a string and doesn not contain
+#' \code{fastMapSanity} Checks if the key is a string and doesn not contain
 #' an illegal character (allowed are alphanumeric, -, _). Check sif the value is
 #' a string or NULL. If it is a string, it also checks if value does not contain
 #' an illegl character.
