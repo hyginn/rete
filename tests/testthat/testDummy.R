@@ -11,6 +11,7 @@ dummyF <- function(a) {
     return(a * a)
 }
 
+
 test_that("parameter errors are correctly handled", {
     # Try each parameter missing in turn
     # Try parameters out of expected bounds
