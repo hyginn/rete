@@ -103,7 +103,28 @@ test_that("Magic check for hash character using raw vectors", {
     expect_error(.filter.unimportant_genes.getMagic("/dev/null"))
 })
 
-test_that("Parsing clinical expression data", {
+test_that("Parsing expression data", {
+    exprName <- tempfile()
+    exprData <- c(
+        paste(c("Hybridization REF",
+            "TCGA-A0-0001-00A-11R-ABCD-01",
+            "TCGA-A0-0001-00B-11R-ABCD-01",
+            "TCGA-A0-0002-00A-11R-1234-99"), collapse="\t"),
+        paste(c("gene_id", "normalized_count",
+            "normalized_count", "normalized_count"), collapse="\t"),
+        paste(c("HFE|3077", "173.9", "12.5", "1.0"), collapse="\t"),
+        paste(c("TF2|123", "4003.1", "0.0", "6.5"), collapse="\t")
+        )
+    writeLines(exprData, con=exprName)
+    expect_true(file.exists(exprName), info="Test setup (expression data)")
+
+    data <- .filter.unimportant_genes.parseExpressionFile(exprName)
+    expect_equal(nrow(data), 2)
+    expect_equal(ncol(data), 3)
+    expect_equal(data['TF2|123', 'TCGA-A0-0001-00B-11R-ABCD-01'], '0.0')
+})
+
+test_that("Parsing clinical data", {
     clinName <- tempfile()
     clinData <- c(
         paste(c("Hybridization REF", "TCGA-A0-0001", "TCGA-A0-0002", "TCGA-A0-0003"), collapse="\t"),
@@ -164,14 +185,21 @@ test_that("Loading vital status", {
 
 test_that("Loading expression rCNA data", {
     rCNApath <- tempfile()
-    listy <- data.frame(row.names = c("HFE", "FTO", "ZNF66"),
-        a = c(0.0, 130.4, 1.5),
-        b = c(2.9, 1.3, 0.5),
-        c = c(1.0, 1.6, 0.0))
-    expect_is(listy, "data.frame", info="Test setup (raw data)")
 
     saveRDS(listy, file=rCNApath)
-    expect_true(file.exists(rCNApath), info="Test setup (RDS)")
+    exprName <- tempfile()
+    exprData <- c(
+        paste(c("Hybridization REF",
+            "a", "b", "c"), collapse="\t"),
+        paste(c("gene_id", "normalized_count",
+            "normalized_count", "normalized_count"), collapse="\t"),
+        paste(c("HFE", "0.0", "2.9", "1.0"), collapse="\t"),
+        paste(c("FTO", "130.4", "1.3", "1.6"), collapse="\t")
+        paste(c("ZNF66", "1.5", "0.5", "0.0"), collapse="\t")
+        )
+    writeLines(rCNApath, con=exprName)
+    expect_true(file.exists(rCNApath), info="Test setup (expression data)")
+
 
     expression <- .filter.unimportant_genes.loadExpression(rCNApath, 2)
     expect_equal(expression$numSampleReads, 2)

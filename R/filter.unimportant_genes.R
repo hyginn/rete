@@ -129,13 +129,49 @@
     return(toFilter)
 }
 
-# Load the expression rCNA file
+# Parse the expression data
+.filter.unimportant_genes.parseExpressionFile <- function(filename) {
+    # XXX: needs tests
+    expr <- file(filename, open="r")
+   
+    # Get the header
+    line <- readLines(con=expr, n=1)
+    if (length(line) == 0) {
+        stop("Expression data file empty")
+    }
+
+    # Save the barcode ids
+    barcodes <- strsplit(line, "\t")[[1]]
+    colcount <- length(barcodes)
+   
+    genes <- c() 
+    data <- data.frame()
+    line <- readLines(con=expr, n=2)[2]
+    while (length(line) != 0) {
+        fields <- strsplit(line, "\t")[[1]]
+
+        genes <- c(genes, fields[1])
+        for (val in 2:colcount) {
+            data[length(genes), val-1] <- fields[val]
+        }
+
+        line <- readLines(con=expr, n=1)
+    }
+
+    rownames(data) <- genes
+    colnames(data) <- barcodes[2:colcount]
+
+    close(expr)
+    return(data)
+}
+
+# Load the expression data
 .filter.unimportant_genes.loadExpression <- function(filename, rT) {
     genehash <- new.env(hash=TRUE)
     genesummary <- new.env(hash=TRUE)
     numSampleReads <- 0
 
-    samples <- readRDS(filename)
+    samples <- .filter.unimportant_genes.parseExpression(filename, rT)
     sc <- length(colnames(samples))
     for (gene in rownames(samples)) {
         numSamples <- 0
