@@ -20,8 +20,8 @@ Some useful keyboard shortcuts for package authoring:
 
   Build and Reload Package:  'Cmd + Shift + B'
   Update Documentation:      'Cmd + Shift + D' or devtools::document()
-  Check Package:             'Cmd + Shift + E'
   Test Package:              'Cmd + Shift + T'
+  Check Package:             'Cmd + Shift + E'
 -----------------------------------------------
 
 Run before every commit:

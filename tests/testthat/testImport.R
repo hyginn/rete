@@ -10,7 +10,7 @@ test_that("importNet.STRING produces gG from STRING data", {
                            noLog = TRUE)
     expect_equal(igraph::vcount(gG), 5)    # correct number of vertices
     expect_equal(igraph::ecount(gG), 4)    # correct number of edges
-    expect_equal(igraph::graph_attr(gG)$gGversion, "1.0") # correct version
+    expect_equal(igraph::graph_attr(gG)$version, "gG 1.0") # correct version
     expect_equal(igraph::graph_attr(gG)$inFile, "dataString.txt") # metadata
                                                                   # has been
                                                                   # set
