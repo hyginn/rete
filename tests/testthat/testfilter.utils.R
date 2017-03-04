@@ -75,7 +75,7 @@ test_that("Magic check for hash character using raw vectors", {
     expect_error(filter.utils.getMagic("/dev/null"))
 })
 
-test_that("Processing an rMUT MAF file", {
+test_that("Processing an rSNV MAF file", {
     outFile <- tempfile()
     rMutName <- tempfile()
     rMutData <- c(
@@ -100,11 +100,11 @@ test_that("Processing an rMUT MAF file", {
             "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
     writeLines(rMutData, con=rMutName)
-    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
     filter <- c()
 
-    output <- filter.utils.processrMUT(rMutName, outFile, filter)
+    output <- filter.utils.processrSNV(rMutName, outFile, filter)
     filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -127,14 +127,14 @@ test_that("Processing an rMUT MAF file", {
         paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
             "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t")),
-        info=paste(c("All rMUT records kept with empty filter", outFile)))
+        info=paste(c("All rSNV records kept with empty filter", outFile)))
     expect_equal(output[1], 4)
     expect_equal(output[2], 0)
 
     
     filter <- c('ZNF660')
 
-    output <- filter.utils.processrMUT(rMutName, outFile, filter)
+    output <- filter.utils.processrSNV(rMutName, outFile, filter)
     filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -157,14 +157,14 @@ test_that("Processing an rMUT MAF file", {
         paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
             "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t")),
-        info=paste(c("All rMUT records kept", outFile)))
+        info=paste(c("All rSNV records kept", outFile)))
     expect_equal(output[1], 4)
     expect_equal(output[2], 0)
 
     outFile <- tempfile()
     filter <- c('TF2')
 
-    output <- filter.utils.processrMUT(rMutName, outFile, filter)
+    output <- filter.utils.processrSNV(rMutName, outFile, filter)
     filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -179,14 +179,14 @@ test_that("Processing an rMUT MAF file", {
         paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
             "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t")),
-        info=paste(c("Some rMUT records filtered", outFile)))
+        info=paste(c("Some rSNV records filtered", outFile)))
     expect_equal(output[1], 2)
     expect_equal(output[2], 2)
 
     outFile <- tempfile()
     filter <- c('HFE', 'TF2')
 
-    output <- filter.utils.processrMUT(rMutName, outFile, filter)
+    output <- filter.utils.processrSNV(rMutName, outFile, filter)
     filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -195,7 +195,7 @@ test_that("Processing an rMUT MAF file", {
             "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
             "Tumor_Sample_Barcode", "UUID"), collapse="\t")
             ),
-        info=paste(c("All rMUT records filtered out", outFile)))
+        info=paste(c("All rSNV records filtered out", outFile)))
     expect_equal(output[1], 0)
     expect_equal(output[2], 4)
 
@@ -208,9 +208,9 @@ test_that("Processing an rMUT MAF file", {
             "Tumor_Sample_Barcode", "UUID"), collapse="\t")
         )
     writeLines(rMutData, con=rMutName)
-    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
-    output <- filter.utils.processrMUT(rMutName, outFile, filter)
+    output <- filter.utils.processrSNV(rMutName, outFile, filter)
     filtered <- readLines(output)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -219,7 +219,7 @@ test_that("Processing an rMUT MAF file", {
             "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
             "Tumor_Sample_Barcode", "UUID"), collapse="\t")
             ),
-        info=paste(c("Accepts bodyless rMUT files", outFile)))
+        info=paste(c("Accepts bodyless rSNV files", outFile)))
     expect_equal(output[1], 0)
     expect_equal(output[2], 0)
 
@@ -230,9 +230,9 @@ test_that("Processing an rMUT MAF file", {
             "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
             "Tumor_Sample_Barcode", "UUID"), collapse="\t"))
     writeLines(rMutData, con=rMutName)
-    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
-    expect_error(filter.utils.processrMUT(rMutName, outFile, filter))
+    expect_error(filter.utils.processrSNV(rMutName, outFile, filter))
 
     outFile <- tempfile()
     rMutData <- c(
@@ -244,9 +244,9 @@ test_that("Processing an rMUT MAF file", {
             "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
     writeLines(rMutData, con=rMutName)
-    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
-    expect_error(filter.utils.processrMUT(rMutName, outFile, filter))
+    expect_error(filter.utils.processrSNV(rMutName, outFile, filter))
 
     outFile <- tempfile()
     rMutData <- c(
@@ -258,9 +258,9 @@ test_that("Processing an rMUT MAF file", {
             "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
     writeLines(rMutData, con=rMutName)
-    expect_true(file.exists(rMutName), info="Test setup (rMUT)")
+    expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
-    expect_error(filter.utils.processrMUT(rMutName, outFile, filter))
+    expect_error(filter.utils.processrSNV(rMutName, outFile, filter))
 
 })
 
