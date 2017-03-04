@@ -34,7 +34,7 @@
 #'   The function returns a rete gG object, a weighted,
 #'   directed, simple igraph graph in which HGNC gene symbols are vertex names,
 #'   and the edge attributes $weight hold the network scores. Graph attributes
-#'   hold metadata; use igraph::graph_attr(gG) to return: $gGversion: the gG
+#'   hold metadata; use igraph::graph_attr(gG) to return: $version: the gG
 #'   object version; $logFile: the filename to which log information was
 #'   written; $inFile: the input filename of STRING data; $call: the complete
 #'   function call with expanded arguments; and $date: when the gG object was
@@ -48,10 +48,13 @@
 #'   type.
 #' @param taxID The NCBI tax ID prefix of the protein1 and protein2 IDs.
 #'   Defaults to "9606" (homo sapiens)
+#' @param dropUnmapped Controls whether to drop records in which at least one
+#'  interactor could not be mapped to HGNC gene symbol. TRUE by default.
+#'   by default.
 #' @param silent Controls whether output to console should be suppressed. FALSE
 #'   by default.
-#' @param noLog Controls whether writing the result to the global logfile should
-#'   be suppressed. FALSE by default.
+#' @param writeLog Controls whether writing the result to the global logfile is
+#'   enabled. TRUE by default.
 #' @return a weighted, directed, simple igraph graph which is a rete gG object.
 #'
 #' @family ImportNet.STRING, importNet.MultiNet, importNet.MITAB
@@ -66,10 +69,18 @@ importNet.STRING <- function(fName,
                              cutoffType = "xN",
                              val,
                              taxID = "9606",
+                             dropUnmapped = TRUE,
                              silent = FALSE,
-                             noLog = FALSE) {
+                             writeLog = TRUE) {
 
     # ToDo: can we select the number of vertices ?
+    #
+    # ToDo: Handle unmapped edges
+    # ToDo: Remove duplicate edges and remove loops before subsetting,
+    #         since this changes the number of edges above cutoff.
+    # ToDo: write tests for that
+
+    #
 
     # ==== PARAMETERS ==========================================================
 
@@ -91,7 +102,22 @@ importNet.STRING <- function(fName,
 
 
     # ==== VALIDATIONS =========================================================
-    #    Validate cutoffType parameter
+
+    # General parameter checks
+    checkReport <- character()
+    checkReport <- c(checkReport, .checkArgs(fName, like = character()))
+    checkReport <- c(checkReport, .checkArgs(net, like = character()))
+    checkReport <- c(checkReport, .checkArgs(cutoffType, like = character()))
+    checkReport <- c(checkReport, .checkArgs(val, like = numeric()))
+    checkReport <- c(checkReport, .checkArgs(taxID, like = character()))
+    checkReport <- c(checkReport, .checkArgs(dropUnmapped, like = logical()))
+    checkReport <- c(checkReport, .checkArgs(silent, like = logical()))
+    checkReport <- c(checkReport, .checkArgs(writeLog, like = logical()))
+    if(length(checkReport) > 0) {
+        stop(checkReport)
+    }
+
+    #  Validate cutoffType parameter
     if (!cutoffType %in% cutoffTypes) {
         stop("Parameter error:\n   Valid cutoff types: \"",
              paste(cutoffTypes, collapse = "\" | \""),
@@ -100,7 +126,7 @@ importNet.STRING <- function(fName,
              "\"\n")
     }
 
-    #    Validate Interactor ID format
+    #  Validate Interactor ID format
     patt <- paste(taxID, ".ENSP", sep = "")
     if (length(grep(patt, data[1:2])) != 2) {
         stop("ID error:\n   Expected format ",
@@ -110,7 +136,7 @@ importNet.STRING <- function(fName,
              ">\n")
     }
 
-    #    Validate that requested network exists in data
+    #  Validate that requested network exists in data
     if (length(iCol) != 1) {
         stop("Request error:\n   Requested network type is ",
              sprintf("\"%s\"", net),
@@ -168,16 +194,17 @@ importNet.STRING <- function(fName,
     fCall[4] <- sprintf("cutoffType = \"%s\", ", cutoffType)
     fCall[5] <- sprintf("val = %s, ", as.character(val))
     fCall[6] <- sprintf("taxID = \"%s\", ", taxID)
-    fCall[7] <- sprintf("silent = %s, ", as.character(silent))
-    fCall[8] <- sprintf("noLog = %s)", as.character(noLog))
+    fCall[7] <- sprintf("dropUnmapped = %s, ", as.character(dropUnmapped))
+    fCall[8] <- sprintf("silent = %s, ", as.character(silent))
+    fCall[9] <- sprintf("writeLog = %s)", as.character(writeLog))
     fCall <- paste(fCall, collapse = "")
 
     # ==== MAKE GRAPH ==========================================================
     gG <- .df2gG(fName, call = fCall, isDirected = TRUE, simplify = TRUE)
 
     # ==== WRITE LOG ===========================================================
-    if(! noLog) {
-        logMessage    <- sprintf("%s: importNet.STRING()\n")
+    if(writeLog) {
+        logMessage    <- sprintf("importNet.STRING()\n")
         logMessage[1] <- "    Returned gG object with"
         logMessage[2] <- sprintf("%d vertices and %d edges.\n",
                                  igraph::gorder(gG),
