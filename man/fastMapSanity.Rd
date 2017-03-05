@@ -4,23 +4,18 @@
 \alias{fastMapSanity}
 \title{Check if given input is a valid key or valid value}
 \usage{
-fastMapSanity(toCheck, type)
+fastMapSanity(toCheck)
 }
 \arguments{
 \item{toCheck}{Given input to check.}
-
-\item{type}{The type of \code{toCheck}}
 }
 \description{
-\code{fastMapSanity} If the \code{type} is key, this will check if
-\code{toCheck} is a string and does not contain an illegal character
-(allowed characters are alphanumeric, -, _). If the \code{type} is value,
-this will check if \code{toCheck} is a string or NULL. If it is a string,
-it will check if \code{toCheck} does not contain an illegal character.
+\code{fastMapSanity} Will check if \code{toCheck} contains an illegal
+character (Allowed characters: alphanumeric, -, _).
 }
 \examples{
-fastMapSanity("ENSP00000245105", "key")
-fastMapSanity("A2M", "value")
+fastMapSanity("ENSP00000245105")
+fastMapSanity("A2M")
 }
 \seealso{
 Other fastMap functions: \code{\link{fastMapGenerate}},

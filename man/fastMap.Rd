@@ -14,12 +14,12 @@ fastMap(ID, hashTable, type = "UniProt")
 \item{type}{The type of the unmapped ID.}
 }
 \value{
-The HGNC gene symbol of \code{ID}
+The mapped HGNC symbol or \code{ID} if not found.
 }
 \description{
 \code{fastMap} accesses the associated hash table
 (\code{fastMapUniProt} for UniProt IDs or
-\code{fastMapUniENSP} for Ensembl protein IDs) and return the
+\code{fastMapUniENSP} for Ensembl protein IDs) and returns the
 associated HGNC gene symbol. Unmapped IDs will be returned as is and
 will be stored in an global option \code{rete.unmapped}.
 }

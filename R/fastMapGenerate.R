@@ -4,17 +4,17 @@
 #'
 #' \code{fastMapGenerate} will parse through an HGNC file and create a hash
 #' table. Keys are the IDs found in \code{unmappedColName} and associated values
-#' are IDs found in \code{hgncSymbolColName}. The type attribute of the hash
+#' are IDs found in \code{HGNCSymbolColName}. The type attribute of the hash
 #' table will be set to \code{type}. Hash table can be saved and can be loaded
 #' in future sessions. If there conflicting keys or a tab delimited key, keep
 #' the first instance of the key or only store the first key respectively.
 #'
 #' @param fName The path to the HGNC gene symbol data set.
-#' @param hgncSymbolColName The column name of the HGNC symbol.
+#' @param HGNCSymbolColName The column name of the HGNC symbol.
 #' @param unmappedColName The column name the unmapped symbol.
 #' @param type The type of the gene database of unmappedColName.
-#' @param saveHashTable Boolean whether to save the hash table as an rda.
-#' @param outputPath The path to save the RDS.
+#' @param saveHashTable Boolean whether to save the hash table as an rds.
+#' @param outputName The path to save the RDS.
 #'
 #' @seealso \code{\link{fastMapSanity}} on acceptable keys and values.
 #'
@@ -22,33 +22,41 @@
 #'
 #' @examples
 #' fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids",
-#' type = "UniProt", outPath = "fastMapUniProt.rds")
+#' type = "UniProt", outName = "fastMapUniProt.rds")
 #' @export
-fastMapGenerate <- function(fName, hgncSymbolColName, unmappedColName,
-                            type, saveHashTable = TRUE, outputPath = NULL) {
+fastMapGenerate <- function(fName, HGNCSymbolColName, unmappedColName,
+                            type, saveHashTable = TRUE, outputName = NULL) {
     if (saveHashTable) {
-        if (!is.character(outputPath)) {
-            errorMessage <- "saveHashTable is set to TRUE but outputPath is not valid."
+        if (!is.character(outputName)) {
+            errorMessage <- "saveHashTable is set to TRUE but outputName is not specified."
             stop(errorMessage)
+        } else {
+            # Check if rds extension is in outputName, warn if it doesn't
+            pathNameSplit <- strsplit(outputName, ".", fixed = TRUE)
+            extension <- pathNameSplit[[1]][length(pathNameSplit)]
+            if (extension != "rds") {
+                warningMessage <- "Supplied outputName does not contain a .rds file extension."
+                warning(warningMessage)
+            }
         }
     }
     hashTable <- new.env(hash = TRUE)
     listedUnique <- new.env(hash = TRUE)
 
-    hgncFile <- file(fName, open = "r")
+    HGNCFile <- file(fName, open = "r")
 
     # Read header
-    tmp <- readLines(hgncFile, n = 1)
+    tmp <- readLines(HGNCFile, n = 1)
     header <- unlist(strsplit(tmp, "\t"))
 
-    # Locate column for hgnc symbol and unmapped column
-    symbolCol <- which(header == hgncSymbolColName)
+    # Locate column for HGNC symbol and unmapped column
+    symbolCol <- which(header == HGNCSymbolColName)
     unmappedCol <- which(header == unmappedColName)
 
     # Check if columns have been found
     if (length(symbolCol) == 0) {
         errorMessage <- sprintf("Symbol column: %s, is not found.",
-                                hgncSymbolColName)
+                                HGNCSymbolColName)
         stop(errorMessage)
     } else if (length(unmappedCol) == 0) {
         errorMessage <- sprintf("Unmapped column: %s, is not found.",
@@ -61,7 +69,7 @@ fastMapGenerate <- function(fName, hgncSymbolColName, unmappedColName,
     unsanitizedKeys <- 0
     unsanitizedValues <- 0
     # Read line by line
-    while (length(entry <- readLines(hgncFile, n = 1)) > 0) {
+    while (length(entry <- readLines(HGNCFile, n = 1)) > 0) {
         entryVector <- (strsplit(entry, "\t"))
         key <- entryVector[[1]][unmappedCol]
         value <- entryVector[[1]][symbolCol]
@@ -70,17 +78,31 @@ fastMapGenerate <- function(fName, hgncSymbolColName, unmappedColName,
         if (key == "") {
             next
         }
-        # Check key and value sanity
-        keySanity <- fastMapSanity(key, "key")
-        if (!keySanity) {
-            # Check if it was pipe delimited
-            key <- (strsplit(value, "|", fixed = TRUE))[[1]][1]
-            keySanity <- fastMapSanity(key, "key")
+
+        # Check key sanity
+        if (is.character(key)) {
+            keySanity <- fastMapSanity(key)
             if (!keySanity) {
-                unsanitizedKeys <- unsanitizedKeys + 1
+                # Check if it was pipe delimited
+                key <- (strsplit(value, "|", fixed = TRUE))[[1]][1]
+                keySanity <- fastMapSanity(key)
+                if (!keySanity) {
+                    unsanitizedKeys <- unsanitizedKeys + 1
+                }
             }
+        } else {
+            keySanity <- FALSE
         }
-        valueSanity <- fastMapSanity(value, "value")
+
+        # Check value sanity
+        if (is.character(value)) {
+            valueSanity <- fastMapSanity(value)
+        } else if (is.null(value)) {
+            valueSanity <- TRUE
+        } else {
+            valueSanity <- FALSE
+        }
+
         if (!valueSanity) {
             unsanitizedValues <- unsanitizedValues + 1
         }
@@ -109,7 +131,7 @@ fastMapGenerate <- function(fName, hgncSymbolColName, unmappedColName,
         totalCount <- totalCount + 1
     }
 
-    close(hgncFile)
+    close(HGNCFile)
 
     if (unsanitizedKeys) {
         warningMessage <- sprintf("%d of %d keys are unsanitized and skipped.",
@@ -129,10 +151,10 @@ fastMapGenerate <- function(fName, hgncSymbolColName, unmappedColName,
         warning(warningMessage)
     }
 
-    # Store hash table as a global variable and save an RDS.
+    # Insert metadata
     attr(hashTable, "type")  <- type
     if (saveHashTable) {
-        saveRDS(hashTable, outputPath)
+        saveRDS(hashTable, outputName)
     }
     return(hashTable)
 }

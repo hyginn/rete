@@ -4,33 +4,33 @@
 \alias{fastMapGenerate}
 \title{Generate the fastMap hash tables.}
 \usage{
-fastMapGenerate(fName, hgncSymbolColName, unmappedColName, type,
-  saveHashTable = TRUE, outputPath = NULL)
+fastMapGenerate(fName, HGNCSymbolColName, unmappedColName, type,
+  saveHashTable = TRUE, outputName = NULL)
 }
 \arguments{
 \item{fName}{The path to the HGNC gene symbol data set.}
 
-\item{hgncSymbolColName}{The column name of the HGNC symbol.}
+\item{HGNCSymbolColName}{The column name of the HGNC symbol.}
 
 \item{unmappedColName}{The column name the unmapped symbol.}
 
 \item{type}{The type of the gene database of unmappedColName.}
 
-\item{saveHashTable}{Boolean whether to save the hash table as an rda.}
+\item{saveHashTable}{Boolean whether to save the hash table as an rds.}
 
-\item{outputPath}{The path to save the RDS.}
+\item{outputName}{The path to save the RDS.}
 }
 \description{
 \code{fastMapGenerate} will parse through an HGNC file and create a hash
 table. Keys are the IDs found in \code{unmappedColName} and associated values
-are IDs found in \code{hgncSymbolColName}. The type attribute of the hash
+are IDs found in \code{HGNCSymbolColName}. The type attribute of the hash
 table will be set to \code{type}. Hash table can be saved and can be loaded
 in future sessions. If there conflicting keys or a tab delimited key, keep
 the first instance of the key or only store the first key respectively.
 }
 \examples{
 fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids",
-type = "UniProt", outPath = "fastMapUniProt.rds")
+type = "UniProt", outName = "fastMapUniProt.rds")
 }
 \seealso{
 \code{\link{fastMapSanity}} on acceptable keys and values.

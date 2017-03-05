@@ -32,20 +32,19 @@ test_that("fastMap maps an ID properly", {
 
 test_that("fastMapSanity checks if a key or value is appropriate", {
     # Valid key
-    expect_true(fastMapSanity("P04217", "key"))
-    expect_true(fastMapSanity("P0_4217", "key"))
+    expect_true(fastMapSanity("P04217"))
+    expect_true(fastMapSanity("P0_4217"))
+    expect_true(fastMapSanity("P0-4217"))
 
     # Valid value
-    expect_true(fastMapSanity("A1BG", "value"))
-    expect_true(fastMapSanity(NULL, "value"))
+    expect_true(fastMapSanity("A1BG"))
 
     # Invalid key
-    expect_false(fastMapSanity("P123$", "key"))
-    expect_false(fastMapSanity("", "key"))
-    expect_false(fastMapSanity(NULL, "key"))
+    expect_false(fastMapSanity("P123$"))
+    expect_false(fastMapSanity(""))
 
     # Invalid value
-    expect_false(fastMapSanity("A1 BG", "value"))
+    expect_false(fastMapSanity("A1 BG"))
 })
 
 test_that("fastMapUpdate modifies a fastMap hash table correctly", {

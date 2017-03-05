@@ -11,14 +11,18 @@ fastMapUpdate(hashTable, key, value)
 
 \item{key}{The key to update.}
 
-\item{value}{The value to insert to the associated key.}
+\item{value}{The HGNC symbol to associate with \code{key}.}
 }
 \description{
 \code{fastMapUpdate} Update, add, or delete entries in the fastMap
 hash table. Adding and updating are the same; if a key does/doesn't
 exist, will set the key's value to \code{value}. If a lookup is made
 for a non-existant key, NULL will be returned; setting a key's value to
-NULL is essentially deleting.
+NULL is essentially deleting. Before inserting into the hash table, convert
+all letters in \code{value} to upper case.
+}
+\details{
+TODO: Vectorize.
 }
 \examples{
 fastMapUpdate(fastMapUniprot, "P01023", "A2M")

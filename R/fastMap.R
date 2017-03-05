@@ -4,14 +4,14 @@
 #'
 #' \code{fastMap} accesses the associated hash table
 #' (\code{fastMapUniProt} for UniProt IDs or
-#' \code{fastMapUniENSP} for Ensembl protein IDs) and return the
+#' \code{fastMapUniENSP} for Ensembl protein IDs) and returns the
 #' associated HGNC gene symbol. Unmapped IDs will be returned as is and
 #' will be stored in an global option \code{rete.unmapped}.
 #'
 #' @param ID An unmapped ID.
 #' @param hashTable The hash table to perform lookups on.
 #' @param type The type of the unmapped ID.
-#' @return The HGNC gene symbol of \code{ID}
+#' @return The mapped HGNC symbol or \code{ID} if not found.
 #'
 #' @family fastMap functions
 #'
@@ -35,19 +35,19 @@ fastMap <- function(ID, hashTable, type = "UniProt") {
     for (i in 1:IDLength) {
         lookUp <- hashTable[[ID[i]]]
         if (is.null(lookUp)) {
-            out[i] <- "NA"
+            out[i] <- NA
         } else {
             out[i] <- lookUp
         }
     }
 
     # Address unmapped IDs
-    unmappedCount <- sum(out == "NA")
+    unmappedCount <- sum(is.na(out))
     if (unmappedCount) {
-        naLocations <- (out == "NA")
-        out[naLocations] <- ID[naLocations]
+        iNA <- which(is.na(out))
+        out[iNA] <- ID[iNA]
         # Export unmapped IDs to the global option rete.unmapped
-        options(rete.unmapped = ID[naLocations])
+        options(rete.unmapped = ID[iNA])
         warningMessage <- sprintf("%d of %d IDs could not be mapped, see getOptions('rete.unmapped') to list them all.",
                                   unmappedCount, IDLength)
         warning(warningMessage)
