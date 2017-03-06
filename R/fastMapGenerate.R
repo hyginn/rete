@@ -32,8 +32,8 @@ fastMapGenerate <- function(fName, HGNCSymbolColName, unmappedColName,
             stop(errorMessage)
         } else {
             # Check if rds extension is in outputName, warn if it doesn't
-            pathNameSplit <- strsplit(outputName, ".", fixed = TRUE)
-            extension <- pathNameSplit[[1]][length(pathNameSplit)]
+            outputNameSplit <- strsplit(outputName, ".", fixed = TRUE)
+            extension <- outputNameSplit[[1]][length(outputNameSplit[[1]])]
             if (extension != "rds") {
                 warningMessage <- "Supplied outputName does not contain a .rds file extension."
                 warning(warningMessage)

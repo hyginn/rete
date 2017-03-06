@@ -120,6 +120,14 @@ test_that("fastMapGenerate imports from an HGNC dataset", {
     expect_error(fastMapGenerate("hgnc_subset.txt", "symbol",
                                  "uniprot_ids", type = "UniProt",
                                  saveHashTable = TRUE))
+
+    # Invalid extension
+    expect_warning(fastMapGenerate("hgnc_subset.txt", "symbol",
+                                 "uniprot_ids", type = "UniProt",
+                                 saveHashTable = TRUE, outputName = "test.out"))
+
+    # Clean up
+    file.remove("test.out")
 })
 
 test_that("fastMap functions integrate together", {
