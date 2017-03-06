@@ -34,16 +34,23 @@
         stop("Failed to find required package \"readr\".")
     }
 
-    op <- options()
+    # Make list of rete global parameters
 
-    op.rete <- list(
-        rete.logfile = .makeLogFileName()
-        )
+    # filepath of logfile
+    op.rete <- list(rete.logfile = .makeLogFileName() )
 
-    toset <- !(names(op.rete) %in% names(op))
+    # make a gG Prototype
+    op.rete[["rete.gGprototype"]] <-
+        importNet.STRING(system.file("extdata",
+                                     "STRINGprototype.txt",
+                                     package="rete"),
+                         silent = TRUE,
+                         writeLog = FALSE)
 
-    if(any(toset)) {
-        options(op.rete[toset])
+    toSet <- !(names(op.rete) %in% names(options()))
+
+    if(any(toSet)) {
+        options(op.rete[toSet])
     }
 
     invisible()

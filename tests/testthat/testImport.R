@@ -7,7 +7,7 @@ test_that("importNet.STRING produces gG from STRING data", {
     gG <- importNet.STRING(fName = "dataString.txt",
                            net = "experimental",
                            silent = TRUE,
-                           noLog = TRUE)
+                           writeLog = FALSE)
     expect_equal(igraph::vcount(gG), 5)    # correct number of vertices
     expect_equal(igraph::ecount(gG), 4)    # correct number of edges
     expect_equal(igraph::graph_attr(gG)$version, "gG 1.0") # correct version
