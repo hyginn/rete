@@ -27,7 +27,7 @@ fastMap <- function(ID, hashTable, type = "UniProt") {
             stop(errorMessage)
         }
     } else {
-        errorMessage <- "Supplied hash table does not have a type."
+        errorMessage <- "Supplied hash table does not have a type attribute."
         stop(errorMessage)
     }
     IDLength = length(ID)

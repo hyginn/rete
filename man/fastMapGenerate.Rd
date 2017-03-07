@@ -5,7 +5,7 @@
 \title{Generate the fastMap hash tables.}
 \usage{
 fastMapGenerate(fName, HGNCSymbolColName, unmappedColName, type,
-  saveHashTable = TRUE, outputName = NULL)
+  saveHashTable = TRUE, outputName)
 }
 \arguments{
 \item{fName}{The path to the HGNC gene symbol data set.}
@@ -25,7 +25,7 @@ fastMapGenerate(fName, HGNCSymbolColName, unmappedColName, type,
 table. Keys are the IDs found in \code{unmappedColName} and associated values
 are IDs found in \code{HGNCSymbolColName}. The type attribute of the hash
 table will be set to \code{type}. Hash table can be saved and can be loaded
-in future sessions. If there conflicting keys or a tab delimited key, keep
+in future sessions. If there are conflicting keys or a tab delimited key, keep
 the first instance of the key or only store the first key respectively.
 }
 \examples{

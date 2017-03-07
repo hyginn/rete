@@ -6,7 +6,7 @@
 #' table. Keys are the IDs found in \code{unmappedColName} and associated values
 #' are IDs found in \code{HGNCSymbolColName}. The type attribute of the hash
 #' table will be set to \code{type}. Hash table can be saved and can be loaded
-#' in future sessions. If there conflicting keys or a tab delimited key, keep
+#' in future sessions. If there are conflicting keys or a tab delimited key, keep
 #' the first instance of the key or only store the first key respectively.
 #'
 #' @param fName The path to the HGNC gene symbol data set.
@@ -25,19 +25,20 @@
 #' type = "UniProt", outName = "fastMapUniProt.rds")
 #' @export
 fastMapGenerate <- function(fName, HGNCSymbolColName, unmappedColName,
-                            type, saveHashTable = TRUE, outputName = NULL) {
+                            type, saveHashTable = TRUE, outputName) {
     if (saveHashTable) {
-        if (!is.character(outputName)) {
+        if (missing(outputName)) {
             errorMessage <- "saveHashTable is set to TRUE but outputName is not specified."
             stop(errorMessage)
-        } else {
+        } else if (is.character(outputName)) {
             # Check if rds extension is in outputName, warn if it doesn't
-            outputNameSplit <- strsplit(outputName, ".", fixed = TRUE)
-            extension <- outputNameSplit[[1]][length(outputNameSplit[[1]])]
-            if (extension != "rds") {
+            if (!grepl("\\.rds$", outputName)) {
                 warningMessage <- "Supplied outputName does not contain a .rds file extension."
                 warning(warningMessage)
             }
+        } else {
+            errorMessage <- "Supplied outputName can only be a string."
+            stop(errorMessage)
         }
     }
     hashTable <- new.env(hash = TRUE)
@@ -70,7 +71,7 @@ fastMapGenerate <- function(fName, HGNCSymbolColName, unmappedColName,
     unsanitizedValues <- 0
     # Read line by line
     while (length(entry <- readLines(HGNCFile, n = 1)) > 0) {
-        entryVector <- (strsplit(entry, "\t"))
+        entryVector <- strsplit(entry, "\t")
         key <- entryVector[[1]][unmappedCol]
         value <- entryVector[[1]][symbolCol]
         # Check if the key is a pipe delimited. Choose the first entry.
@@ -84,7 +85,7 @@ fastMapGenerate <- function(fName, HGNCSymbolColName, unmappedColName,
             keySanity <- fastMapSanity(key)
             if (!keySanity) {
                 # Check if it was pipe delimited
-                key <- (strsplit(value, "|", fixed = TRUE))[[1]][1]
+                key <- strsplit(value, "|", fixed = TRUE)[[1]][1]
                 keySanity <- fastMapSanity(key)
                 if (!keySanity) {
                     unsanitizedKeys <- unsanitizedKeys + 1

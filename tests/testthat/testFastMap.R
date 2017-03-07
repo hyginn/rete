@@ -116,18 +116,28 @@ test_that("fastMapGenerate imports from an HGNC dataset", {
                                    saveHashTable = FALSE))
     expect_equal(fastMapUniProt[["Q9NQ94"]], "A1BG")
 
-    # Path not specified
-    expect_error(fastMapGenerate("hgnc_subset.txt", "symbol",
-                                 "uniprot_ids", type = "UniProt",
-                                 saveHashTable = TRUE))
+    # Save file
+    fastMapGenerate("hgnc_subset.txt", "symbol", "uniprot_ids", type = "UniProt",
+                                 saveHashTable = TRUE, outputName = "test1.rds")
 
     # Invalid extension
     expect_warning(fastMapGenerate("hgnc_subset.txt", "symbol",
                                  "uniprot_ids", type = "UniProt",
-                                 saveHashTable = TRUE, outputName = "test.out"))
+                                 saveHashTable = TRUE, outputName = "test2.out"))
+
+    # Invalid outputName
+    expect_error(fastMapGenerate("hgnc_subset.txt", "symbol",
+                                   "uniprot_ids", type = "UniProt",
+                                   saveHashTable = TRUE, outputName = 1))
+
+    # Unspecified outputName
+    expect_error(fastMapGenerate("hgnc_subset.txt", "symbol",
+                                   "uniprot_ids", type = "UniProt",
+                                   saveHashTable = TRUE))
 
     # Clean up
-    file.remove("test.out")
+    file.remove("test1.rds")
+    file.remove("test2.out")
 })
 
 test_that("fastMap functions integrate together", {
