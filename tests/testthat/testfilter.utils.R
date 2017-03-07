@@ -308,8 +308,8 @@ test_that("Processing an rCNA RDS file", {
     
     filter <- c()
 
-    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
-    filtered <- readRDS(outName)
+    output <- .filter.utils.filterrCNA(rCNAName, outFile, filter)
+    filtered <- readRDS(outFile)
 
     expect_equal(nrow(filtered), 3, info="3 genes present (empty filter)")
     expect_equal(ncol(filtered), 3, info="3 samples present (empty filter)")
@@ -322,8 +322,8 @@ test_that("Processing an rCNA RDS file", {
     
     filter <- c('TF2')
 
-    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
-    filtered <- readRDS(outName)
+    output <- .filter.utils.filterrCNA(rCNAName, outFile, filter)
+    filtered <- readRDS(outFile)
 
     expect_equal(nrow(filtered), 3, info="3 genes present (filter not in rCNA)")
     expect_equal(ncol(filtered), 3,
@@ -337,8 +337,8 @@ test_that("Processing an rCNA RDS file", {
     
     filter <- c('HFE')
 
-    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
-    filtered <- readRDS(outName)
+    output <- .filter.utils.filterrCNA(rCNAName, outFile, filter)
+    filtered <- readRDS(outFile)
 
     expect_equal(nrow(filtered), 2, info="2 genes present (HFE filtered)")
     expect_equal(ncol(filtered), 3, info="3 samples present (HFE filtered)")
@@ -351,8 +351,8 @@ test_that("Processing an rCNA RDS file", {
     
     filter <- c('HFE', 'ZNF66')
 
-    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
-    filtered <- readRDS(outName)
+    output <- .filter.utils.filterrCNA(rCNAName, outFile, filter)
+    filtered <- readRDS(outFile)
 
     expect_equal(nrow(filtered), 1,
         info="1 gene present (HFE, ZNF66 filtered)")
@@ -367,8 +367,8 @@ test_that("Processing an rCNA RDS file", {
     
     filter <- c('HFE', 'ZNF66', 'FTO')
 
-    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
-    filtered <- readRDS(outName)
+    output <- .filter.utils.filterrCNA(rCNAName, outFile, filter)
+    filtered <- readRDS(outFile)
 
     expect_equal(nrow(filtered), 0,
         info="No genes present (all genes filtered)")
