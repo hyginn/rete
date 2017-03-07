@@ -167,8 +167,9 @@ importNet.STRING <- function(fName,
     netDF$b <- gsub("^[0-9]*\\.{0,1}", "", netDF$b)
 
     # map ID to gene names
-    netDF$a <- fastMap(netDF$a, type = "ENSP")
-    netDF$b <- fastMap(netDF$b, type = "ENSP")
+#ToDo: fix the fastMap calls
+#    netDF$a <- fastMap(netDF$a, type = "ENSP")
+#    netDF$b <- fastMap(netDF$b, type = "ENSP")
 
     # Remove values below cutoff
     if (cutoffType == "xS") {

@@ -24,8 +24,10 @@ associated HGNC gene symbol. Unmapped IDs will be returned as is and
 will be stored in an global option \code{rete.unmapped}.
 }
 \examples{
+\dontrun{
 fastmap("ENSG00000121410", fastMapENSP, type = "ENSP")
 fastmap(c("Q9NQ94", "P01023"), fastMapUniProt)
+}
 }
 \seealso{
 Other fastMap functions: \code{\link{fastMapGenerate}},

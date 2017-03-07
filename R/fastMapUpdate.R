@@ -21,8 +21,10 @@
 #' \code{\link{fastMapSanity}} on acceptable keys and values.
 #'
 #' @examples
+#' \dontrun{
 #' fastMapUpdate(fastMapUniprot, "P01023", "A2M")
 #' fastMapUpdate(fastMapENSP, "ENSP00000245105", "a2m-as1")
+#' }
 #' @export
 fastMapUpdate <- function(hashTable, key, value) {
     # Key validation
