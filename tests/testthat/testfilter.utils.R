@@ -158,7 +158,9 @@ test_that("Processing an rSNV MAF file", {
         info=paste(c("All rSNV records kept with empty filter", outFile)))
     expect_equal(output[1], 4, info="Kept 4 records (empty filter)")
     expect_equal(output[2], 0, info="Removed 0 records (empty filter)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
     
     filter <- c('ZNF660')
 
@@ -189,7 +191,9 @@ test_that("Processing an rSNV MAF file", {
     expect_equal(output[1], 4, info="Kept 4 records (filter gene not in data)")
     expect_equal(output[2], 0,
         info="Removed 0 records (filter gene not in data")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
 
     outFile <- tempfile()
     filter <- c('TF2')
@@ -212,7 +216,9 @@ test_that("Processing an rSNV MAF file", {
         info=paste(c("Some rSNV records filtered", outFile)))
     expect_equal(output[1], 2, info="Kept 2 records (filtered one gene)")
     expect_equal(output[2], 2, info="Removed 2 records (filtered one gene)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
 
     outFile <- tempfile()
     filter <- c('HFE', 'TF2')
@@ -229,7 +235,9 @@ test_that("Processing an rSNV MAF file", {
         info=paste(c("All rSNV records filtered out", outFile)))
     expect_equal(output[1], 0, info="Kept 0 records (filtered all genes)")
     expect_equal(output[2], 4, info="Removed 4 records (filtered all genes)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
 
     outFile <- tempfile()
     rMutData <- c(
@@ -241,10 +249,12 @@ test_that("Processing an rSNV MAF file", {
         )
     writeLines(rMutData, con=rMutName)
     expect_true(file.exists(rMutName), info="Test setup (rSNV)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
     
     output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
-    filtered <- readLines(output)
+    filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
         paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
@@ -255,7 +265,9 @@ test_that("Processing an rSNV MAF file", {
         info=paste(c("Accepts bodyless rSNV files", outFile)))
     expect_equal(output[1], 0, info="Kept 0 records (none in data)")
     expect_equal(output[2], 0, info="Removed 0 records (none in data)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
 
     outFile <- tempfile()
     rMutData <- c(
@@ -268,7 +280,9 @@ test_that("Processing an rSNV MAF file", {
     
     expect_error(.filter.utils.filterrSNV(rMutName, outFile, filter),
         info="stop on malformed rSNV (without data)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
 
     outFile <- tempfile()
     rMutData <- c(
@@ -284,7 +298,9 @@ test_that("Processing an rSNV MAF file", {
     
     expect_error(.filter.utils.filterrSNV(rMutName, outFile, filter),
         info="stop on malformed rSNV (with data)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
 
     outFile <- tempfile()
     rMutData <- c(
@@ -293,14 +309,16 @@ test_that("Processing an rSNV MAF file", {
             "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
             "Tumor_Sample_Barcode", "UUID", "extra"), collapse="\t"),
         paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
-            "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 
+            "A", "T", "G", "TCGA-A3-0001-124-01W-0615-10", 'bla',
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
     writeLines(rMutData, con=rMutName)
     expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
     expect_error(.filter.utils.filterrSNV(rMutName, outFile, filter),
         info="stop on malformed rSNV (incorrect record count)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
     file.remove(rMutName)
 
 })
@@ -328,7 +346,9 @@ test_that("Processing an rCNA RDS file", {
         info="FTP present (empty filter)")
     expect_true('ZNF66' %in% rownames(filtered),
         info="ZNF66 present (empty filter)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
     
     filter <- c('TF2')
 
@@ -344,7 +364,9 @@ test_that("Processing an rCNA RDS file", {
         info="FTO present (filtered not in rCNA)")
     expect_true('ZNF66' %in% rownames(filtered),
         info="ZNF66 present (filtered not in rCNA)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
     
     filter <- c('HFE')
 
@@ -359,7 +381,9 @@ test_that("Processing an rCNA RDS file", {
         info="FTO present (HFE filtered)")
     expect_true('ZNF66' %in% rownames(filtered),
         info="ZNF66 present (HFE filtered)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
     
     filter <- c('HFE', 'ZNF66')
 
@@ -376,7 +400,9 @@ test_that("Processing an rCNA RDS file", {
         info="FTO present (HFE, ZNF66 filtered)")
     expect_false('ZNF66' %in% rownames(filtered),
         info="ZNF66 not present (HFE, ZNF66 filtered)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
     
     filter <- c('HFE', 'ZNF66', 'FTO')
 
@@ -393,7 +419,9 @@ test_that("Processing an rCNA RDS file", {
         info="FTO not present (all genes filtered)")
     expect_false('ZNF66' %in% rownames(filtered),
         info="ZNF66 not present (all genes filtered)")
-    file.remove(outFile)
+    if (file.exists(outFile)) {
+        file.remove(outFile)
+    }
     file.remove(rCNAName)
 })
 

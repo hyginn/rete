@@ -93,7 +93,7 @@
     # XXX: need tests
     readable <- c()
     for (fName in fNames) {
-    	if (file.exists(exprData) == FALSE) {
+    	if (file.exists(fName) == FALSE) {
             if (level == 'error') {
     	        stop(paste('ERROR: filter data file', fName, 'does not exist.'))
     	    } else {
@@ -112,7 +112,7 @@
                 next
     	    }
     	}
-        readable <- c(readable, filename)
+        readable <- c(readable, fName)
     }
 
     return(readable)
@@ -157,7 +157,7 @@
                 next
     	    }
     	}
-        writeable <- c(writeable, filename)
+        writeable <- c(writeable, dName)
     }
 
     return(writeable)
@@ -179,20 +179,24 @@
     SNV <- file(outFile, open="w")
 
     # Duplicate the header
-    hasHeader <- FALSE
+    hasHeaderHash <- FALSE
+    hasHeaderHugo <- FALSE
     line <- readLines(con=rSNV, n=1)
     while (length(line) != 0) {
         if (!startsWith(line[[1]], "#") &&
             !startsWith(line[[1]], "Hugo_Symbol")
         ) {
             break
+        } else if (startsWith(line[[1]], '#')) {
+            hasHeaderHash <- TRUE
+        } else if (startsWith(line[[1]], 'Hugo_Symbol')) {
+            hasHeaderHugo <- TRUE
         }
-        hasHeader <- TRUE
         writeLines(line, con=SNV)
         line <- readLines(con=rSNV, n=1)
     }
    
-    if (!hasHeader) {
+    if (!hasHeaderHash || !hasHeaderHugo) {
         stop("Malformed rSNV file: missing header")
     }
  
