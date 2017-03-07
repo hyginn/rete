@@ -126,3 +126,4 @@ test_that("Heat scores are as expected", {
     expect_equal(graph_attr(netwk1,"aggHeatScore"),36)
     expect_equal(graph_attr(netwk2,"aggHeatScore"),17)
 })
+#[END]

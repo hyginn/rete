@@ -2,6 +2,43 @@ findsub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
 #NOTE: THIS IS THE MOST RECENT FORM OF FINDSUB, AND HAS BEEN TESTED AND SHOWN TO WORK IN SCRIPTS
 #TITLED FINSUB_Test1.R through FINDSUB
 
+    #'Find Highly Connected Subnetworks after Eliminating 'Weak' Edges,
+    #'and calculating aggregate 'heat' scores for these subnetworks
+    #'
+    #'@param method method of edge removal. Currently only "Leis" (Leiseron et al. 2015) method of edge
+    #'removal available. See details for more information
+    #'@param EGG an igraph object of format AGG with score annotations
+    #'@param minOrd minimum number of vertices per generated subgraph
+    #'@param noLog if FALSE, save process to an .Rdata log file
+    #'@param silent if FALSE, print process to console in real time
+    #'@include igraph
+    #'@details Depending on method used, edges are removed from EGG based upon the assigned 'delta' attribute
+    #'and their 'Influence' scores(see next paragraph). In the "Leis" method (Leiseron et al. 2015), edges with
+    #'Influence scores below the value of 'delta' are eliminated. Then, highly connected components of
+    #'the EGG graph made of the remaining edges are found using igraph::components(),
+    #'and subgraphs generated for these components. The vertices in these subgraphs come with the Gene Scores
+    #'(score can differ depending on method), which for each subgraph's vertices are summed to find an
+    #'aggregate heat score for each individual graph. E.g., if a subgraph's vertices had scores of 5,8,11
+    #' the aggregate heat score would be 24. The aggregate heat score is then assigned as an attribute
+    #' aggHeatScore. Subgraphs are stored in a list of subgraphs sN, which is returned. sN is ordered from
+    #' highest aggHeatScore to lowest aggHeatScore of the subgraph.
+    #' All subgraphs in sN contain same attributes as EGG and have aggHeatScore (aggregate heat score)
+    #' added as an attribute.
+    #'
+    #'EGG must have the following: vertices: genes with HGNC symbol
+    #'and Gene Score ('heat', see documentation for score function for more details) as the minimal vertex
+    #'attributes; edges: directed edges from 1 gene to the next, derived from protein protein interaction data.
+    #'Edges' 'from' and 'to' columns (edge vertices) named with HGNC symbols. Minimum attributes for edges
+    #'include 'Influence', a score weighting edges depending on weighting method (for our purposes this
+    #'will likely ). EGG must also come with a delta attribute (integer or of type double)
+    #'(assigned threshold for edge removal regardless of method used in generating edge scores) and an
+    #'EGGversion, a graph attribute with a character vector of length 1. Unless further changes are made,
+    #'EGGversion must be "1.0".
+    #'
+    #'@example
+    #'sN<-findsub(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE)
+
+
 
     #INPUTS:
     #   method: method of edge removal
@@ -18,13 +55,13 @@ findsub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
 #Module 1: Checks
 
     logVect<-"Begin function FINDSUB" #begin log
-    messt<-paste("Begun at date/time ",as.character(Sys.time()))
+    messt<-paste("Begun at date/time ",as.character(Sys.time()),collapse="\n")
     logVect<-c(logVect,messt) #catenate log messages
 
     if (!silent) {
         print(logVect[length(logVect)])
     }
-    logName<-paste("FINDSUB_Run_",as.character(Sys.Date()),".Rdata",sep="") #Set a name for the log
+    logName<-paste("FINDSUB_Run_",as.character(Sys.Date()),".Rdata",collapse="\n") #Set a name for the log
 
     #Now all the Checks
 
@@ -62,7 +99,7 @@ findsub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
 #=====================================================================================
 #Module 2: Method Selection and Edge Removal
 
-    mess3<-paste("Method Selected (method:",method)
+    mess3<-paste("Method Selected (method:",method,collapse="\n")
     logVect<-c(logVect,"========Begin Module 2: Edge Removal========",mess3)
     if (!silent) {
         print(logVect[length(logVect)-1])
@@ -144,8 +181,9 @@ findsub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
            aggHeatScoreVect<-c(aggHeatScoreVect,aggHeatScore)
 
            sN<-c(sN,list(newGraph))#adding the graph to the sN
-           mess4<-paste("Component", i ,"out of", cEGG$no , "is of order>=minOrd" )
-           mess5<-paste("Created subgraph for component" , i , "and calculated aggregate heat score")
+           mess4<-paste("Component", i ,"out of", cEGG$no , "is of order>=minOrd",collapse="\n")
+           mess5<-paste("Created subgraph for component" , i , "and calculated aggregate heat score",
+                        collapse="\n")
            logVect<-c(logVect,mess4,mess5)
            if (!silent) {
                print(logVect[length(logVect) - 1])
@@ -161,7 +199,8 @@ sN <- sN[graphOrder]
 
 
 
-mess6<-paste("Function finished.", length(sN) , "strongly connected subgraphs found")
+mess6<-paste("Function finished.", length(sN) , "strongly connected subgraphs found",
+             collapse="\n")
 
 logVect<-c(logVect,mess6)
 if (!silent) {

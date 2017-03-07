@@ -96,3 +96,4 @@ context("Check Heat score")
 test_that("Heat scores are as expected", {
     expect_equal(graph_attr(netwk1,"aggHeatScore"),22)
 })
+#[END]

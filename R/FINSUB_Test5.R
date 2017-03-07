@@ -119,3 +119,4 @@ testthat::test_that("No Delta-> Error message", {
     expect_error(outputGraphs<-findsub(method="Leis",EGG,minOrd=3,
                                        noLog = TRUE,silent=TRUE))
 })
+#[END]

@@ -109,3 +109,5 @@ test_that("Heat scores are as expected", {
 #ABC1 DEF2 JKL3 GHI4 from same subnetwork
 #Lower further to 2, and the 'discovered subnetwork' will include all vertices, but not all edges
 #Lower influence threshold (delta) to 1, and every edge included
+
+#[END]

@@ -11,3 +11,15 @@ Encoding: UTF-8
 LazyData: true
 Suggests: testthat
 RoxygenNote: 6.0.1
+Collate: 
+    'FINDSUB.R'
+    'FINDSUB_Test_Data.R'
+    'igraph'
+    'FINDSUBv1_2.R'
+    'FINSUB_Test1.R'
+    'FINSUB_Test2.R'
+    'FINSUB_Test3.R'
+    'FINSUB_Test4.R'
+    'FINSUB_Test4b.R'
+    'FINSUB_Test5.R'
+    'hello.R'
