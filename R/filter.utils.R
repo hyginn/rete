@@ -16,9 +16,26 @@
 
 ### Small utility functions.  Possibly of use elsewhere
 
-# Extract the patient portion of a tumor sample barcode
-.filter.utils.patientFromBarcode <- function(
+# Normalize the formatting of a tumor sample barcode.  Text files use
+#   hyphens to separate elements, RDS converts that to '.'
+.filter.utils.normalizeBarcode <- function(
         barcode, separator="-") {
+
+    if (typeof(barcode) != "character") {
+        stop("Barcode must be of type character")
+    }
+
+    if (separator != ".") {
+        barcode <- gsub('-', '.', barcode)
+    }
+
+    return(toupper(barcode))
+}
+
+# Extract the patient portion of a tumor sample barcode.  Expects a
+#   normalized barcode.
+.filter.utils.patientFromBarcode <- function(
+        barcode, separator=".") {
 
     if (typeof(barcode) != "character") {
         stop("Barcode must be of type character")
@@ -132,7 +149,7 @@
 
 # Scan an rSNV MAF file, outputting into the output directory a new MAF
 #   file that has only the records for which the filter says not to ignore
-filter.utils.processrSNV <- function(inFile, outFile,
+.filter.utils.filterrSNV <- function(inFile, outFile,
     removeGenes=c()) {
 
     rSNV <- file(inFile, open="r")
@@ -142,7 +159,9 @@ filter.utils.processrSNV <- function(inFile, outFile,
     hasHeader <- FALSE
     line <- readLines(con=rSNV, n=1)
     while (length(line) != 0) {
-        if (!startsWith(line[[1]], "#")) {
+        if (!startsWith(line[[1]], "#") &&
+            !startsWith(line[[1]], "Hugo_Symbol")
+        ) {
             break
         }
         hasHeader <- TRUE
@@ -183,7 +202,7 @@ filter.utils.processrSNV <- function(inFile, outFile,
 
 # Scan an rCNA RDS object, outputting into the output directory a new RDS
 #   file that has only the records for which the filter says not to ignore
-filter.utils.processrCNA <- function(inFile, outFile, removeGenes=c()) {
+.filter.utils.filterrCNA <- function(inFile, outFile, removeGenes=c()) {
     rCNA <- readRDS(inFile)
 
     # Filter rCNA data
@@ -192,11 +211,11 @@ filter.utils.processrCNA <- function(inFile, outFile, removeGenes=c()) {
     for (gene in rownames(rCNA)) {
         if (gene %in% removeGenes) {
             removed <- removed + 1
-            break
+            next
         }
         keep <- c(keep, gene)
     }
-    CNA <- rCNA[, keep]
+    CNA <- rCNA[keep, ]
 
     saveRDS(CNA, file=outFile)
 

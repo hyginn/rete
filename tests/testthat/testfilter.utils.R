@@ -1,60 +1,88 @@
 context("Filter utility functions")
 
-test_that("Patient correctly extracted from barcode", {
-    expect_equal("TCGA-A3-3307",
-        filter.utils.patientFromBarcode(
-        "TCGA-A3-3307-01A-01R-0864-07"))
+test_that("Barcode normalized according to specs", {
+    expect_equal("TCGA.A3.3307.01A.01R.0864.07",
+        .filter.utils.normalizeBarcode(
+        "TCGA-A3-3307-01A-01R-0864-07", separator="-"))
 
-    expect_equal("TCGA.A3.3307",
-        filter.utils.patientFromBarcode(
+    expect_equal("TCGA.A3.3307.01A.01R.0864.07",
+        .filter.utils.normalizeBarcode(
         "TCGA.A3.3307.01A.01R.0864.07", separator="."))
 
-    expect_error(
-        filter.utils.patientFromBarcode("TCGA-A3"))
+    expect_equal("TCGA.A3.3307",
+        .filter.utils.normalizeBarcode(
+        "tcga-a3-3307", separator='-'))
 
     expect_error(
-        filter.utils.patientFromBarcode(""))
+        .filter.utils.normalizeBarcode(NULL))
 
     expect_error(
-        filter.utils.patientFromBarcode(NULL))
+        .filter.utils.normalizeBarcode(3))
+
+    expect_equal(
+        .filter.utils.normalizeBarcode(c("TCGA-A3", "tcga-a3", "tcga-a3-3307")),
+        c('TCGA.A3', 'TCGA.A3', 'TCGA.A3.3307'))
+})
+
+test_that("Patient correctly extracted from barcode", {
+    expect_equal("TCGA-A3-3307",
+        .filter.utils.patientFromBarcode(
+        "TCGA-A3-3307-01A-01R-0864-07", separator="-"))
+
+    expect_equal("TCGA.A3.3307",
+        .filter.utils.patientFromBarcode(
+        "TCGA.A3.3307.01A.01R.0864.07", separator="."))
+
+    expect_equal("TCGA.A3.3307",
+        .filter.utils.patientFromBarcode(
+        "TCGA.A3.3307.01A.01R.0864.07"))
 
     expect_error(
-        filter.utils.patientFromBarcode(3))
+        .filter.utils.patientFromBarcode("TCGA-A3"))
 
     expect_error(
-        filter.utils.patientFromBarcode(c("TCGA", "A3", "3307")))
+        .filter.utils.patientFromBarcode(""))
+
+    expect_error(
+        .filter.utils.patientFromBarcode(NULL))
+
+    expect_error(
+        .filter.utils.patientFromBarcode(3))
+
+    expect_error(
+        .filter.utils.patientFromBarcode(c("TCGA", "A3", "3307")))
 })
 
 test_that("Path correctly concatenated on Linux", {
     skip_on_os(c("windows", "mac", "solaris"))
 
     expect_equal("/tmp/foo.rds",
-        filter.utils.outputFilename("/tmp/", "foo.rds"))
+        .filter.utils.outputFilename("/tmp/", "foo.rds"))
 
     expect_equal("/tmp/foo.rds",
-        filter.utils.outputFilename("/tmp", "foo.rds"))
+        .filter.utils.outputFilename("/tmp", "foo.rds"))
 
     expect_equal("/tmp/foo.rds",
-        filter.utils.outputFilename("/tmp///", "foo.rds"))
+        .filter.utils.outputFilename("/tmp///", "foo.rds"))
 
     expect_equal("/tmp/foo.rds",
-        filter.utils.outputFilename("/tmp", "/home/foo/foo.rds"))
+        .filter.utils.outputFilename("/tmp", "/home/foo/foo.rds"))
 })
 
 test_that("Path correctly concatenated on OS X", {
     skip_on_os(c("windows", "linux", "solaris"))
 
     expect_equal("/private/tmp/foo.rds",
-        filter.utils.outputFilename("/tmp/", "foo.rds"))
+        .filter.utils.outputFilename("/tmp/", "foo.rds"))
 
     expect_equal("/private/tmp/foo.rds",
-        filter.utils.outputFilename("/tmp", "foo.rds"))
+        .filter.utils.outputFilename("/tmp", "foo.rds"))
 
     expect_equal("/private/tmp/foo.rds",
-        filter.utils.outputFilename("/tmp///", "foo.rds"))
+        .filter.utils.outputFilename("/tmp///", "foo.rds"))
 
     expect_equal("/private/tmp/foo.rds",
-        filter.utils.outputFilename("/tmp", "/Users/foo/foo.rds"))
+        .filter.utils.outputFilename("/tmp", "/Users/foo/foo.rds"))
 })
 
 test_that("Magic check for hash character using raw vectors", {
@@ -62,17 +90,17 @@ test_that("Magic check for hash character using raw vectors", {
     gz <- writeBin(c("ZZZ"), raw())
 
     expect_equal("MAF",
-        filter.utils.getMagic(maf))
+        .filter.utils.getMagic(maf))
 
     expect_equal("RDS",
-        filter.utils.getMagic(gz))
+        .filter.utils.getMagic(gz))
 
-    expect_error(filter.utils.getMagic())
-    expect_error(filter.utils.getMagic(NULL))
-    expect_error(filter.utils.getMagic("not_a_real_file"))
+    expect_error(.filter.utils.getMagic())
+    expect_error(.filter.utils.getMagic(NULL))
+    expect_error(.filter.utils.getMagic("not_a_real_file"))
 
     skip_on_os(c("windows"))
-    expect_error(filter.utils.getMagic("/dev/null"))
+    expect_error(.filter.utils.getMagic("/dev/null"))
 })
 
 test_that("Processing an rSNV MAF file", {
@@ -104,7 +132,7 @@ test_that("Processing an rSNV MAF file", {
     
     filter <- c()
 
-    output <- filter.utils.processrSNV(rMutName, outFile, filter)
+    output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
     filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -128,13 +156,13 @@ test_that("Processing an rSNV MAF file", {
             "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t")),
         info=paste(c("All rSNV records kept with empty filter", outFile)))
-    expect_equal(output[1], 4)
-    expect_equal(output[2], 0)
+    expect_equal(output[1], 4, info="Kept 4 records (empty filter)")
+    expect_equal(output[2], 0, info="Removed 0 records (empty filter)")
 
     
     filter <- c('ZNF660')
 
-    output <- filter.utils.processrSNV(rMutName, outFile, filter)
+    output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
     filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -158,13 +186,14 @@ test_that("Processing an rSNV MAF file", {
             "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t")),
         info=paste(c("All rSNV records kept", outFile)))
-    expect_equal(output[1], 4)
-    expect_equal(output[2], 0)
+    expect_equal(output[1], 4, info="Kept 4 records (filter gene not in data)")
+    expect_equal(output[2], 0,
+        info="Removed 0 records (filter gene not in data")
 
     outFile <- tempfile()
     filter <- c('TF2')
 
-    output <- filter.utils.processrSNV(rMutName, outFile, filter)
+    output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
     filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -180,13 +209,13 @@ test_that("Processing an rSNV MAF file", {
             "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t")),
         info=paste(c("Some rSNV records filtered", outFile)))
-    expect_equal(output[1], 2)
-    expect_equal(output[2], 2)
+    expect_equal(output[1], 2, info="Kept 2 records (filtered one gene)")
+    expect_equal(output[2], 2, info="Removed 2 records (filtered one gene)")
 
     outFile <- tempfile()
     filter <- c('HFE', 'TF2')
 
-    output <- filter.utils.processrSNV(rMutName, outFile, filter)
+    output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
     filtered <- readLines(outFile)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -196,8 +225,8 @@ test_that("Processing an rSNV MAF file", {
             "Tumor_Sample_Barcode", "UUID"), collapse="\t")
             ),
         info=paste(c("All rSNV records filtered out", outFile)))
-    expect_equal(output[1], 0)
-    expect_equal(output[2], 4)
+    expect_equal(output[1], 0, info="Kept 0 records (filtered all genes)")
+    expect_equal(output[2], 4, info="Removed 4 records (filtered all genes)")
 
     outFile <- tempfile()
     rMutData <- c(
@@ -210,7 +239,7 @@ test_that("Processing an rSNV MAF file", {
     writeLines(rMutData, con=rMutName)
     expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
-    output <- filter.utils.processrSNV(rMutName, outFile, filter)
+    output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
     filtered <- readLines(output)
     expect_equal(filtered, c(
         "#version 2.2",
@@ -220,8 +249,8 @@ test_that("Processing an rSNV MAF file", {
             "Tumor_Sample_Barcode", "UUID"), collapse="\t")
             ),
         info=paste(c("Accepts bodyless rSNV files", outFile)))
-    expect_equal(output[1], 0)
-    expect_equal(output[2], 0)
+    expect_equal(output[1], 0, info="Kept 0 records (none in data)")
+    expect_equal(output[2], 0, info="Removed 0 records (none in data)")
 
     outFile <- tempfile()
     rMutData <- c(
@@ -232,7 +261,8 @@ test_that("Processing an rSNV MAF file", {
     writeLines(rMutData, con=rMutName)
     expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
-    expect_error(filter.utils.processrSNV(rMutName, outFile, filter))
+    expect_error(.filter.utils.filterrSNV(rMutName, outFile, filter),
+        info="stop on malformed rSNV (without data)")
 
     outFile <- tempfile()
     rMutData <- c(
@@ -246,12 +276,13 @@ test_that("Processing an rSNV MAF file", {
     writeLines(rMutData, con=rMutName)
     expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
-    expect_error(filter.utils.processrSNV(rMutName, outFile, filter))
+    expect_error(.filter.utils.filterrSNV(rMutName, outFile, filter),
+        info="stop on malformed rSNV (with data)")
 
     outFile <- tempfile()
     rMutData <- c(
         paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
-            "Strand", "Variant_Classification", "Variant_Type",
+            "Strand", "Variant_Classification", "Variant_Type", "foo",
             "Reference_Allele", "Tumor_Seq_Allele1", "Tumor_Seq_Allele2",
             "Tumor_Sample_Barcode", "UUID", "extra"), collapse="\t"),
         paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
@@ -260,7 +291,8 @@ test_that("Processing an rSNV MAF file", {
     writeLines(rMutData, con=rMutName)
     expect_true(file.exists(rMutName), info="Test setup (rSNV)")
     
-    expect_error(filter.utils.processrSNV(rMutName, outFile, filter))
+    expect_error(.filter.utils.filterrSNV(rMutName, outFile, filter),
+        info="stop on malformed rSNV (incorrect record count)")
 
 })
 
@@ -276,11 +308,77 @@ test_that("Processing an rCNA RDS file", {
     
     filter <- c()
 
-    output <- .filter.utils.processrCNA(rCNAName, outName, filter)
+    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
     filtered <- readRDS(outName)
 
-    expect_equal(nrow(filtered), 3)
-    expect_equal(ncol(filtered), 2)
-    expect_false('TCGA.A3.0001.124' %in% colnames(filtered))
+    expect_equal(nrow(filtered), 3, info="3 genes present (empty filter)")
+    expect_equal(ncol(filtered), 3, info="3 samples present (empty filter)")
+    expect_true('HFE' %in% rownames(filtered),
+        info="HFE present (empty filter)")
+    expect_true('FTO' %in% rownames(filtered),
+        info="FTP present (empty filter)")
+    expect_true('ZNF66' %in% rownames(filtered),
+        info="ZNF66 present (empty filter)")
+    
+    filter <- c('TF2')
+
+    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
+    filtered <- readRDS(outName)
+
+    expect_equal(nrow(filtered), 3, info="3 genes present (filter not in rCNA)")
+    expect_equal(ncol(filtered), 3,
+        info="3 samples present (filterd not in rCNA)")
+    expect_true('HFE' %in% rownames(filtered),
+        info="HFE present (filtered not in rCNA)")
+    expect_true('FTO' %in% rownames(filtered),
+        info="FTO present (filtered not in rCNA)")
+    expect_true('ZNF66' %in% rownames(filtered),
+        info="ZNF66 present (filtered not in rCNA)")
+    
+    filter <- c('HFE')
+
+    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
+    filtered <- readRDS(outName)
+
+    expect_equal(nrow(filtered), 2, info="2 genes present (HFE filtered)")
+    expect_equal(ncol(filtered), 3, info="3 samples present (HFE filtered)")
+    expect_false('HFE' %in% rownames(filtered),
+        info="HFE not present (HFE filtered)")
+    expect_true('FTO' %in% rownames(filtered),
+        info="FTO present (HFE filtered)")
+    expect_true('ZNF66' %in% rownames(filtered),
+        info="ZNF66 present (HFE filtered)")
+    
+    filter <- c('HFE', 'ZNF66')
+
+    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
+    filtered <- readRDS(outName)
+
+    expect_equal(nrow(filtered), 1,
+        info="1 gene present (HFE, ZNF66 filtered)")
+    expect_equal(ncol(filtered), 3,
+        info="3 samples present (HFE, ZNF66 filtered)")
+    expect_false('HFE' %in% rownames(filtered),
+        info="HFE not present (HFE, ZNF66 filtered)")
+    expect_true('FTO' %in% rownames(filtered),
+        info="FTO present (HFE, ZNF66 filtered)")
+    expect_false('ZNF66' %in% rownames(filtered),
+        info="ZNF66 not present (HFE, ZNF66 filtered)")
+    
+    filter <- c('HFE', 'ZNF66', 'FTO')
+
+    output <- .filter.utils.filterrCNA(rCNAName, outName, filter)
+    filtered <- readRDS(outName)
+
+    expect_equal(nrow(filtered), 0,
+        info="No genes present (all genes filtered)")
+    expect_equal(ncol(filtered), 3,
+        info="3 samples present (all genes filtered")
+    expect_false('HFE' %in% rownames(filtered),
+        info="HFE not present (all genes filtered)")
+    expect_false('FTO' %in% rownames(filtered),
+        info="FTO not present (all genes filtered)")
+    expect_false('ZNF66' %in% rownames(filtered),
+        info="ZNF66 not present (all genes filtered)")
 })
 
