@@ -5,7 +5,7 @@
 #' @param filterFile The filename to output the list of genes removed
 #' @param iT The inconsistency threshold to use.  Default: 0.75
 #' @return The list of filtered genes
-.filter.inconsistentCNA <- function(rCNAfile, CNAFile, filterFile,
+filter.inconsistentCNA <- function(rCNAfile, CNAFile, filterFile,
     iT=0.75
 ) {
     # check for input file readability

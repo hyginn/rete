@@ -1,13 +1,13 @@
 # filter.utils.R
 
-#' Utility function for removing genes from a dataset
-#'
-#' Normalize the formatting of a tumor sample barcode.  Text files use
-#'   hyphens to separate elements, RDS converts that to '.'
-#'
-#' @param barcode A tumour barcode
-#' @param separator The separator used in this barcode, default '-'
-#' @return A normalized barcode that is upper case and has '.' as a separator
+# Utility function for removing genes from a dataset
+#
+# Normalize the formatting of a tumor sample barcode.  Text files use
+#   hyphens to separate elements, RDS converts that to '.'
+#
+# @param barcode A tumour barcode
+# @param separator The separator used in this barcode, default '-'
+# @return A normalized barcode that is upper case and has '.' as a separator
 .filter.utils.normalizeBarcode <- function(
         barcode, separator="-") {
 
@@ -22,13 +22,13 @@
     return(toupper(barcode))
 }
 
-#' Extract the patient portion of a tumor sample barcode.  Expects a
-#'   normalized barcode.
-#'
-#' @param barcode A tumour barcode
-#' @param separator The separator used in this barcode, default '.'
-#' @return The barcode truncated to the study participant level,
-#'   with '.' as a separator
+# Extract the patient portion of a tumor sample barcode.  Expects a
+#   normalized barcode.
+#
+# @param barcode A tumour barcode
+# @param separator The separator used in this barcode, default '.'
+# @return The barcode truncated to the study participant level,
+#   with '.' as a separator
 .filter.utils.patientFromBarcode <- function(
         barcode, separator=".") {
 
@@ -46,19 +46,19 @@
     return(patient)
 }
 
-#' Guess whether a file is MAF/rSNV or RDS/rCNA
-#'
-#' Gets the first byte of a file, return MAF if it starts with a hash
-#'   Not truly smart enough to handle all of our tab-delimited formats,
-#'   but it suffices for RDS vs (non-compressed) MAF.  If we were to 
-#'   be dealing with compressed MAF files, I could no longer recognize
-#'   the format based off the first byte of the file, and would instead
-#'   need to either wrap readRDS in a tryCatch() call or check the first
-#'   decompressed byte.  Decompressed RDS files do not start with a hash,
-#'   and MAF files do.
-#'
-#' @param filename The filename to check
-#' @return 'MAF' if the file starts with a hash, 'RDS' otherwise
+# Guess whether a file is MAF/rSNV or RDS/rCNA
+#
+# Gets the first byte of a file, return MAF if it starts with a hash
+#   Not truly smart enough to handle all of our tab-delimited formats,
+#   but it suffices for RDS vs (non-compressed) MAF.  If we were to 
+#   be dealing with compressed MAF files, I could no longer recognize
+#   the format based off the first byte of the file, and would instead
+#   need to either wrap readRDS in a tryCatch() call or check the first
+#   decompressed byte.  Decompressed RDS files do not start with a hash,
+#   and MAF files do.
+#
+# @param filename The filename to check
+# @return 'MAF' if the file starts with a hash, 'RDS' otherwise
 .filter.utils.getMagic <- function(filename) {
     magic <- readBin(con=filename, what="int", n=1, size=1, signed=FALSE)
 
@@ -69,13 +69,13 @@
     }
 }
 
-#' Generate a normalized output file path by concatenating the provided
-#'  output directory with the basename of the input file.
-#'
-#' @param path The desired output directory
-#' @param file A path whose base filename should be concatenated to the output
-#'   directory
-#' @return A canonical, concatenated path
+# Generate a normalized output file path by concatenating the provided
+#  output directory with the basename of the input file.
+#
+# @param path The desired output directory
+# @param file A path whose base filename should be concatenated to the output
+#   directory
+# @return A canonical, concatenated path
 .filter.utils.outputFilename <- function(path, file) {
     bName <- basename(file)
     outName <- normalizePath(paste(normalizePath(path), '/', bName, sep=''),
@@ -83,12 +83,12 @@
     return(outName)
 }
 
-#' Validate basic file readability status
-#'
-#' @param fNames A vector of filenames to check for existence and readability
-#' @param level The level of error a non-readable file should hold.  If
-#'   error, execution stops.  Otherwise a warning to the logs is emitted.
-#' @return A vector of readable files
+# Validate basic file readability status
+#
+# @param fNames A vector of filenames to check for existence and readability
+# @param level The level of error a non-readable file should hold.  If
+#   error, execution stops.  Otherwise a warning to the logs is emitted.
+# @return A vector of readable files
 .filter.utils.fileReadable <- function(fNames, level='error') {
     # XXX: need tests
     readable <- c()
@@ -118,13 +118,13 @@
     return(readable)
 }
 
-#' Validate basic directory writability status
-#'
-#' @param dNames A vector of directory names to check for existence and
-#'   writeability
-#' @param level The level of error a non-writeable directory should hold.  If
-#'   error, execution stops.  Otherwise a warning to the logs is emitted.
-#' @return A vector of writeable directories
+# Validate basic directory writability status
+#
+# @param dNames A vector of directory names to check for existence and
+#   writeability
+# @param level The level of error a non-writeable directory should hold.  If
+#   error, execution stops.  Otherwise a warning to the logs is emitted.
+# @return A vector of writeable directories
 .filter.utils.dirWritable <- function(dNames, level='error') {
     # XXX: need tests
     writeable <- c()
@@ -163,15 +163,15 @@
     return(writeable)
 }
 
-#' Scan an rSNV MAF file, outputting into the output file a new MAF
-#'   file that has only the records for which the filter says not to ignore
-#'
-#' @param inFile The input rSNV file
-#' @param outFile The output rSNV file
-#' @param removeGenes The list of genes to remove
-#' @return A two-element vector, where the first element is the number
-#'   of records kept from the original rSNV file and the second is
-#'   the number of records removed.
+# Scan an rSNV MAF file, outputting into the output file a new MAF
+#   file that has only the records for which the filter says not to ignore
+#
+# @param inFile The input rSNV file
+# @param outFile The output rSNV file
+# @param removeGenes The list of genes to remove
+# @return A two-element vector, where the first element is the number
+#   of records kept from the original rSNV file and the second is
+#   the number of records removed.
 .filter.utils.filterrSNV <- function(inFile, outFile,
     removeGenes=c()) {
 
@@ -227,15 +227,15 @@
     return(c(kept, removed))
 }
 
-#' Scan an rCNA RDS object, outputting into the output directory a new RDS
-#'   file that has only the records for which the filter says not to ignore
-#'
-#' @param inFile The input rCNA file
-#' @param outFile The output rCNA file
-#' @param removeGenes The list of genes to remove
-#' @return A two-element vector, where the first element is the number
-#'   of genes kept from the original rCNA file and the second is
-#'   the number of genes removed.
+# Scan an rCNA RDS object, outputting into the output directory a new RDS
+#   file that has only the records for which the filter says not to ignore
+#
+# @param inFile The input rCNA file
+# @param outFile The output rCNA file
+# @param removeGenes The list of genes to remove
+# @return A two-element vector, where the first element is the number
+#   of genes kept from the original rCNA file and the second is
+#   the number of genes removed.
 .filter.utils.filterrCNA <- function(inFile, outFile, removeGenes=c()) {
     rCNA <- readRDS(inFile)
 
