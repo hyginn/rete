@@ -1,6 +1,10 @@
 #FINDSUB test Data
 #testing of findsub function
 
+#EDITED: 3.5.17
+
+
+
 require(igraph) #load igraph package. need iGraph package
 
 folder<-"C:/Users/HPDM1/Documents/CanadaUofT/4thYear/BCB420/ekplektoR/R/"
@@ -23,6 +27,9 @@ for (i in 1:length(edgeID)) {
     edgeID[i]<-paste("BNE_",as.character(i),sep="")
 }
 
+
+
+#Influence vector created to assign influence levels to directed edges
 Influence<-numeric(length(From))
 Influence[1:length(Influence)]=5
 Influence[(From=="GHI4")&(To=="LMN5")]=1
@@ -40,7 +47,11 @@ Influence[(From=="XYZ9")&(To=="UVW8")]=3.5
 #Lower further to 2, and the 'discovered subnetwork' will include all vertices, but not all edges
 #Lower influence threshold (delta) to 1, and every edge included
 
-BigNetEdges<-data.frame(from=From,to=To,Influence=Influence,edgeID=edgeID)
-inputGraph<-graph_from_data_frame(BigNetEdges,directed=TRUE,vertices=BigNetVertices)
-as_data_frame(inputGraph,what="edges")
-as_data_frame(inputGraph,what="vertices")
+BigNetEdges<-data.frame(from=From,to=To,Influence=Influence,edgeID=edgeID) #edge data frame created for EGG
+EGG<-graph_from_data_frame(BigNetEdges,directed=TRUE,vertices=BigNetVertices) #setup EGG graph
+igraph::graph_attr(EGG, "EGGversion") <- "1.0"  #set EGG version attribute
+
+as_data_frame(EGG,what="edges")
+as_data_frame(EGG,what="vertices")
+
+#[END]

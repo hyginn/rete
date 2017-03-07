@@ -5,7 +5,12 @@ folder<-"C:/Users/HPDM1/Documents/CanadaUofT/4thYear/BCB420/ekplektoR/R/"
 fPath<-paste(folder,"FINDSUB_Test_Data.R",sep="")
 source(fPath) #executing script generating test data. See script for variables generated and how
 
-outputGraphs<-FINDSUBv1_2(MethType="Leis",Thresh=4,inputGraph,minOrd=2,logResults = TRUE,silent=FALSE)
+igraph::graph_attr(EGG,"delta")<-4 #setting delta parameter (score threshold for edge inclusion)
+
+minOrd <- 2  #setting minOrd to 2
+
+#below, applying findsub function
+outputGraphs<-findsub(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE)
 #MethType: method of edge removal; Thresh: influence threshold; inputgraph: iGraph object containing
 #network with assigned 'influence' to each edge; logResults: do we save a log of the process? ; silent
 #if false, print what appears in the process log while the process is in action, as well as additional
@@ -13,8 +18,10 @@ outputGraphs<-FINDSUBv1_2(MethType="Leis",Thresh=4,inputGraph,minOrd=2,logResult
 
 #below 4 lines manually constructing expected networks
 expectNet1Edges<-BigNetEdges[1:10,]
+expectNet1Edges<-expectNet1Edges[order(expectNet1Edges$edgeID),]
 expectNet1Verts<-BigNetVertices[1:4,]
 expectNet2Edges<-BigNetEdges[c(15:16,19:20),]
+expectNet2Edges<-expectNet2Edges[order(expectNet2Edges$edgeID),]
 expectNet2Verts<-BigNetVertices[5:7,]
 #below 6 lines loading iGraph object contents from output into data frames
 netwk1<-outputGraphs[[1]]
@@ -87,6 +94,11 @@ test_that("2 subnetworks created with expected edges and vertices", {
     expect_equal(sum(as.numeric(edgeCompar1)),ncol(expectNet1Edges))
     expect_equal(sum(as.numeric(edgeCompar2)),ncol(expectNet2Edges))
     expect_equal(length(outputGraphs),2)
+})
+context("Check Heat score")
+test_that("Heat scores are as expected", {
+    expect_equal(graph_attr(netwk1,"aggHeatScore"),22)
+    expect_equal(graph_attr(netwk2,"aggHeatScore"),17)
 })
 
 #Note:

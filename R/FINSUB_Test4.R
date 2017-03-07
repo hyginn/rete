@@ -7,8 +7,9 @@ source(fPath) #executing script generating test data. See script for variables g
 
 
 
-#Here, we will be assigning an edge influence attribute of 5 to edge GHI4->XYZ9. Therefore,
-#ABC1 DEF2 JKL3 GHI4 XYZ9 and UVw8 should form 1 large subnetwork, and LMN5, OPQ6, RST7 should form
+#Here, we will be assigning an edge influence attribute of 5 to edge GHI4->XYZ9. Since this does not
+#create a 'strongly connected' network that liks XYZ9 & UVW8 to ABC1:GHI4,
+#ABC1 DEF2 JKL3 GHI4 should form a network of 4 nodes and LMN5, OPQ6, RST7 should form
 #a subnetwork of 3 nodes.
 
 #The main purpose of this test is to show that construction of subnetworks can involve grouping
@@ -20,8 +21,13 @@ Influence[(From=="GHI4")&(To=="XYZ9")]=5
 
 BigNetEdges<-data.frame(from=From,to=To,Influence=Influence,edgeID=edgeID) #remaking the data frame
 inputGraph<-graph_from_data_frame(BigNetEdges,directed=TRUE,vertices=BigNetVertices) #and inputGraph
+igraph::graph_attr(EGG,"delta")<-4 #setting delta parameter (score threshold for edge inclusion)
 
-outputGraphs<-FINDSUBv1_2(MethType="Leis",Thresh=4,inputGraph,minOrd=3,logResults = TRUE,silent=FALSE)
+minOrd <- 3  #setting minOrd to 3s
+
+#below, applying findsub function
+outputGraphs<-findsub(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE)
+
 #MethType: method of edge removal; Thresh: influence threshold; inputgraph: iGraph object containing
 #network with assigned 'influence' to each edge; logResults: do we save a log of the process? ; silent
 #if false, print what appears in the process log while the process is in action, as well as additional
@@ -30,9 +36,11 @@ outputGraphs<-FINDSUBv1_2(MethType="Leis",Thresh=4,inputGraph,minOrd=3,logResult
 
 
 #below 6 lines: set up expected edges and vertices
-expectNet1Edges<-BigNetEdges[c(1:10,12,21,22),]
-expectNet1Verts<-BigNetVertices[c(1:4,8:9),]
+expectNet1Edges<-BigNetEdges[c(1:10),]
+expectNet1Edges<-expectNet1Edges[order(expectNet1Edges$edgeID),]
+expectNet1Verts<-BigNetVertices[c(1:4),]
 expectNet2Edges<-BigNetEdges[c(15:16,19:20),]
+exoectNet2Edges<-expectNet2Edges[order(expectNet2Edges$edgeID)]
 expectNet2Verts<-BigNetVertices[5:7,]
 #below 9 lines: set up edges and vertices from output as data frames
 netwk1<-outputGraphs[[1]]
@@ -98,8 +106,8 @@ for (i in 1:nrow(expectNet2Verts)) {
     }
 }
 
-context("Check that you have 3 subnetworks")
-test_that("3 subnetworks created with expected edges and vertices", {
+context("Check that you have 2 subnetworks")
+test_that("2 subnetworks created with expected edges and vertices", {
     expect_equal(nrow(expectNet1Verts),nrow(netwk1Verts))
     expect_equal(nrow(expectNet2Verts),nrow(netwk2Verts))
     expect_equal(sum(as.numeric(vertCompar1)),nrow(expectNet1Verts))
@@ -108,4 +116,8 @@ test_that("3 subnetworks created with expected edges and vertices", {
     expect_equal(sum(as.numeric(edgeCompar2)),ncol(expectNet2Edges))
     expect_equal(length(outputGraphs),2)
 })
-
+context("Check Heat score")
+test_that("Heat scores are as expected", {
+    expect_equal(graph_attr(netwk1,"aggHeatScore"),22)
+    expect_equal(graph_attr(netwk2,"aggHeatScore"),17)
+})

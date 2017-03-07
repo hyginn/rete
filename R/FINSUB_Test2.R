@@ -5,11 +5,20 @@ folder<-"C:/Users/HPDM1/Documents/CanadaUofT/4thYear/BCB420/ekplektoR/R/"
 fPath<-paste(folder,"FINDSUB_Test_Data.R",sep="")
 source(fPath) #executing script generating test data. See script for variables generated and how
 
-#We should only get 1 subnetwork this time
-outputGraphs<-FINDSUBv1_2(MethType="Leis",Thresh=4,inputGraph,minOrd=4,logResults = TRUE,silent=FALSE)
+#delta set to 4, minOrd to 4
 
-#MethType: method of edge removal; Thresh: influence threshold; inputgraph: iGraph object containing
-#network with assigned 'influence' to each edge; logResults: do we save a log of the process? ; silent
+igraph::graph_attr(EGG,"delta")<-4 #setting delta parameter (score threshold for edge inclusion)
+
+minOrd <- 4
+
+#We should only get 1 subnetwork this time
+outputGraphs<-findsub(method="Leis",EGG,minOrd,noLog = FALSE,silent=FALSE)
+
+
+
+
+#method: method of edge removal; EGG: iGraph object containing
+#network with assigned 'influence' to each edge; noLog: do we save a log of the process? ; silent
 #if false, print what appears in the process log while the process is in action, as well as additional
 #material (e.g. list edges removed, vertices removed)
 
@@ -22,12 +31,12 @@ outputGraphs<-FINDSUBv1_2(MethType="Leis",Thresh=4,inputGraph,minOrd=4,logResult
 #Lower further to 2, and the 'discovered subnetwork' will include all vertices, but not all edges
 #Lower influence threshold (delta) to 1, and every edge included
 
-#below 4 lines manually constructing expected networks
+#below 2 lines manually constructing expected networks
 expectNet1Edges<-BigNetEdges[1:10,]
+expectNet1Edges<-expectNet1Edges[order(expectNet1Edges$edgeID),]
 expectNet1Verts<-BigNetVertices[1:4,]
-expectNet2Edges<-BigNetEdges[c(15:16,19:20),]
-expectNet2Verts<-BigNetVertices[5:7,]
-#below 6 lines loading iGraph object contents from output into data frames
+
+#below 3 lines loading iGraph object contents from output into data frames
 netwk1<-outputGraphs[[1]]
 netwk1Edges<-as_data_frame(netwk1,what="edges")
 netwk1Verts<-as_data_frame(netwk1,what="vertices")
@@ -69,6 +78,11 @@ for (i in 1:nrow(expectNet1Verts)) {
     }
 }
 
+#checking the following conditions:
+#number of vertices in expected and produced (netwk1) graphs consistent
+#every vertex in expected graph is present in produced graph
+#every row and column of expected graph reproduced in produced graph
+#only one subnetwork produced given input parameters and delta value
 
 context("Check that you have 1 and only one correctly constructed subnetwork")
 test_that("1 subnetwork created with expected edges and vertices", {
@@ -78,3 +92,7 @@ test_that("1 subnetwork created with expected edges and vertices", {
     expect_equal(length(outputGraphs),1)
 })
 
+context("Check Heat score")
+test_that("Heat scores are as expected", {
+    expect_equal(graph_attr(netwk1,"aggHeatScore"),22)
+})
