@@ -1,4 +1,10 @@
-#' Filters inconsistent CNA entries out of rCNA data
+#' Filter inconsistent CNA entries
+#'
+#' This filter removes genes from rCNA files that have inconsistent signs.
+#' Raw rCNA files can contain genes whose copy numbers are consistently
+#' increased or decreased relative to normal expression.  This filter finds
+#' genes whose expression is not consistently increased or decreased, then
+#' removes them from the dataset.
 #'
 #' @param rCNA An rCNA RDS file to operate over
 #' @param CNAFile The filename to output the filtered CNA data into
