@@ -1,6 +1,6 @@
 # filter.utils.R
 
-#' Remove "unimportant genes" from a dataset
+#' Utility function for removing genes from a dataset
 #'
 #' \code{filter.utils} placeholder function
 #'
