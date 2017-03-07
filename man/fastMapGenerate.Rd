@@ -29,8 +29,10 @@ in future sessions. If there are conflicting keys or a tab delimited key, keep
 the first instance of the key or only store the first key respectively.
 }
 \examples{
+\dontrun{
 fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids",
-type = "UniProt", outName = "fastMapUniProt.rds")
+                type = "UniProt", outName = "fastMapUniProt.rds")
+}
 }
 \seealso{
 \code{\link{fastMapSanity}} on acceptable keys and values.

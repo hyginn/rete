@@ -25,8 +25,10 @@ all letters in \code{value} to upper case.
 TODO: Vectorize.
 }
 \examples{
+\dontrun{
 fastMapUpdate(fastMapUniprot, "P01023", "A2M")
 fastMapUpdate(fastMapENSP, "ENSP00000245105", "a2m-as1")
+}
 }
 \seealso{
 \code{\link{fastMapGenerate}} on how the hash table is structured.

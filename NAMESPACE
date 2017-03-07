@@ -2,6 +2,7 @@
 
 export(fastMap)
 export(fastMapGenerate)
+export(fastMapSanity)
 export(fastMapUpdate)
 export(importNet.STRING)
 export(multiply)

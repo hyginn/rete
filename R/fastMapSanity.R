@@ -12,6 +12,7 @@
 #' @examples
 #' fastMapSanity("ENSP00000245105")
 #' fastMapSanity("A2M")
+#' @export
 fastMapSanity <- function(toCheck) {
     if (!grepl("^[a-zA-Z0-9_-]+$", toCheck)) {
         return(FALSE)
