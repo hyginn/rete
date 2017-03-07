@@ -12,7 +12,7 @@ test_that("Filtering inconsistent CNA out of an rCNA RDS file", {
     saveRDS(rCNAData, file=rCNAName)
     expect_true(file.exists(rCNAName), info="Test setup (rCNA)")
     
-    output <- .filter.inconsistentCNA(rCNAName, outFile, filter)
+    output <- filter.inconsistentCNA(rCNAName, outFile, filter)
 
     expect_equal(length(output), 2, info="2 genes filtered")
     expect_true('ZNF66' %in% output, info='ZNF66 has inconsistent sign')
