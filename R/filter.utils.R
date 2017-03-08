@@ -57,7 +57,7 @@
 #   decompressed byte.  Decompressed RDS files do not start with a hash,
 #   and MAF files do.
 #
-# @param filename The filename to check
+# @param filename The filename to check.  Must exist and be readable
 # @return 'MAF' if the file starts with a hash, 'RDS' otherwise
 .filter.utils.getMagic <- function(filename) {
     magic <- readBin(con=filename, what="int", n=1, size=1, signed=FALSE)
@@ -197,6 +197,8 @@
     }
    
     if (!hasHeaderHash || !hasHeaderHugo) {
+        close(rSNV)
+        close(SNV)
         stop("Malformed rSNV file: missing header")
     }
  
@@ -206,6 +208,8 @@
     while (length(line) != 0) {
         fields <- strsplit(line[[1]], "\t", fixed=TRUE)[[1]]
         if (length(fields) != 12) {
+            close(rSNV)
+            close(SNV)
             stop("Malformed rSNV file: incorrect field count")
         }
 

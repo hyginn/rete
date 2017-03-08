@@ -96,8 +96,6 @@ test_that("Magic check for hash character using raw vectors", {
         .filter.utils.getMagic(gz))
 
     expect_error(.filter.utils.getMagic())
-    expect_error(.filter.utils.getMagic(NULL))
-    expect_error(.filter.utils.getMagic("not_a_real_file"))
 
     skip_on_os(c("windows"))
     expect_error(.filter.utils.getMagic("/dev/null"))
@@ -133,7 +131,9 @@ test_that("Processing an rSNV MAF file", {
     filter <- c()
 
     output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
-    filtered <- readLines(outFile)
+    fh <- file(outFile, open='r')
+    filtered <- readLines(fh)
+    close(fh)
     expect_equal(filtered, c(
         "#version 2.2",
         paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
@@ -165,7 +165,9 @@ test_that("Processing an rSNV MAF file", {
     filter <- c('ZNF660')
 
     output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
-    filtered <- readLines(outFile)
+    fh <- file(outFile, open='r')
+    filtered <- readLines(fh)
+    close(fh)
     expect_equal(filtered, c(
         "#version 2.2",
         paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
@@ -199,7 +201,9 @@ test_that("Processing an rSNV MAF file", {
     filter <- c('TF2')
 
     output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
-    filtered <- readLines(outFile)
+    fh <- file(outFile, open='r')
+    filtered <- readLines(fh)
+    close(fh)
     expect_equal(filtered, c(
         "#version 2.2",
         paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
@@ -224,7 +228,9 @@ test_that("Processing an rSNV MAF file", {
     filter <- c('HFE', 'TF2')
 
     output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
-    filtered <- readLines(outFile)
+    fh <- file(outFile, open='r')
+    filtered <- readLines(fh)
+    close(fh)
     expect_equal(filtered, c(
         "#version 2.2",
         paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
@@ -254,7 +260,9 @@ test_that("Processing an rSNV MAF file", {
     }
     
     output <- .filter.utils.filterrSNV(rMutName, outFile, filter)
-    filtered <- readLines(outFile)
+    fh <- file(outFile, open='r')
+    filtered <- readLines(fh)
+    close(fh)
     expect_equal(filtered, c(
         "#version 2.2",
         paste(c("Hugo_Symbol", "Chromosome", "Start_position", "End_position", 
