@@ -4,7 +4,8 @@
 \alias{filter.inconsistentCNA}
 \title{Filter inconsistent CNA entries}
 \usage{
-filter.inconsistentCNA(rCNAfile, fNames, dOut, filterFile, iT = 0.75)
+filter.inconsistentCNA(rCNAfile, fNames, dOut, filterFile, iT = 0.75,
+  silent = FALSE, noLog = FALSE)
 }
 \arguments{
 \item{fNames}{A vector of filenames to filter}
@@ -14,6 +15,10 @@ filter.inconsistentCNA(rCNAfile, fNames, dOut, filterFile, iT = 0.75)
 \item{filterFile}{The filename to output the list of genes removed}
 
 \item{iT}{The inconsistency threshold to use.  Default: 0.75}
+
+\item{silent}{Whether or not to write progress information to console, default: FALSE}
+
+\item{noLog}{Whether or not to log results, default: FALSE}
 
 \item{rCNA}{The rCNA RDS file that contains the CNAs to consider}
 }

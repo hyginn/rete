@@ -11,9 +11,11 @@
 #' @param dOut The local path to a directory to output the filtered files
 #' @param filterFile The filename to output the list of genes removed
 #' @param iT The inconsistency threshold to use.  Default: 0.75
+#' @param silent Whether or not to write progress information to console, default: FALSE
+#' @param noLog Whether or not to log results, default: FALSE
 #' @return The list of filtered genes
 filter.inconsistentCNA <- function(rCNAfile, fNames, dOut, filterFile,
-    iT=0.75
+    iT=0.75, silent=FALSE, noLog=FALSE
 ) {
     # check for input file readability
     .filter.utils.fileReadable(rCNAfile)
