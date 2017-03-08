@@ -6,16 +6,21 @@
 #' genes whose expression is not consistently increased or decreased, then
 #' removes them from the dataset.
 #'
-#' @param rCNA An rCNA RDS file to operate over
-#' @param CNAFile The filename to output the filtered CNA data into
+#' @param rCNA The rCNA RDS file that contains the CNAs to consider
+#' @param fNames A vector of filenames to filter
+#' @param dOut The local path to a directory to output the filtered files
 #' @param filterFile The filename to output the list of genes removed
 #' @param iT The inconsistency threshold to use.  Default: 0.75
 #' @return The list of filtered genes
-filter.inconsistentCNA <- function(rCNAfile, CNAFile, filterFile,
+filter.inconsistentCNA <- function(rCNAfile, fNames, dOut, filterFile,
     iT=0.75
 ) {
     # check for input file readability
     .filter.utils.fileReadable(rCNAfile)
+    toFilter <- .filter.utils.fileReadable(fNames)
+
+    # check for output directory writability
+    .filter.utils.dirWritable(dOut)
 
     # load input data
     rCNA <- readRDS(rCNAfile)
@@ -44,7 +49,16 @@ filter.inconsistentCNA <- function(rCNAfile, CNAFile, filterFile,
     # Save filter list
     writeLines(genes, con=filterFile)
 
-    # Filter rCNA data
-    .filter.utils.filterrCNA(rCNAfile, CNAFile, genes)
+    # Filter out selected genes 
+    for (target in toFilter) {
+        outputPath = .filter.utils.outputFilename(dOut, target)
+
+        if (.filter.utils.getMagic(target) == 'MAF') {
+            .filter.utils.filterrSNV(target, outputPath, genes)
+        } else {
+            .filter.utils.filterrCNA(target, outputPath, genes)
+        }
+    }
+
     return(genes)
 }
