@@ -1,31 +1,14 @@
 # utils.R
 #
-# internal utility functions
+# internal (non-exported) utility functions
 
 
-.appendToLog <- function(message) {
-    # Purpose:
-    #     Appends a message to the logfile
-    #
-    # Parameters:
-    #     message: string - the message
-    # Details:
-    #     TBD.
-    # Value:
-    #     NA: appends message to logfile as side-effect
-    # ToDo:
-    #     Determine if we should check other attributes - especially
-    #     names, rownames, and colnames.
-
-
-}
 
 .checkArgs <- function(x, like, checkSize = FALSE) {
     # Purpose:
     #     checks for argument mode, type, class and other attributes
     #
     # Parameters:
-    #          name: the argument to be checked
     #             x: the parameter that was given
     #          like: a prototype that x is being compared to
     #     checkSize: if TRUE
@@ -33,7 +16,8 @@
     #                -  check dim for all kD, k>1 models
     #                -  check vcount(), ecount() for igraph graphs
     # Details:
-    #     TBD.
+    #     like can be a keyword that can trigger specific checks:
+    #
     # Value:
     #     report: "" if everything is oK
     #             a descriptive message if there is an error
@@ -51,6 +35,41 @@
 
     report <- character()  # init
 
+    # === keyword specific checks ==============================================
+    if (class(like) == "character" && length(like) == 1 &&
+        class(x)    == "character" && length(x)    >  0) {
+        for (el in x) {
+            if (like == "DIR" && ! dir.exists(el)) {
+                # el must be a valid directory
+                report <- c(report,
+                            sprintf(".checkArgs> \"%s\" %s%s%s",
+                                    name,
+                                    "error: directory ",
+                                    el,
+                                    " does not exist.\n"))
+            }
+            if (like == "FILE_E" && ! file.exists(el)) {
+                # el must be an existing file (or directory)
+                report <- c(report,
+                            sprintf(".checkArgs> \"%s\" %s%s%s",
+                                    name,
+                                    "error: file ",
+                                    el,
+                                    " does not exist.\n"))
+            }
+            if (like == "FILE_W" && file.access(el, mode = 2) != 0) {
+                # el must be a writable filename (i.e. must also exist)
+                report <- c(report,
+                            sprintf(".checkArgs> \"%s\" %s%s%s",
+                                    name,
+                                    "error: \"",
+                                    el,
+                                    "\" is not a writable file.\n"))
+            }
+        }
+    }
+
+    # === mode/typeof/class checks =============================================
     if (mode(x) != mode(like)) {
         report <- c(report,
                     sprintf(".checkArgs> \"%s\" %s%s%s%s%s",
@@ -119,6 +138,7 @@
                             "\".\n"))
     }
 
+
     # === class igraph specific checks =========================================
     if (class(like) == "igraph") {
         if (length(igraph::graph_attr(x)) != length(igraph::graph_attr(like))) {
@@ -165,8 +185,5 @@
 
     return(report)
 }
-
-
-
 
 # [END]
