@@ -3,6 +3,10 @@
 #
 context("import networks")
 
+# ToDo test parameter handling
+#      test correct logfile
+#      test correct attributes
+
 test_that("importNet.STRING produces gG from STRING data", {
     gG <- importNet.STRING(fName = "dataString.txt",
                            net = "experimental",
@@ -10,10 +14,8 @@ test_that("importNet.STRING produces gG from STRING data", {
                            writeLog = FALSE)
     expect_equal(igraph::vcount(gG), 5)    # correct number of vertices
     expect_equal(igraph::ecount(gG), 4)    # correct number of edges
-    expect_equal(igraph::graph_attr(gG)$version, "gG 1.0") # correct version
-    expect_equal(igraph::graph_attr(gG)$inFile, "dataString.txt") # metadata
-                                                                  # has been
-                                                                  # set
+    expect_equal(attr(gG, "version"), "gG 1.0") # correct version
+    expect_equal(attr(gG, "inFile"), "dataString.txt") # metadata exists
 })
 
 test_that(".df2gG simplifies the graph", {
