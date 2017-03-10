@@ -79,6 +79,7 @@ importNet.STRING <- function(fName,
     # ToDo: Remove duplicate edges and remove loops before subsetting,
     #         since this changes the number of edges above cutoff.
     # ToDo: write tests for that
+    # ToDo: fix the fastMap() call
 
     #
 
@@ -167,8 +168,9 @@ importNet.STRING <- function(fName,
     netDF$b <- gsub("^[0-9]*\\.{0,1}", "", netDF$b)
 
     # map ID to gene names
-    netDF$a <- fastMap(netDF$a, type = "ENSP")
-    netDF$b <- fastMap(netDF$b, type = "ENSP")
+#ToDo: fix the fastMap calls
+#    netDF$a <- fastMap(netDF$a, type = "ENSP")
+#    netDF$b <- fastMap(netDF$b, type = "ENSP")
 
     # Remove values below cutoff
     if (cutoffType == "xS") {
@@ -204,12 +206,14 @@ importNet.STRING <- function(fName,
 
     # ==== WRITE LOG ===========================================================
     if(writeLog) {
-        logMessage    <- sprintf("importNet.STRING()\n")
-        logMessage[1] <- "    Returned gG object with"
-        logMessage[2] <- sprintf("%d vertices and %d edges.\n",
+        msg    <- sprintf("event > %s from importNet.STRING()\n", Sys.time())
+        msg[2] <- "note >   Returned gG object with"
+        msg[3] <- sprintf("%d vertices and %d edges.\n",
                                  igraph::gorder(gG),
                                  igraph::gsize(gG))
-        .appendToLog(paste(logMessage, collapse = ""))
+        msg[4] <- sprintf("out > %s", "<object UUID and attributes>")
+        msg[5] <- "\n"
+        logMessage(msg)
     }
 
     return(gG)

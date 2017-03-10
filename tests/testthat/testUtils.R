@@ -5,6 +5,9 @@ context("utility functions")
 
 test_that(".checkArgs lets matching arguments pass", {
     # We are only counting the length of the error messsages, not contents
+    expect_equal(length(.checkArgs("~", "DIR")), 0)
+    expect_equal(length(.checkArgs("testUtils.R", "FILE_E")), 0)
+    expect_equal(length(.checkArgs("testUtils.R", "FILE_W")), 0)
     expect_equal(length(.checkArgs(1, 1)), 0)
     expect_equal(length(.checkArgs(1L, 1:2)), 0)
     expect_equal(length(.checkArgs(as.matrix(1:2),
@@ -22,6 +25,9 @@ test_that(".checkArgs lets matching arguments pass", {
 
 test_that(".checkArgs finds argument errors", {
     # We are only counting the length of the error messsages, not contents
+    expect_equal(length(.checkArgs("~/no/such/dir", "DIR")), 1)
+    expect_equal(length(.checkArgs("noSuchFile", "FILE_E")), 1)
+    expect_equal(length(.checkArgs("noSuchFile", "FILE_W")), 1)
     expect_equal(length(.checkArgs(1, "1")), 3)  # mode, type and class error
     expect_equal(length(.checkArgs(1L, 1)), 2) # type and class error
     expect_equal(length(.checkArgs(1L, 1:2, checkSize = TRUE)), 1) # 1D
