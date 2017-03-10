@@ -11,9 +11,11 @@
 #' }
 #' @source \url{https://tcga-data.nci.nih.gov/docs/publications/ov_2011/}
 #' @examples
-#' system.file("extdata", "devSNV.maf", package="ekplektoR")
-#' fPath <- system.file("extdata", "devSNV.maf", package="ekplektoR")
+#' \dontrun{
+#' system.file("extdata", "devSNV.maf", package="rete")
+#' fPath <- system.file("extdata", "devSNV.maf", package="rete")
 #' myMAF <- read.delim(fPath, skip = 1, stringsAsFactors = FALSE)
+#' }
 #' @docType data
 #' @name devSNV.maf
 NULL
@@ -34,9 +36,11 @@ NULL
 #' }
 #' @source \url{https://tcga-data.nci.nih.gov/docs/publications/ov_2011/}
 #' @examples
-#' system.file("extdata", "devCNA.txt", package="ekplektoR")
-#' fPath <- system.file("extdata", "devCNA.txt", package="ekplektoR")
+#' \dontrun{
+#' system.file("extdata", "devCNA.txt", package="rete")
+#' fPath <- system.file("extdata", "devCNA.txt", package="rete")
 #' myCNA <- read.delim(fPath, stringsAsFactors = FALSE)
+#' }
 #' @docType data
 #' @name devCNA.txt
 NULL
@@ -54,9 +58,11 @@ NULL
 #' }
 #' @source \url{http://irefindex.org/}
 #' @examples
-#' system.file("extdata", "devPPI.txt", package="ekplektoR")
-#' fPath <- system.file("extdata", "devPPI.txt", package="ekplektoR")
+#' \dontrun{
+#' system.file("extdata", "devPPI.txt", package="rete")
+#' fPath <- system.file("extdata", "devPPI.txt", package="rete")
 #' myMITAB <- read.delim(fPath, stringsAsFactors = FALSE)
+#' }
 #' @docType data
 #' @name devPPI.txt
 NULL

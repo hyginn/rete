@@ -21,7 +21,9 @@ A file containing TCAG OV carcinoma CNAs for 16
 genes.
 }
 \examples{
-system.file("extdata", "devCNA.txt", package="ekplektoR")
-fPath <- system.file("extdata", "devCNA.txt", package="ekplektoR")
+\dontrun{
+system.file("extdata", "devCNA.txt", package="rete")
+fPath <- system.file("extdata", "devCNA.txt", package="rete")
 myCNA <- read.delim(fPath, stringsAsFactors = FALSE)
+}
 }
