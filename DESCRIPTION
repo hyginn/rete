@@ -16,6 +16,18 @@ Suggests:
     testthat
 RoxygenNote: 6.0.1
 Collate: 
+    data.R
+  externalData.R
+  fastMap.R
+  fastMapGenerate.R
+  fastMapSanity.R
+  fastMapUpdate.R
+  gGtools.R
+  importNet.STRING.R
+  logTools.R
+  multiply.R
+  utils.R
+  zzz.R
     'FINDSUB.R'
     'FINDSUB_Test_Data.R'
     'FINDSUBv1_2.R'
@@ -25,4 +37,3 @@ Collate:
     'FINSUB_Test4.R'
     'FINSUB_Test4b.R'
     'FINSUB_Test5.R'
-    'hello.R'
