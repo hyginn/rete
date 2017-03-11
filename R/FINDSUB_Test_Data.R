@@ -6,7 +6,7 @@
 
 
 require(igraph) #load igraph package. need iGraph package
-
+require(testthat)
 folder<-"C:/Users/HPDM1/Documents/CanadaUofT/4thYear/BCB420/ekplektoR/R/"
 #note: you will have to change folder and filename depending on changes to the function's filename
 #and file location

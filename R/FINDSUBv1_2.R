@@ -11,7 +11,9 @@ findsub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
     #'@param minOrd minimum number of vertices per generated subgraph
     #'@param noLog if FALSE, save process to an .Rdata log file
     #'@param silent if FALSE, print process to console in real time
-    #'@include igraph
+    #'@return A list of igraph objects, with "Influence" edge attributes,
+    #'"Gene Score" vertex attributes, "EGGversion" graph Attribute,
+    #'"Aggregate Heat score graph attribute
     #'@details Depending on method used, edges are removed from EGG based upon the assigned 'delta' attribute
     #'and their 'Influence' scores(see next paragraph). In the "Leis" method (Leiseron et al. 2015), edges with
     #'Influence scores below the value of 'delta' are eliminated. Then, highly connected components of
@@ -35,7 +37,7 @@ findsub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
     #'EGGversion, a graph attribute with a character vector of length 1. Unless further changes are made,
     #'EGGversion must be "1.0".
     #'
-    #'@example
+    #'@examples
     #'sN<-findsub(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE)
 
 
@@ -61,7 +63,18 @@ findsub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
     if (!silent) {
         print(logVect[length(logVect)])
     }
-    logName<-paste("FINDSUB_Run_",as.character(Sys.Date()),".Rdata",collapse="\n") #Set a name for the log
+
+    #setting log name
+    dateTimeName<-strsplit(as.character(Sys.time()), split="[- ]")
+    yr<-dateTimeName[[1]][1]
+    mm<-dateTimeName[[1]][2]
+    dd<-dateTimeName[[1]][3]
+    tm<-strsplit(dateTimeName[[1]][4],split="[:]")
+    hr<-tm[[1]][1]
+    min<-tm[[1]][2]
+    sec<-tm[[1]][3]
+    logName<-paste("FINDSUBrun",yr,"yr",mm,"month",dd,"day",hr,"hr",min,"min",
+                   sec,"sec",".Rdata",sep = "") #Set a name for the log
 
     #Now all the Checks
 
