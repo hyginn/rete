@@ -1,4 +1,4 @@
-ekplektoR
+rete
 
 Network topology analysis
 
@@ -19,8 +19,9 @@ suggested by Hadley Wickham in:
 Some useful keyboard shortcuts for package authoring:
 
   Build and Reload Package:  'Cmd + Shift + B'
-  Check Package:             'Cmd + Shift + E'
+  Update Documentation:      'Cmd + Shift + D' or devtools::document()
   Test Package:              'Cmd + Shift + T'
+  Check Package:             'Cmd + Shift + E'
 -----------------------------------------------
 
 Run before every commit:
@@ -31,6 +32,6 @@ DO NOT SUBMIT CODE that does not pass without error, warnings and notes.
 -----------------------------------------------
 
 Load the package (outside of this project) with:
-   devtools::install_github("hyginn/ekplektoR")
+   devtools::install_github("hyginn/rete")
 
 
