@@ -17,6 +17,10 @@
     #                -  check vcount(), ecount() for igraph graphs
     # Details:
     #     like can be a keyword that can trigger specific checks:
+    #        DIR: string is an existing directory
+    #        FILE_E: File exists
+    #        FILE_W: File exists and is writable
+    #        UUID: string is a valid UUID (not NIL)
     #
     # Value:
     #     report: "" if everything is oK
@@ -65,6 +69,25 @@
                                     "error: \"",
                                     el,
                                     "\" is not a writable file.\n"))
+            }
+            if (like == "UUID") {
+                patt <- paste0("\\{?[0-9a-f]{8}-?", # braces, hyphens optional
+                               "[0-9a-f]{4}-?",
+                               "[1-5]",   # version
+                               "[0-9a-f]{3}-?",
+                               "[89ab][0-9a-f]{3}-?",
+                               "[0-9a-f]{12}\\}?")
+                # Note: this rejects the NIL UUID event though it is
+                # syntactically correct as per RFC4122, in that it fails the
+                # semantic requirements for this package.
+                if (! grepl(patt, el, ignore.case = TRUE)) {
+                    report <- c(report,
+                                sprintf(".checkArgs> \"%s\" %s%s%s",
+                                        name,
+                                        "error: \"",
+                                        el,
+                                        "\" is not a valid UUID.\n"))
+                }
             }
         }
     }
