@@ -80,17 +80,38 @@ test_that("logMessage works as expected with reasonable arguments", {
     fn <- unlist(getOption("rete.logfile"))
     # confirm that rete.logfile does not yet exist when we enter the test
     expect_false(file.exists(fn))
+
     # test one message, file creation, correct addition of \n if \n is missing
-    logMessage("a")
-    expect_true(file.exists(fn))  # log file created
-    expect_equal(readChar(fn, file.info(fn)$size), "a\n")
-    # test two message elements
-    logMessage(c("b", "c"))
-    expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\n")
-    # test no addition of \n if \n is already there
-    logMessage("d\n")
-    expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\nd\n")
-    # test logfile can be removed
+    # platform appropriate conversions.
+    if (.Platform$OS.type == "windows") {
+        logMessage("a")
+        expect_true(file.exists(fn))  # log file created
+        expect_equal(readChar(fn, file.info(fn)$size), "a\r\n")
+        # test two message elements
+        logMessage(c("b", "c"))
+        expect_equal(readChar(fn, file.info(fn)$size), "a\r\nb\r\nc\r\n")
+        # test no extra \r\n if \r\n is already there
+        logMessage("d\r\n")
+        expect_equal(readChar(fn, file.info(fn)$size), "a\r\nb\r\nc\r\nd\r\n")
+        # test replacement of wrong linebreak
+        logMessage("\ne\n")
+        expect_equal(readChar(fn, file.info(fn)$size),
+                     "a\r\nb\r\nc\r\nd\r\n\r\ne\r\n")
+    } else {
+        logMessage("a")
+        expect_true(file.exists(fn))  # log file created
+        expect_equal(readChar(fn, file.info(fn)$size), "a\n")
+        # test two message elements
+        logMessage(c("b", "c"))
+        expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\n")
+        # test no extra \n if \n is already there
+        logMessage("d\n")
+        expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\nd\n")
+        # test replacement of wrong linebreak
+        logMessage("\r\ne\r\n")
+        expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\nd\n\ne\n")
+    }
+
     # cleanup, but might as well test ...
     expect_true(file.remove(fn))
 })
@@ -196,33 +217,53 @@ test_that("extractAttributes logs all attributes for an object with multiple att
     expect_equal(extractAttributes(x), paste(result1, result2, result3, sep=""))
 })
 
-###
 
-# tests for: logEvent(event = <eventTitle>, call = <eventCall>, in = c(<inputObject1>, <inputObject2>), out = c(<outputObject1>, <outputObject2>))
+# tests for: logEvent(eventTitle, eventCall, input = c(), output = c())
 
-### bs> I think this signature and the tests don't fully translate the requirements.
-### bs> The log should contain a copy of the call. It's really hard to parse and assemble
-### bs> the call out of the environment of the parent function (I tried, and others have too)
-### bs> with poor results, but it's not hard to do that "by hand" in the calling function itself
-### bs> and just pass the call in as an argument. So there should be a parameter "call".
-### bs> Check how I built the "call" in importNet.STRING()
-### bs>
-### bs> Also, if the input object has an UUID, it's fine to parse that out from it, but if it doesn't?
-### bs> Does the caller need to create a dummy object and attach the filename? Or should
-### bs> input/output be a list that can contain either object references or filenames?
-### bs>
 ### bs> Finally, could the "event" just be a comment, or other message?
 ### bs> This needs a bit of thought.
+### wt>
+### wt> The "event" should come from a predetermined set of all possible events
+### wt> that could happen in rete - it would be nice to have some sort of categorized dictionary
+### wt> of events to outcomes.
+### wt>
 ### bs>
 ### bs> Test that messages are separated from each other by blank lines.
+### wt> Ok.
 
-
-test_that("an error occurs if an event title is not passed in", {
+test_that("logEvent raises an error if the event title is not passed in", {
     # call function without eventTitle parameter
     # expect function to error
 })
 
-test_that("the date and time of the event are logged", {
+test_that("logEvent raises an error if the event call is not passed in", {
+    # call function without call
+    # expect function to error
+})
+
+test_that("logEvent is able to accept both objects or filenames in list of input and output parameters", {
+    # call function with name that does not exist as a object or filename
+    # function should error
+
+    # call function with name that exists as an object but not as a filename
+    # function should not error
+
+    # call function with name that does not exist as an object but exists as a file
+    # function should not error
+
+    # call function with name that exists as both object or as filename
+    # function should use object and should not error
+})
+
+test_that("logEvent tests that the event title comes from a predefined set of events", {
+
+})
+
+test_that("logEvent separates messages from each other using blank lines", {
+
+})
+
+test_that("logEvent should log the date and time of the event", {
     # call function with arbitrary event and no input or outputs
     # expect function to have logged the event with date and time
     # expect function to have logged the event title
@@ -230,7 +271,7 @@ test_that("the date and time of the event are logged", {
 })
 
 # only one test case for input attributes since already tested above
-test_that("the input attributes have been logged", {
+test_that("logEvent should log the input attributes, if any", {
     # create potential input object with two attributes
     # call function with arbitrary event
     # expect function to have logged the event with date and time
@@ -238,7 +279,7 @@ test_that("the input attributes have been logged", {
     # expect function to have logged both input attributes
 })
 
-test_that("the output attributes have been logged", {
+test_that("logEvent should log the output attributes, if any", {
     # create potential output object with two attributes
     # call function with arbitrary event
     # expect function to have logged the event with date and time
@@ -246,7 +287,7 @@ test_that("the output attributes have been logged", {
     # expect function to have logged both output attributes
 })
 
-test_that("both input and output attributes have been logged", {
+test_that("logEvent should log both input and output attributes", {
     # create potential input object with two attributes
     # create potential output object with two attributes
     # call function with arbitrary event
@@ -256,10 +297,8 @@ test_that("both input and output attributes have been logged", {
     # expect function to have logged both output attributes
 })
 
-###
 
 # tests for: findUUID(uuid, path)
-
 test_that("function errors if an invalid path has been provided", {
     # call function with invalid file path
     # expect function to error

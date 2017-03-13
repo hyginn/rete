@@ -94,7 +94,7 @@ logFileName <- function(fPath = getwd(), fName, setOption = FALSE) {
 #'   file. The file name is taken from the rete.logfile global option.
 #'
 #' The function will stop() if message is not of mode, type and class character.
-#' If a line is not terminated with a linebreak, a linebreak is appended.
+#' On windows systems, \n linebreaks are replaced with \r\n.
 #'
 #' @param message a character object or vector of character objects.
 #' @return N/A. message is appended to the current logfile.
@@ -116,17 +116,26 @@ logMessage <- function(message) {
         stop(checkReport)
     }
 
-    # append "\n" to lines that don't have it.
-    for (i in grep("\n$", message, invert = TRUE)) {
-        message[i] <- paste(message[i], "\n", sep = "")
+    # remove "\n" or "\r\n" from line-endings
+    message <- gsub("[\n\r]+$", "", message)
+
+    # replace existing line breaks with platform appropriate version
+    if (.Platform$OS.type == "windows") {
+        Sep <- "\r\n"
+        message <- gsub("([^\r]\n)|^\n", Sep, message)
+    } else {
+        Sep <- "\n"
+        message <- gsub("\r\n", Sep, message)
     }
 
+    # append to log file, with platform appropriate separator
     cat(message,
         file = unlist(getOption("rete.logfile")),
-        sep = "",
+        sep = Sep,
         append = TRUE)
 
 }
+
 
 #' Attach a UUID to an object
 #'
@@ -174,6 +183,7 @@ attachUUID <- function(object, overwrite = TRUE) {
 
 }
 
+
 #' Extract attributes from object
 #'
 #' \code{extractAttributes} returns all of the attributes that are attached
@@ -211,9 +221,6 @@ extractAttributes <- function(object) {
 
     result <- ""
     for (name in names(attributes(object))) {
-        attribute <- sub("\\s+$", "", sub("^\\s+", "", name))
-        value <- sub("\\s+$", "", sub("^\\s+", "", attr(object, name)))
-
         result <- paste(result, "attribute\t|\t", name, "\t|\t", attr(object, name), "\n", sep="")
     }
 
@@ -225,4 +232,107 @@ extractAttributes <- function(object) {
 
 }
 
+
+#' Main function for writing logs
+#'
+#' \code{logEvent} generates a log of an event with:
+#' - the event type
+#' - the event call
+#' - attributes of the input object
+#' - attributes of the output object
+#' - date and time of the event
+#' - function version
+#' - file hashes of input
+#'
+#' Format of the logging is as follows:
+#'
+#'
+#'
+#' @param eventTitle the title of the event, from a predetermined categorization of events
+#' @param eventCall the function call in which the event occurred
+#' @param input the vector of input objects
+#' @param output the vector of output objects
+#' @return N/A. message is appended to the logFile with \code{\link{logMessage}}.
+#'
+#' @family log file functions
+#'
+#'   ## @seealso \code{\link{logFileName}}
+#'   ## @seealso \code{\link{logMessage}}
+#'   ## @seealso \code{\link{attachUUID}}
+#'   ## @seealso \code{\link{extractAttribute}}
+#'   ## @seealso \code{\link{findUUID}}
+#'   ## @seealso \code{\link{getProvenance}}
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+#' @export
+logEvent <- function(eventTitle, eventCall, input = c(), output = c()) {
+    if (!eventTitle) {
+        stop(eventTitle)
+    }
+}
+
+#' Finds specific UUID in logs
+#'
+#' \code{findUUID}
+#'
+#' Output format:
+#'
+#'
+#'
+#' @param uuid the title of the event, from a predetermined categorization of events
+#' @param path the vector of output objects
+#' @return N/A. message is appended to the logFile with \code{\link{logMessage}}.
+#'
+#' @family log file functions
+#'
+#'   ## @seealso \code{\link{logFileName}}
+#'   ## @seealso \code{\link{logMessage}}
+#'   ## @seealso \code{\link{attachUUID}}
+#'   ## @seealso \code{\link{extractAttribute}}
+#'   ## @seealso \code{\link{logEvent}}
+#'   ## @seealso \code{\link{getProvenance}}
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+#' @export
+findUUID <- function(uuid, path) {
+
+}
+
+
+#' Reconstructs provenance of object
+#'
+#' \code{getProvenance} reconstructs the provenance of an object back via its intermediaries
+#' to all input files that contributed to it
+#'
+#' Format of the output
+#'
+#'
+#'
+#' @param uuid the UUID of the object of interest
+#' @param path the path in which to search for logFile
+#' @return
+#'
+#' @family log file functions
+#'
+#'   ## @seealso \code{\link{logFileName}}
+#'   ## @seealso \code{\link{logMessage}}
+#'   ## @seealso \code{\link{attachUUID}}
+#'   ## @seealso \code{\link{extractAttribute}}
+#'   ## @seealso \code{\link{findUUID}}
+#'   ## @seealso \code{\link{logEvent}}
+#'
+#' @examples
+#' \dontrun{
+#'
+#' }
+#' @export
+getProvenance <- function(uuid, path) {
+
+}
 # [END]
