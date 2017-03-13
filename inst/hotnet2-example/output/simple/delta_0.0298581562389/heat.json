@@ -1,0 +1,32 @@
+{
+    "heat": {
+        "gene8": 4.0, 
+        "gene9": 2.0, 
+        "gene1": 15.0, 
+        "gene2": 6.0, 
+        "gene3": 5.0, 
+        "gene4": 1.0, 
+        "gene5": 3.0, 
+        "gene6": 2.0, 
+        "gene7": 1.0, 
+        "gene12": 1.0, 
+        "gene13": 1.0, 
+        "gene10": 5.0, 
+        "gene11": 1.0, 
+        "gene16": 1.0, 
+        "gene17": 1.0, 
+        "gene14": 1.0, 
+        "gene15": 1.0, 
+        "gene18": 1.0, 
+        "gene19": 1.0, 
+        "gene23": 1.0, 
+        "gene22": 1.0, 
+        "gene21": 1.0, 
+        "gene20": 1.0, 
+        "gene25": 1.0, 
+        "gene24": 1.0
+    }, 
+    "parameters": {
+        "heat_file": "/home/joel/edu/phd/courses/jtb2020/hotnet2-download/hotnet2/example/output/simple/delta_0.0900611409683/heat.json"
+    }
+}
