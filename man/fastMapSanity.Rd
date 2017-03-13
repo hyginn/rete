@@ -21,4 +21,3 @@ fastMapSanity("A2M")
 Other fastMap functions: \code{\link{fastMapGenerate}},
   \code{\link{fastMapUpdate}}, \code{\link{fastMap}}
 }
-

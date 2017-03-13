@@ -31,4 +31,3 @@ a UUID previously or not, a new UUID attribute is attached
   attachUUID(object)
 }
 }
-

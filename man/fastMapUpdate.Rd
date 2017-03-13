@@ -37,4 +37,3 @@ fastMapUpdate(fastMapENSP, "ENSP00000245105", "a2m-as1")
 Other fastMap functions: \code{\link{fastMapGenerate}},
   \code{\link{fastMapSanity}}, \code{\link{fastMap}}
 }
-

@@ -47,4 +47,3 @@ logFileName()
 logFileName(fPath = "./logs", setOption = TRUE)
 }
 }
-

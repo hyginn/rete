@@ -40,4 +40,3 @@ fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids",
 Other fastMap functions: \code{\link{fastMapSanity}},
   \code{\link{fastMapUpdate}}, \code{\link{fastMap}}
 }
-

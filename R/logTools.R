@@ -190,11 +190,12 @@ attachUUID <- function(object, overwrite = TRUE) {
 #' to an object, formatted for logging
 #'
 #' Format of the extracted attributes:
-#' attribute | <attrName1> | <attrValue1>
-#' attribute | <attrName2> | <attrValue2>
-#' attribute | <attrName3> | <attrValue3>
+#' event | <input/output> | attribute | <attrName1> | <attrValue1>
+#' event | <input/output> | attribute | <attrName2> | <attrValue2>
+#' event | <input/output> | attribute | <attrName3> | <attrValue3>
 #'
 #' @param object any R object
+#' @param option can be either "input" or "output", to signify the file type
 #' @return NULL if no attributes are extracted, text of attributes if attributes exist
 #'
 #' @family log file functions
@@ -210,18 +211,18 @@ attachUUID <- function(object, overwrite = TRUE) {
 #' \dontrun{
 #'   object <- "c"
 #'   attr(object, "UUID") <- uuid::UUIDgenerate()
-#'   extractAttributes(object)
+#'   extractAttributes(object, "output")
 #' }
 #' @export
-extractAttributes <- function(object) {
+extractAttributes <- function(object, option = "input") {
 
     if (is.null(object)) {
-        stop(object)
+        stop("object is null")
     }
 
     result <- ""
     for (name in names(attributes(object))) {
-        result <- paste(result, "attribute\t|\t", name, "\t|\t", attr(object, name), "\n", sep="")
+        result <- paste(result, "event\t|\t", option, "\t|\tattribute\t|\t", name, "\t|\t", attr(object, name), "\n", sep="")
     }
 
     if (result == "") {
@@ -236,22 +237,30 @@ extractAttributes <- function(object) {
 #' Main function for writing logs
 #'
 #' \code{logEvent} generates a log of an event with:
-#' - the event type
+#' - the event title
 #' - the event call
 #' - attributes of the input object
 #' - attributes of the output object
 #' - date and time of the event
-#' - function version
-#' - file hashes of input
+#' - function version (TODO)
+#' - file hashes of input (TODO)
 #'
 #' Format of the logging is as follows:
-#'
+#' event | input | attribute | <inputAttrName1> | <inputAttrValue1>
+#' event | output | attribute | <outputAttrName1> | <outputAttrValue1>
+#' event | call | <eventCall>
+#' comment | title | <eventTitle>
+#' comment | dateTime | <eventDateTime>
+#' comment | functionVersion | <functionVersion>
 #'
 #'
 #' @param eventTitle the title of the event, from a predetermined categorization of events
 #' @param eventCall the function call in which the event occurred
-#' @param input the vector of input objects
-#' @param output the vector of output objects
+#' @param input the list of input objects - given a name that is both an object and filename, defaults to
+#' treating it as an object
+#' @param output the list of output objects - given a name that is both an object and filename, defaults to
+#' treating it as an object
+#' @param fPath the file path in which to log the event, defaults to getwd()
 #' @return N/A. message is appended to the logFile with \code{\link{logMessage}}.
 #'
 #' @family log file functions
@@ -265,26 +274,114 @@ extractAttributes <- function(object) {
 #'
 #' @examples
 #' \dontrun{
-#'
+#'     logEvent(eventTitle = "Test event", eventCall = "function1(test = \"test\")")
 #' }
 #' @export
-logEvent <- function(eventTitle, eventCall, input = c(), output = c()) {
-    if (!eventTitle) {
-        stop(eventTitle)
+logEvent <- function(eventTitle = NULL, eventCall = NULL, input = list(), output = list(), fPath = getwd()) {
+
+    # CHECK PARAMS
+    if (is.null(eventTitle)) {
+        stop("eventTitle is NULL")
     }
+
+    if (is.null(eventCall)) {
+        stop("eventCall is NULL")
+    }
+
+    # validate fPATH
+    report <- .checkArgs(fPath, like = "DIR", checkSize = TRUE)
+    if(length(report) > 0) {
+        stop(report)
+    }
+
+    fPath <- gsub("/$", "", fPath)
+
+    # validate inputs
+    for (i in input) {
+        if (is.null(i)) {
+            stop("input contains NULL object")
+        } else if (!missing(i)) {
+            next
+        } else if (!file.exists(paste(fPath, i[1], sep="/"))) {
+            stop("input contains file which does not exist")
+        }
+
+        stop("input contains object which does not exist")
+    }
+
+    # validate outputs
+    for (o in output) {
+        if (is.null(o)) {
+            stop("output contains NULL object")
+        } else if (!missing(o)) {
+            next
+        } else if (!file.exists(paste(fPath, o[1], sep="/"))) {
+            stop("output contains file which does not exist")
+        }
+
+        stop("output contains object which does not exist")
+    }
+
+    # main event logging
+    for (i in input) {
+        allAttributes <- NULL
+        # if input is object - extract attributes and write to log
+        if (!missing(i)) {
+            allAttributes <- extractAttributes(i, "input")
+        }
+
+        # if input is file
+        # need to read file and load it for attributes
+        fileName <- i[1]
+        if (file.exists(paste(fPath, fileName, sep="/"))) {
+            completePath <- paste(fPath, fileName, sep="/")
+            load(file = completePath)
+            allAttributes <- extractAttributes(fileName, "input")
+        }
+
+        if (!is.null(allAttributes)) {
+            logMessage(allAttributes)
+        }
+    }
+
+    for (o in output) {
+        allAttributes <- NULL
+
+        # if output is object - extract attributes and write to log
+        if (!missing(o)) {
+            allAttributes <- extractAttributes(o, "output")
+        }
+
+        # if output is file
+        # need to read file and load for attribute access
+        fileName <- o[1]
+        if (file.exists(paste(fPath, fileName, sep="/"))) {
+            completePath <- paste(fPath, fileName, sep="/")
+            load(file = completePath)
+            allAttributes <- extractAttributes(fileName, "output")
+        }
+
+        if (!is.null(allAttributes)) {
+            logMessage(allAttributes)
+        }
+    }
+
+    # comments logging
+    logMessage(paste("event\t|\tcall\t|\t", eventCall, sep = ""))
+    logMessage(paste("comment\t|\ttitle\t|\t", eventTitle, sep = ""))
+    logMessage(paste("comment\t|\tdateTime\t|\t", Sys.time(), sep = ""))
+
 }
 
 #' Finds specific UUID in logs
 #'
-#' \code{findUUID}
-#'
-#' Output format:
-#'
+#' \code{findUUID} returns all mentions of a specific UUID in the logs, with all of the events
+#' and comments attached to that specific UUID.
 #'
 #'
-#' @param uuid the title of the event, from a predetermined categorization of events
-#' @param path the vector of output objects
-#' @return N/A. message is appended to the logFile with \code{\link{logMessage}}.
+#' @param uuid a universally unique identifier
+#' @param uuidPath the path in which to search for the logfile, if given. Otherwise, uses getwd().
+#' @return NULL if uuid is not found in logs. Otherwise, returns complete event/comment blocks.
 #'
 #' @family log file functions
 #'
@@ -300,8 +397,86 @@ logEvent <- function(eventTitle, eventCall, input = c(), output = c()) {
 #'
 #' }
 #' @export
-findUUID <- function(uuid, path) {
+findUUID <- function(uuid, uuidPath = getwd()) {
+    # check uuidPath
+    pathReport <- .checkArgs(uuidPath, like = "DIR", checkSize = TRUE)
+    if (length(pathReport) > 0) {
+        stop(pathReport)
+    }
 
+    # check valid UUID
+    uuidReport <- .checkArgs(uuid, like = "UUID")
+    if (length(uuidReport) > 0) {
+        stop(uuidReport)
+    }
+
+    # in all of the log files that are in the specific working directory, should be looking
+    # line by line to see if the UUID exists, and accumulating blocks of events/comments
+    allOccurrences <- list() # list of event blocks
+
+    allLogs <- list.files(path = uuidPath,
+                          pattern = "\\.log$",
+                          full.names = TRUE,
+                          recursive = TRUE)
+
+    currEventBlock <- ""
+    uuidInCurrEventBlock <- FALSE
+    numOccurrences <- 1
+    prevLine <- ""
+    # for every log in all found logs, iterate through each line to find event blocks with UUID
+    for (log in allLogs) {
+        fileConnection <- file(log, open = "r")
+        for (line in readLines(fileConnection)) {
+            if (grepl(pattern = "^event", line)) {
+                # if previous line was comment, then new event starts
+                if (grepl(pattern = "^comment", prevLine)) {
+                    if (uuidInCurrEventBlock) {
+                        allOccurrences[[numOccurrences]] <- currEventBlock
+                        numOccurrences <- numOccurrences + 1
+                    }
+
+                    # reset flags
+                    currEventBlock <- ""
+                    uuidInCurrEventBlock <- FALSE
+                }
+
+                # found UUID?
+                if (grepl(pattern = uuid, line)) {
+                    uuidInCurrEventBlock <- TRUE
+                }
+            }
+            currEventBlock <- paste(currEventBlock, line, "\n", sep = "")
+            prevLine <- line
+        }
+
+        # check again before file closes
+        if (grepl(pattern = "^comment", prevLine)) {
+            if (uuidInCurrEventBlock) {
+                allOccurrences[[numOccurrences]] <- currEventBlock
+                numOccurrences <- numOccurrences + 1
+            }
+
+            # reset flags
+            currEventBlock <- ""
+            uuidInCurrEventBlock <- FALSE
+        }
+
+        close(fileConnection)
+    }
+
+    # should present the information as occurrences
+    if (length(allOccurrences) == 0) {
+        return(NULL)
+    } else {
+        finalResult <- ""
+        counter <- 1
+        for (occurrence in allOccurrences) {
+            finalResult <- paste(finalResult, "Occurrence ", counter, ":\n", occurrence, "\n", sep = "")
+            counter <- counter + 1
+        }
+
+        return(finalResult)
+    }
 }
 
 
@@ -315,7 +490,7 @@ findUUID <- function(uuid, path) {
 #'
 #'
 #' @param uuid the UUID of the object of interest
-#' @param path the path in which to search for logFile
+#' @param uuidPath the path in which to search for logFile
 #' @return
 #'
 #' @family log file functions
@@ -332,7 +507,7 @@ findUUID <- function(uuid, path) {
 #'
 #' }
 #' @export
-getProvenance <- function(uuid, path) {
+getProvenance <- function(uuid, uuidPath = getwd()) {
 
 }
 # [END]

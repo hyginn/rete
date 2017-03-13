@@ -27,4 +27,3 @@ fPath <- system.file("extdata", "devCNA.txt", package="rete")
 myCNA <- read.delim(fPath, stringsAsFactors = FALSE)
 }
 }
-

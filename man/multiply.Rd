@@ -27,6 +27,7 @@ type.
  Actually using this function instead of "*" will get you
   in trouble with QA.
 }
+
 \examples{
 multiply(1, 1)
 multiply(1i, 1i)
@@ -36,4 +37,3 @@ multiply(13, 3)
 \code{\link[base]{prod}} for products, \code{\link[base]{*}} for the
   arithmetic operator.
 }
-

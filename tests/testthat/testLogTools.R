@@ -175,10 +175,10 @@ test_that("if the overwrite flag is TRUE AND object has a UUID, should attach UU
 # tests for: extractAttributes(object)
 test_that("extractAttributes rejects objects that don't exist", {
     # pass reference of object which does not exist into function
-    expect_error(extractAttributes(x))
+    expect_error(extractAttributes(x), "object 'x' not found")
 
     # expect NULL object to raise error
-    expect_error(extractAttributes(NULL))
+    expect_error(extractAttributes(NULL), "object is null")
 })
 
 test_that("extractAttributes does not reject objects that exist", {
@@ -200,7 +200,7 @@ test_that("extractAttributes logs one attribute for an object with one attribute
     attr(x, "testAttribute") <- "testValue"
     # expect one attribute log text to be returned
     result <- extractAttributes(x)
-    expect_equal(result, "attribute\t|\ttestAttribute\t|\ttestValue\n")
+    expect_equal(result, "event\t|\tinput\t|\tattribute\t|\ttestAttribute\t|\ttestValue\n")
 })
 
 test_that("extractAttributes logs all attributes for an object with multiple attributes", {
@@ -211,14 +211,14 @@ test_that("extractAttributes logs all attributes for an object with multiple att
     attr(x, "testAttribute2") <- "testValue2"
     attr(x, "testAttribute3") <- "testValue3"
     # expect one attribute log text to be returned
-    result1 <- "attribute\t|\ttestAttribute1\t|\ttestValue1\n"
-    result2 <- "attribute\t|\ttestAttribute2\t|\ttestValue2\n"
-    result3 <- "attribute\t|\ttestAttribute3\t|\ttestValue3\n"
+    result1 <- "event\t|\tinput\t|\tattribute\t|\ttestAttribute1\t|\ttestValue1\n"
+    result2 <- "event\t|\tinput\t|\tattribute\t|\ttestAttribute2\t|\ttestValue2\n"
+    result3 <- "event\t|\tinput\t|\tattribute\t|\ttestAttribute3\t|\ttestValue3\n"
     expect_equal(extractAttributes(x), paste(result1, result2, result3, sep=""))
 })
 
 
-# tests for: logEvent(eventTitle, eventCall, input = c(), output = c())
+# tests for: logEvent(eventTitle, eventCall, input = list(), output = list(), fPath = getwd())
 
 ### bs> Finally, could the "event" just be a comment, or other message?
 ### bs> This needs a bit of thought.
@@ -226,112 +226,270 @@ test_that("extractAttributes logs all attributes for an object with multiple att
 ### wt> The "event" should come from a predetermined set of all possible events
 ### wt> that could happen in rete - it would be nice to have some sort of categorized dictionary
 ### wt> of events to outcomes.
-### wt>
-### bs>
-### bs> Test that messages are separated from each other by blank lines.
-### wt> Ok.
 
 test_that("logEvent raises an error if the event title is not passed in", {
     # call function without eventTitle parameter
+    eventCall <- "function1(param1, param2)"
     # expect function to error
+    expect_error(logEvent(eventCall = eventCall), "eventTitle is NULL")
 })
 
 test_that("logEvent raises an error if the event call is not passed in", {
     # call function without call
+    eventTitle <-"Graph generation"
     # expect function to error
+    expect_error(logEvent(eventTitle = eventTitle), "eventCall is NULL")
+})
+
+test_that("logEvent raises an error if both the event call and event title are not passed in", {
+    expect_error(logEvent())
 })
 
 test_that("logEvent is able to accept both objects or filenames in list of input and output parameters", {
-    # call function with name that does not exist as a object or filename
+    logFile <- unlist(getOption("rete.logfile"))
+    expect_false(file.exists(logFile))
+
+    eventTitle <-"Graph generation"
+    eventCall <- "function1(param1, param2)"
+    # call function with input name that DNE as an object or filename
     # function should error
+    expect_error(logEvent(eventTitle, eventCall, input = list(x)), "object 'x' not found")
 
-    # call function with name that exists as an object but not as a filename
+    # call function with output name that DNE as object or filename
+    expect_error(logEvent(eventTitle, eventCall, output = list(x)), "object 'x' not found")
+
+    # call function with NULL input
+    # function should error
+    expect_error(logEvent(eventTitle, eventCall, input = list(NULL)), "input contains NULL object")
+
+    # call function with NULL output
+    # function should error
+    expect_error(logEvent(eventTitle, eventCall, output = list(NULL)), "output contains NULL object")
+
+    # call function with input name that exists as an object but not as a filename
     # function should not error
+    testInputObject1 <- c("testparam1", "testparam2", "testparam3")
+    attr(testInputObject1, "testInputAttr1") <- "testInputValue1"
+    expect_error(logEvent(eventTitle, eventCall, input = list(testInputObject1)), NA)
 
-    # call function with name that does not exist as an object but exists as a file
+    # call function with output name that exists as an object but not as a filename
+    testOutputObject1 <- c("testparam1", "testparam2", "testparam3")
+    attr(testOutputObject1, "testOutputAttr1") <- "testOutputValue1"
+    expect_error(logEvent(eventTitle, eventCall, output = list(testOutputObject1)), NA)
+
+    # call function with input name that does not exist as an object but exists as a file
     # function should not error
+    testInputFile1 <- "testInputFile1.rds"
+    save(testInputFile1, file = "testInputFile1.rds")
+    expect_error(logEvent(eventTitle, eventCall, input = list(testInputFile1)), NA)
+    expect_true(file.remove(testInputFile1))
 
-    # call function with name that exists as both object or as filename
-    # function should use object and should not error
+    # call function with output name that DNE as an object but exists as a file
+    # function should not error
+    testOutputFile1 <- "testOutputFile1.rds"
+    save(testOutputFile1, file = "testOutputFile1.rds")
+    expect_error(logEvent(eventTitle, eventCall, output = list(testOutputFile1)), NA)
+    expect_true(file.remove(testOutputFile1))
+
+    expect_true(file.remove(logFile))
+
 })
 
 test_that("logEvent tests that the event title comes from a predefined set of events", {
-
+    eventTitle <-"Graph generation"
+    eventCall <- "function1(param1, param2)"
 })
 
-test_that("logEvent separates messages from each other using blank lines", {
+test_that("logEvent writes proper messages", {
+    logFile <- unlist(getOption("rete.logfile"))
+    expect_false(file.exists(logFile))
 
-})
+    eventTitle <-"Graph generation"
+    eventCall <- "function1(param1, param2)"
 
-test_that("logEvent should log the date and time of the event", {
-    # call function with arbitrary event and no input or outputs
-    # expect function to have logged the event with date and time
-    # expect function to have logged the event title
-    # expect function to have logged no attributes of any input or output objects
-})
+    testInputObject1 <- c("testparam1", "testparam2", "testparam3")
+    attr(testInputObject1, "testBlankAttr1") <- "testBlankValue1"
 
-# only one test case for input attributes since already tested above
-test_that("logEvent should log the input attributes, if any", {
-    # create potential input object with two attributes
-    # call function with arbitrary event
-    # expect function to have logged the event with date and time
-    # expect function to have logged the event title
-    # expect function to have logged both input attributes
-})
+    testInputObject2 <- c("testparam4")
+    attr(testInputObject2, "testBlankAttr2") <- "testBlankValue2"
+    expect_error(logEvent(eventTitle, eventCall, input = list(testInputObject1, testInputObject2)), NA)
 
-test_that("logEvent should log the output attributes, if any", {
-    # create potential output object with two attributes
-    # call function with arbitrary event
-    # expect function to have logged the event with date and time
-    # expect function to have logged the event title
-    # expect function to have logged both output attributes
-})
+    expect_true(file.exists(logFile))
 
-test_that("logEvent should log both input and output attributes", {
-    # create potential input object with two attributes
-    # create potential output object with two attributes
-    # call function with arbitrary event
-    # expect function to have logged the event with date and time
-    # expect function to have logged the event title
-    # expect function to have logged both input attributes
-    # expect function to have logged both output attributes
+    result1 <- "event\t|\tinput\t|\tattribute\t|\ttestBlankAttr1\t|\ttestBlankValue1\n"
+    result2 <- "event\t|\tinput\t|\tattribute\t|\ttestBlankAttr2\t|\ttestBlankValue2\n"
+    call <- "event\t|\tcall\t|\tfunction1(param1, param2)\n"
+    title <- "comment\t|\ttitle\t|\tGraph generation\n"
+    dateTime <- paste("comment\t|\tdateTime\t|\t", Sys.time(), "\n", sep = "")
+
+    expect_equal(readChar(logFile, file.info(logFile)$size), paste(result1, result2, call, title, dateTime, sep = ""))
+    expect_true(file.remove(logFile))
 })
 
 
-# tests for: findUUID(uuid, path)
-test_that("function errors if an invalid path has been provided", {
-    # call function with invalid file path
-    # expect function to error
+# tests for: findUUID(uuid, uuidPath)
+test_that("findUUID errors if an invalid path has been provided", {
+    randomUUID <- "34cb8d64-4422-4232-9d58-8521b5a90ada"
+
+    # Professor Steipe's tests from testLogTools.R
+    # test non-existent path
+    expect_error(findUUID(randomUUID, uuidPath = "no/such/path"))
+    # test NULL path
+    expect_error(findUUID(randomUUID, uuidPath = NULL))
+    # test null-length path
+    expect_error(findUUID(randomUUID, uuidPath = character()))
+    # test vector of paths
+    expect_error(findUUID(randomUUID, uuidPath = c("~", "~")))
+})
+
+test_that("findUUID errors if UUID is not valid", {
+    # test random string
+    badUUID1 <- "abc"
+    expect_error(findUUID(badUUID1))
+    # test vector
+    badUUID2 <- c("not", "good")
+    expect_error(findUUID(badUUID2))
+    # test something very close
+    badUUID3 <- "89337ch-389-3938-9383-938e3cu0938"
+    expect_error(findUUID(badUUID3))
 })
 
 test_that("if the uuid does not occur in the logs, that nothing is returned", {
     # set up log file with uuids that will not be called by the function test
+    logFile <- unlist(getOption("rete.logfile"))
+    expect_false(file.exists(logFile))
+
+    eventTitle <-"Graph generation"
+    eventCall <- "function1(param1, param2)"
+
+    testInputObject1 <- c("testparam1", "testparam2", "testparam3")
+    attr(testInputObject1, "testBlankAttr1") <- "testBlankValue1"
+    testInputObject1 <- attachUUID(testInputObject1)
+
+    testInputObject2 <- c("testparam4")
+    attr(testInputObject2, "testBlankAttr2") <- "testBlankValue2"
+    testInputObject2 <- attachUUID(testInputObject2)
+    expect_error(logEvent(eventTitle, eventCall, input = list(testInputObject1, testInputObject2)), NA)
+
     # call function with uuid which does not occur in the logs
     # expect function to not return any instances
-    ### bs> What should the function do instead? Return NULL, NA, or ""?
-    ### wt> The function should instead return NULL.
+    searchUUID <- "tc17e152a-e0f2-4b9c-a70e-40ed417dc0f7"
+    expect_equal(findUUID(searchUUID), NULL)
+    expect_true(file.remove(logFile))
 })
 
 test_that("one instance is returned if uuid occurs in the logs once", {
     # set up log file with one instance of a uuid which will be called by the function
+    # new logFile is created in tests folder
+    logFile <- logFileName(setOption = TRUE)
+    expect_false(file.exists(logFile))
+
+    eventTitle <-"Graph generation"
+    eventCall <- "function1(param1, param2)"
+
+    testInputObject1 <- c("testparam1", "testparam2", "testparam3")
+    attr(testInputObject1, "testBlankAttr1") <- "testBlankValue1"
+    testInputObject1 <- attachUUID(testInputObject1)
+
+    testInputObject2 <- c("testparam4")
+    attr(testInputObject2, "testBlankAttr2") <- "testBlankValue2"
+    testInputObject2 <- attachUUID(testInputObject2)
+    expect_error(logEvent(eventTitle, eventCall, input = list(testInputObject1, testInputObject2)), NA)
+
+    # print(readChar(logFile, file.info(logFile)$size))
+
     # call function with same uuid
+    searchUUID <- attr(testInputObject1, "UUID")
+
     # expect function to return one instance
-    ### bs> What _is_ actually returned? Just the line? The entire event block?
-    ### bs>    The filename too?
+    expectedResult0 <- "Occurrence 1:\n"
+    expectedResult1 <- "event\t|\tinput\t|\tattribute\t|\ttestBlankAttr1\t|\ttestBlankValue1\n"
+    expectedResult2 <- paste("event\t|\tinput\t|\tattribute\t|\tUUID\t|\t", attr(testInputObject1, "UUID"), "\n", sep = "")
+    expectedResult3 <- "event\t|\tinput\t|\tattribute\t|\ttestBlankAttr2\t|\ttestBlankValue2\n"
+    expectedResult4 <- paste("event\t|\tinput\t|\tattribute\t|\tUUID\t|\t", attr(testInputObject2, "UUID"), "\n", sep = "")
+    expectedResult5 <- "event\t|\tcall\t|\tfunction1(param1, param2)\n"
+    expectedResult6 <- paste("comment\t|\ttitle\t|\tGraph generation\ncomment\t|\tdateTime\t|\t", Sys.time(), "\n\n", sep = "")
+
+    expect_equal(findUUID(searchUUID), paste(expectedResult0, expectedResult1, expectedResult2, expectedResult3,
+                                             expectedResult4, expectedResult5, expectedResult6, sep = ""))
+    expect_true(file.remove(logFile))
+
 })
 
-test_that("multiple instances are return if uuid occurs in the logs more than once", {
+test_that("multiple instances are returned if uuid occurs in the logs more than once", {
     # set up log file with 3 instances of a uuid which will be called by the function
+    logFile <- logFileName(setOption = TRUE)
+    expect_false(file.exists(logFile))
+
+    # first event which only uses testInputObject1 by reading from it
+    eventTitle1 <-"Graph generation"
+    eventCall1 <- "function1(param1, param2)"
+
+    testInputObject1 <- c("testparam1", "testparam2", "testparam3")
+    attr(testInputObject1, "testBlankAttr1") <- "testBlankValue1"
+    testInputObject1 <- attachUUID(testInputObject1)
+
+    testInputObject2 <- c("testparam4")
+    attr(testInputObject2, "testBlankAttr2") <- "testBlankValue2"
+    testInputObject2 <- attachUUID(testInputObject2)
+    expect_error(logEvent(eventTitle1, eventCall1, input = list(testInputObject1, testInputObject2)), NA)
+
+
+    # second event which only uses testInputObject1 by reading from it
+    eventTitle2 <- "More graph generation"
+    eventCall2 <- "function2(param1, param2)"
+
+    testOutputObject2 <- "testparam5"
+    testOutputObject2 <- attachUUID(testOutputObject2)
+    expect_error(logEvent(eventTitle2, eventCall2, input = list(testInputObject1), output = list(testOutputObject2)), NA)
+
+    # third event which only uses testInputObject1 by reading from it
+    eventTitle3 <- "Do something with graph"
+    eventCall3 <- "function3(param1, param2)"
+
+    testOutputObject3 <- "testparam6"
+    testOutputObject3 <- attachUUID(testOutputObject3)
+    expect_error(logEvent(eventTitle3, eventCall3, input = list(testInputObject1), output = list(testOutputObject3)), NA)
+
+    # call function with same uuid
+    searchUUID <- attr(testInputObject1, "UUID")
+
+    # expect function to return one instance
+
+    expectedResult0 <- "Occurrence 1:\n"
+    expectedResult1 <- "event\t|\tinput\t|\tattribute\t|\ttestBlankAttr1\t|\ttestBlankValue1\n"
+    expectedResult2 <- paste("event\t|\tinput\t|\tattribute\t|\tUUID\t|\t", attr(testInputObject1, "UUID"), "\n", sep = "")
+    expectedResult3 <- "event\t|\tinput\t|\tattribute\t|\ttestBlankAttr2\t|\ttestBlankValue2\n"
+    expectedResult4 <- paste("event\t|\tinput\t|\tattribute\t|\tUUID\t|\t", attr(testInputObject2, "UUID"), "\n", sep = "")
+    expectedResult5 <- "event\t|\tcall\t|\tfunction1(param1, param2)\n"
+    expectedResult6 <- paste("comment\t|\ttitle\t|\tGraph generation\ncomment\t|\tdateTime\t|\t", Sys.time(), "\n\n", sep = "")
+
+    expectedResult7 <- "Occurrence 2:\n"
+    expectedResult8 <- "event\t|\tinput\t|\tattribute\t|\ttestBlankAttr1\t|\ttestBlankValue1\n"
+    expectedResult9 <- paste("event\t|\tinput\t|\tattribute\t|\tUUID\t|\t", attr(testInputObject1, "UUID"), "\n", sep = "")
+    expectedResult10 <- paste("event\t|\toutput\t|\tattribute\t|\tUUID\t|\t", attr(testOutputObject2, "UUID"), "\n", sep = "")
+    expectedResult11 <- "event\t|\tcall\t|\tfunction2(param1, param2)\n"
+    expectedResult12 <- paste("comment\t|\ttitle\t|\tMore graph generation\ncomment\t|\tdateTime\t|\t", Sys.time(), "\n\n", sep = "")
+
+    expectedResult13 <- "Occurrence 3:\n"
+    expectedResult14 <- "event\t|\tinput\t|\tattribute\t|\ttestBlankAttr1\t|\ttestBlankValue1\n"
+    expectedResult15 <- paste("event\t|\tinput\t|\tattribute\t|\tUUID\t|\t", attr(testInputObject1, "UUID"), "\n", sep = "")
+    expectedResult16<- paste("event\t|\toutput\t|\tattribute\t|\tUUID\t|\t", attr(testOutputObject3, "UUID"), "\n", sep = "")
+    expectedResult17 <- "event\t|\tcall\t|\tfunction3(param1, param2)\n"
+    expectedResult18 <- paste("comment\t|\ttitle\t|\tDo something with graph\ncomment\t|\tdateTime\t|\t", Sys.time(), "\n\n", sep = "")
+
+    expect_equal(findUUID(searchUUID), paste(expectedResult0, expectedResult1, expectedResult2, expectedResult3,
+                                             expectedResult4, expectedResult5, expectedResult6, expectedResult7,
+                                             expectedResult8, expectedResult9, expectedResult10, expectedResult11,
+                                             expectedResult12, expectedResult13, expectedResult14, expectedResult15,
+                                             expectedResult16, expectedResult17, expectedResult18, sep = ""))
+    expect_true(file.remove(logFile))
+
     # call function with same uuid
     # expect function to return the 3 instances of uuid being mentioned, in chronological order
 })
 
-###
-
-# tests for: getProvenance(object, path)
-
-### bs> I think you should pass an UUID as an argument, not an object. Yes?
-### wt> Yes. Will change pseudocode.
+# tests for: getProvenance(uuid, uuidPath)
 
 test_that("function throws error if object does not exist", {
     # call function with object which does not exist

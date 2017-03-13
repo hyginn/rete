@@ -4,10 +4,12 @@
 \alias{extractAttributes}
 \title{Extract attributes from object}
 \usage{
-extractAttributes(object)
+extractAttributes(object, option = "input")
 }
 \arguments{
 \item{object}{any R object}
+
+\item{option}{can be either "input" or "output", to signify the file type}
 }
 \value{
 NULL if no attributes are extracted, text of attributes if attributes exist
@@ -18,15 +20,14 @@ to an object, formatted for logging
 }
 \details{
 Format of the extracted attributes:
-attribute | <attrName1> | <attrValue1>
-attribute | <attrName2> | <attrValue2>
-attribute | <attrName3> | <attrValue3>
+event | <input/output> | attribute | <attrName1> | <attrValue1>
+event | <input/output> | attribute | <attrName2> | <attrValue2>
+event | <input/output> | attribute | <attrName3> | <attrValue3>
 }
 \examples{
 \dontrun{
   object <- "c"
   attr(object, "UUID") <- uuid::UUIDgenerate()
-  extractAttributes(object)
+  extractAttributes(object, "output")
 }
 }
-
