@@ -21,9 +21,10 @@ The configuration files used to obtain this output can be found under `./config`
 - `example_index_genes` is the legend for how to map numbers to genes.
 - `example_ppr_0.6.h5` is the influence matrix.
 
-## ./ouput/simple{1,2}/delta_0.{[0-9]*}
+## ./output/simple{1,2}/delta_0.{[0-9]*}
+
 - The number in the folder name indicate the threshold used.
 - `components.txt` contains the genes of the significantly altered subnetworks. Genes are tab-separated and subnetworks are listed one per line. 
-- `significance.txt` includes the expected and acutal number of subnetworks of a specific size, and an associated p-value.
+- `significance.txt` includes the expected and actual number of subnetworks of a specific size, and an associated p-value.
 - `results.json` contains the output from `significance.txt` under the key `statistics`, the output from `components.txt` under the key `components`, the network size, and the parameter information.
 - `heat.json` contains the heat-values for each gene in the input network. 
