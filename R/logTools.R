@@ -94,7 +94,7 @@ logFileName <- function(fPath = getwd(), fName, setOption = FALSE) {
 #'   file. The file name is taken from the rete.logfile global option.
 #'
 #' The function will stop() if message is not of mode, type and class character.
-#' If a line is not terminated with a linebreak, a linebreak is appended.
+#' On windows systems, \n linebreaks are replaced with \r\n.
 #'
 #' @param message a character object or vector of character objects.
 #' @return N/A. message is appended to the current logfile.
@@ -116,14 +116,22 @@ logMessage <- function(message) {
         stop(checkReport)
     }
 
-    # append "\n" to lines that don't have it.
-    for (i in grep("\n$", message, invert = TRUE)) {
-        message[i] <- paste(message[i], "\n", sep = "")
+    # remove "\n" or "\r\n" from line-endings
+    message <- gsub("[\n\r]+$", "", message)
+
+    # replace existing line breaks with platform appropriate version
+    if (.Platform$OS.type == "windows") {
+        Sep <- "\r\n"
+        message <- gsub("([^\r]\n)|^\n", Sep, message)
+    } else {
+        Sep <- "\n"
+        message <- gsub("\r\n", Sep, message)
     }
 
+    # append to log file, with platform appropriate separator
     cat(message,
         file = unlist(getOption("rete.logfile")),
-        sep = "",
+        sep = Sep,
         append = TRUE)
 
 }
