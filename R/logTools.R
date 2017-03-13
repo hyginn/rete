@@ -128,5 +128,101 @@ logMessage <- function(message) {
 
 }
 
+#' Attach a UUID to an object
+#'
+#' \code{attachUUID} uses the uuid package to attach a $UUID attribute to
+#' a given object.
+#'
+#' The overwrite flag can be understood as follows:
+#' - if the overwrite flag is TRUE, then whether or not the object had
+#' a UUID previously or not, a new UUID attribute is attached
+#' - if the overwrite flag is FALSE, then no new UUID attribute is attached
+#'
+#' @param object any R object
+#' @param overwrite flag for indicating whether a UUID should be overwritten or not
+#' @return NULL if no new UUID is attached, and the value of the attached UUID if a
+#' new UUID was attached
+#'
+#' @family log file functions
+#'
+#'   ## @seealso \code{\link{logFileName}}
+#'   ## @seealso \code{\link{logMessage}}
+#'   ## @seealso \code{\link{extractAttributes}}
+#'   ## @seealso \code{\link{logEvent}}
+#'   ## @seealso \code{\link{findUUID}}
+#'   ## @seealso \code{\link{getProvenance}}
+#'
+#' @examples
+#' \dontrun{
+#'   object <- "c"
+#'   attachUUID(object)
+#' }
+#' @export
+attachUUID <- function(object, overwrite = TRUE) {
+
+    if (is.null(object)) {
+        stop(object)
+    }
+
+    if (overwrite || is.null(attr(object, "UUID"))) {
+        generatedUUID <- uuid::UUIDgenerate()
+        attr(object, "UUID") <- generatedUUID
+        return(object)
+    } else {
+        return(object)
+    }
+
+}
+
+#' Extract attributes from object
+#'
+#' \code{extractAttributes} returns all of the attributes that are attached
+#' to an object, formatted for logging
+#'
+#' Format of the extracted attributes:
+#' attribute | <attrName1> | <attrValue1>
+#' attribute | <attrName2> | <attrValue2>
+#' attribute | <attrName3> | <attrValue3>
+#'
+#' @param object any R object
+#' @return NULL if no attributes are extracted, text of attributes if attributes exist
+#'
+#' @family log file functions
+#'
+#'   ## @seealso \code{\link{logFileName}}
+#'   ## @seealso \code{\link{logMessage}}
+#'   ## @seealso \code{\link{attachUUID}}
+#'   ## @seealso \code{\link{logEvent}}
+#'   ## @seealso \code{\link{findUUID}}
+#'   ## @seealso \code{\link{getProvenance}}
+#'
+#' @examples
+#' \dontrun{
+#'   object <- "c"
+#'   attr(object, "UUID") <- uuid::UUIDgenerate()
+#'   extractAttributes(object)
+#' }
+#' @export
+extractAttributes <- function(object) {
+
+    if (is.null(object)) {
+        stop(object)
+    }
+
+    result <- ""
+    for (name in names(attributes(object))) {
+        attribute <- sub("\\s+$", "", sub("^\\s+", "", name))
+        value <- sub("\\s+$", "", sub("^\\s+", "", attr(object, name)))
+
+        result <- paste(result, "attribute\t|\t", name, "\t|\t", attr(object, name), "\n", sep="")
+    }
+
+    if (result == "") {
+        return(NULL)
+    } else {
+        return(result)
+    }
+
+}
 
 # [END]

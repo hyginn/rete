@@ -24,3 +24,4 @@ fPath <- system.file("extdata", "devSNV.maf", package="rete")
 myMAF <- read.delim(fPath, skip = 1, stringsAsFactors = FALSE)
 }
 }
+

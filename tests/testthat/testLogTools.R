@@ -95,8 +95,242 @@ test_that("logMessage works as expected with reasonable arguments", {
     expect_true(file.remove(fn))
 })
 
+# tests for: attachUUID(object, overwrite=TRUE)
+test_that("attachUUID rejects objects that don't exist", {
+    # pass object which does not exist into function
+    expect_error(attachUUID(x))
+
+    # should reject NULL objects
+    expect_error(attachUUID(NULL))
+})
+
+test_that("attachUUID does not reject objects that exist", {
+    object <- "c"
+    expect_error(attachUUID(object), NA)
+})
+
+test_that("attachUUID attaches UUID if the overwrite flag is FALSE AND the object does not have a UUID", {
+    # generate an object which does not have a UUID set
+    object <- "c"
+    # call function with overwrite = FALSE
+    object <- attachUUID(object, overwrite = FALSE)
+    # expect the function to have attached a UUID to object
+    # wt> can't actually do this because global object isn't modified by local function
+    expect_false(is.null(attr(object, "UUID")))
+})
+
+test_that("attachUUID does not attach UUID if the overwrite flag is FALSE AND object already has UUID attribute", {
+    # generate an object which has a UUID set
+    object <- "c"
+    generatedUUID <- uuid::UUIDgenerate()
+    attr(object, "UUID") <- generatedUUID
+    # call function with overwrite set to FALSE
+    object <- attachUUID(object, overwrite = FALSE)
+    # expect object's UUID to not have changed
+    expect_equal(generatedUUID, attr(object, "UUID"))
+})
+
+test_that("attachUUID attaches the UUID if the overwrite flag is TRUE AND object does not have a UUID", {
+    # generate an object which does not have a UUID set
+    object <- "c"
+    # call function with overwrite set to TRUE
+    object <- attachUUID(object, overwrite = TRUE)
+    # expect the function to have attached a UUID to object
+    expect_false(is.null(attr(object, "UUID")))
+})
+
+test_that("if the overwrite flag is TRUE AND object has a UUID, should attach UUID", {
+    # generate an object which has a UUID
+    object <- "c"
+    # store this UUID
+    generatedUUID <- uuid::UUIDgenerate()
+    attr(object, "UUID") <- generatedUUID
+    # call function with overwrite set to TRUE
+    object <- attachUUID(object, overwrite = TRUE)
+    # expect the new object's UUID to be different from the old UUID
+    expect_false(generatedUUID == attr(object, "UUID"))
+})
+
+# tests for: extractAttributes(object)
+test_that("extractAttributes rejects objects that don't exist", {
+    # pass reference of object which does not exist into function
+    expect_error(extractAttributes(x))
+
+    # expect NULL object to raise error
+    expect_error(extractAttributes(NULL))
+})
+
+test_that("extractAttributes does not reject objects that exist", {
+    # pass reference of object which exists into function
+    x <- "c"
+    expect_error(extractAttributes(x), NA)
+})
+
+test_that("extractAttributes return NULL for an object with no attributes", {
+    # create object with no attributes
+    x <- "c"
+    # expect no attributes to be returned
+    expect_equal(extractAttributes(x), NULL)
+})
+
+test_that("extractAttributes logs one attribute for an object with one attribute", {
+    # create object with one attribute
+    x <- "c"
+    attr(x, "testAttribute") <- "testValue"
+    # expect one attribute log text to be returned
+    result <- extractAttributes(x)
+    expect_equal(result, "attribute\t|\ttestAttribute\t|\ttestValue\n")
+})
+
+test_that("extractAttributes logs all attributes for an object with multiple attributes", {
+    # create object with multiple attributes (more than one)
+    # expect all of the attributes log text to be returned
+    x <- "c"
+    attr(x, "testAttribute1") <- "testValue1"
+    attr(x, "testAttribute2") <- "testValue2"
+    attr(x, "testAttribute3") <- "testValue3"
+    # expect one attribute log text to be returned
+    result1 <- "attribute\t|\ttestAttribute1\t|\ttestValue1\n"
+    result2 <- "attribute\t|\ttestAttribute2\t|\ttestValue2\n"
+    result3 <- "attribute\t|\ttestAttribute3\t|\ttestValue3\n"
+    expect_equal(extractAttributes(x), paste(result1, result2, result3, sep=""))
+})
+
+###
+
+# tests for: logEvent(event = <eventTitle>, call = <eventCall>, in = c(<inputObject1>, <inputObject2>), out = c(<outputObject1>, <outputObject2>))
+
+### bs> I think this signature and the tests don't fully translate the requirements.
+### bs> The log should contain a copy of the call. It's really hard to parse and assemble
+### bs> the call out of the environment of the parent function (I tried, and others have too)
+### bs> with poor results, but it's not hard to do that "by hand" in the calling function itself
+### bs> and just pass the call in as an argument. So there should be a parameter "call".
+### bs> Check how I built the "call" in importNet.STRING()
+### bs>
+### bs> Also, if the input object has an UUID, it's fine to parse that out from it, but if it doesn't?
+### bs> Does the caller need to create a dummy object and attach the filename? Or should
+### bs> input/output be a list that can contain either object references or filenames?
+### bs>
+### bs> Finally, could the "event" just be a comment, or other message?
+### bs> This needs a bit of thought.
+### bs>
+### bs> Test that messages are separated from each other by blank lines.
 
 
+test_that("an error occurs if an event title is not passed in", {
+    # call function without eventTitle parameter
+    # expect function to error
+})
+
+test_that("the date and time of the event are logged", {
+    # call function with arbitrary event and no input or outputs
+    # expect function to have logged the event with date and time
+    # expect function to have logged the event title
+    # expect function to have logged no attributes of any input or output objects
+})
+
+# only one test case for input attributes since already tested above
+test_that("the input attributes have been logged", {
+    # create potential input object with two attributes
+    # call function with arbitrary event
+    # expect function to have logged the event with date and time
+    # expect function to have logged the event title
+    # expect function to have logged both input attributes
+})
+
+test_that("the output attributes have been logged", {
+    # create potential output object with two attributes
+    # call function with arbitrary event
+    # expect function to have logged the event with date and time
+    # expect function to have logged the event title
+    # expect function to have logged both output attributes
+})
+
+test_that("both input and output attributes have been logged", {
+    # create potential input object with two attributes
+    # create potential output object with two attributes
+    # call function with arbitrary event
+    # expect function to have logged the event with date and time
+    # expect function to have logged the event title
+    # expect function to have logged both input attributes
+    # expect function to have logged both output attributes
+})
+
+###
+
+# tests for: findUUID(uuid, path)
+
+test_that("function errors if an invalid path has been provided", {
+    # call function with invalid file path
+    # expect function to error
+})
+
+test_that("if the uuid does not occur in the logs, that nothing is returned", {
+    # set up log file with uuids that will not be called by the function test
+    # call function with uuid which does not occur in the logs
+    # expect function to not return any instances
+    ### bs> What should the function do instead? Return NULL, NA, or ""?
+    ### wt> The function should instead return NULL.
+})
+
+test_that("one instance is returned if uuid occurs in the logs once", {
+    # set up log file with one instance of a uuid which will be called by the function
+    # call function with same uuid
+    # expect function to return one instance
+    ### bs> What _is_ actually returned? Just the line? The entire event block?
+    ### bs>    The filename too?
+})
+
+test_that("multiple instances are return if uuid occurs in the logs more than once", {
+    # set up log file with 3 instances of a uuid which will be called by the function
+    # call function with same uuid
+    # expect function to return the 3 instances of uuid being mentioned, in chronological order
+})
+
+###
+
+# tests for: getProvenance(object, path)
+
+### bs> I think you should pass an UUID as an argument, not an object. Yes?
+### wt> Yes. Will change pseudocode.
+
+test_that("function throws error if object does not exist", {
+    # call function with object which does not exist
+    # expect function to error
+    ### bs> IF you pass an UUID, your function needs to test whether the object is structured like an UUID.
+    ### bs> you should use the .checkArgs() function for that and I will add a
+    ### bs> keyword directive    like = "UUID"  to .checkArgs() . Good?
+    ### wt> great, thank you.
+})
+
+test_that("function throws error if object's uuid does not exist in the logs", {
+    # set up mock log file with uuids that will not be called by the function test
+    # call function with object uuid which does not occur in the logs
+    # expect function to error
+    ### bs> I would not call this an error. I think this test is actually
+    ### bs> the same as the second test in this group.
+    ### wt> I will remove this test.
+})
+
+test_that("function throws error if a path specified is not a directory", {
+    # call function with invalid path
+    # expect function to error
+    ### bs> yes. .checkArgs has an option for that
+})
+
+### bs> I think it would be useful to also throw an error if there are no log files at all in
+### bs> the directory since that's almost certainly not intended.
+### wt> yes, will add pseudocode.
+
+test_that("given an object whose UUID occurs in the logs, returns the correct provenance", {
+    # set up multiple log events where a particular object was manipulated, from a filename without a UUID
+    # call function with valid object and directory
+    # expect function to return the intermediaries of UUIDs and events which lead up to the current state of the object
+    ### bs> Here too: you need to decide what is being returned. Probably full event blocks plus filenames.
+})
+
+### bs> provenance can be branching since objects can have multiple parents. Need to test that these are correctly queued
+### bs> and handled. Suggest depth-first, not breadth-first.
 
 # Cleanup after testing
 options("rete.logfile" = OLOG)

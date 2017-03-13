@@ -24,3 +24,4 @@ fPath <- system.file("extdata", "devPPI.txt", package="rete")
 myMITAB <- read.delim(fPath, stringsAsFactors = FALSE)
 }
 }
+

@@ -33,3 +33,4 @@ fastmap(c("Q9NQ94", "P01023"), fastMapUniProt)
 Other fastMap functions: \code{\link{fastMapGenerate}},
   \code{\link{fastMapSanity}}, \code{\link{fastMapUpdate}}
 }
+

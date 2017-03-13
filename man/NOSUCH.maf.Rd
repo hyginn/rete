@@ -23,3 +23,4 @@ fPath <- system.file("data", "NOSUCH.maf", package="rete")
 myExample <- read.delim(fPath, stringsAsFactors = FALSE)
 }
 }
+

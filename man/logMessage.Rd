@@ -26,3 +26,4 @@ If a line is not terminated with a linebreak, a linebreak is appended.
   logMessage(mesg)
 }
 }
+
