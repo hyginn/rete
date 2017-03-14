@@ -94,7 +94,7 @@ logFileName <- function(fPath = getwd(), fName, setOption = FALSE) {
 #'   file. The file name is taken from the rete.logfile global option.
 #'
 #' The function will stop() if message is not of mode, type and class character.
-#' On windows systems, \n linebreaks are replaced with \r\n.
+#' On windows systems, \\n linebreaks are replaced with \\r\\n.
 #'
 #' @param message a character object or vector of character objects.
 #' @return N/A. message is appended to the current logfile.
@@ -156,7 +156,6 @@ logMessage <- function(message) {
 #'
 #'   ## @seealso \code{\link{logFileName}}
 #'   ## @seealso \code{\link{logMessage}}
-#'   ## @seealso \code{\link{extractAttributes}}
 #'   ## @seealso \code{\link{logEvent}}
 #'   ## @seealso \code{\link{findUUID}}
 #'   ## @seealso \code{\link{getProvenance}}
@@ -170,7 +169,8 @@ logMessage <- function(message) {
 attachUUID <- function(object, overwrite = TRUE) {
 
     if (is.null(object)) {
-        stop(object)
+        stop(sprintf("Object \"%s\" is NULL.",
+                     deparse(substitute(object))))
     }
 
     if (overwrite || is.null(attr(object, "UUID"))) {
@@ -184,40 +184,27 @@ attachUUID <- function(object, overwrite = TRUE) {
 }
 
 
-#' Extract attributes from object
-#'
-#' \code{extractAttributes} returns all of the attributes that are attached
-#' to an object, formatted for logging
-#'
-#' Format of the extracted attributes:
-#' event | <input/output> | attribute | <attrName1> | <attrValue1>
-#' event | <input/output> | attribute | <attrName2> | <attrValue2>
-#' event | <input/output> | attribute | <attrName3> | <attrValue3>
-#'
-#' @param object any R object
-#' @param option can be either "input" or "output", to signify the file type
-#' @return NULL if no attributes are extracted, text of attributes if attributes exist
-#'
-#' @family log file functions
-#'
-#'   ## @seealso \code{\link{logFileName}}
-#'   ## @seealso \code{\link{logMessage}}
-#'   ## @seealso \code{\link{attachUUID}}
-#'   ## @seealso \code{\link{logEvent}}
-#'   ## @seealso \code{\link{findUUID}}
-#'   ## @seealso \code{\link{getProvenance}}
-#'
-#' @examples
-#' \dontrun{
-#'   object <- "c"
-#'   attr(object, "UUID") <- uuid::UUIDgenerate()
-#'   extractAttributes(object, "output")
-#' }
-#' @export
-extractAttributes <- function(object, option = "input") {
+.extractAttributes <- function(object, option = "input") {
+
+    # Non-exported helper function returns all of the attributes that are
+    # attached to an object, formatted for logging.
+
+    # Format of the extracted attributes:
+    # event | <input/output> | attribute | <attrName1> | <attrValue1>
+    # event | <input/output> | attribute | <attrName2> | <attrValue2>
+    # event | <input/output> | attribute | <attrName3> | <attrValue3>
+    #
+    # Paremeters:
+    #    object: any non-NULL R object
+    #    option: <input|output> , to signify the object role in the calling
+    #             function
+    # Value:
+    #    NULL if no attributes are extracted,
+    #    Vector of formatted attribute descriptions otherwise.
 
     if (is.null(object)) {
-        stop("object is null")
+        stop(sprintf("Object \"%s\" is NULL.",
+                     deparse(substitute(object))))
     }
 
     result <- ""
@@ -268,7 +255,6 @@ extractAttributes <- function(object, option = "input") {
 #'   ## @seealso \code{\link{logFileName}}
 #'   ## @seealso \code{\link{logMessage}}
 #'   ## @seealso \code{\link{attachUUID}}
-#'   ## @seealso \code{\link{extractAttribute}}
 #'   ## @seealso \code{\link{findUUID}}
 #'   ## @seealso \code{\link{getProvenance}}
 #'
@@ -327,7 +313,7 @@ logEvent <- function(eventTitle = NULL, eventCall = NULL, input = list(), output
         allAttributes <- NULL
         # if input is object - extract attributes and write to log
         if (!missing(i)) {
-            allAttributes <- extractAttributes(i, "input")
+            allAttributes <- .extractAttributes(i, "input")
         }
 
         # if input is file
@@ -336,7 +322,7 @@ logEvent <- function(eventTitle = NULL, eventCall = NULL, input = list(), output
         if (file.exists(paste(fPath, fileName, sep="/"))) {
             completePath <- paste(fPath, fileName, sep="/")
             load(file = completePath)
-            allAttributes <- extractAttributes(fileName, "input")
+            allAttributes <- .extractAttributes(fileName, "input")
         }
 
         if (!is.null(allAttributes)) {
@@ -349,7 +335,7 @@ logEvent <- function(eventTitle = NULL, eventCall = NULL, input = list(), output
 
         # if output is object - extract attributes and write to log
         if (!missing(o)) {
-            allAttributes <- extractAttributes(o, "output")
+            allAttributes <- .extractAttributes(o, "output")
         }
 
         # if output is file
@@ -358,7 +344,7 @@ logEvent <- function(eventTitle = NULL, eventCall = NULL, input = list(), output
         if (file.exists(paste(fPath, fileName, sep="/"))) {
             completePath <- paste(fPath, fileName, sep="/")
             load(file = completePath)
-            allAttributes <- extractAttributes(fileName, "output")
+            allAttributes <- .extractAttributes(fileName, "output")
         }
 
         if (!is.null(allAttributes)) {
@@ -388,7 +374,6 @@ logEvent <- function(eventTitle = NULL, eventCall = NULL, input = list(), output
 #'   ## @seealso \code{\link{logFileName}}
 #'   ## @seealso \code{\link{logMessage}}
 #'   ## @seealso \code{\link{attachUUID}}
-#'   ## @seealso \code{\link{extractAttribute}}
 #'   ## @seealso \code{\link{logEvent}}
 #'   ## @seealso \code{\link{getProvenance}}
 #'
@@ -498,7 +483,6 @@ findUUID <- function(uuid, uuidPath = getwd()) {
 #'   ## @seealso \code{\link{logFileName}}
 #'   ## @seealso \code{\link{logMessage}}
 #'   ## @seealso \code{\link{attachUUID}}
-#'   ## @seealso \code{\link{extractAttribute}}
 #'   ## @seealso \code{\link{findUUID}}
 #'   ## @seealso \code{\link{logEvent}}
 #'

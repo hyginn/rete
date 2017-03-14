@@ -120,7 +120,7 @@ test_that("logMessage works as expected with reasonable arguments", {
 # tests for: attachUUID(object, overwrite=TRUE)
 test_that("attachUUID rejects objects that don't exist", {
     # pass object which does not exist into function
-    expect_error(attachUUID(x))
+    expect_error(attachUUID(tmp))
 
     # should reject NULL objects
     expect_error(attachUUID(NULL))
@@ -173,49 +173,51 @@ test_that("if the overwrite flag is TRUE AND object has a UUID, should attach UU
     expect_false(generatedUUID == attr(object, "UUID"))
 })
 
-# tests for: extractAttributes(object)
-test_that("extractAttributes rejects objects that don't exist", {
+# tests for: .extractAttributes(object)
+test_that(".extractAttributes() rejects objects that don't exist", {
     # pass reference of object which does not exist into function
-    expect_error(extractAttributes(x), "object 'x' not found")
+    if (exists("tmp")) { rm(tmp) }
+    expect_error(.extractAttributes(tmp), "object 'tmp' not found")
 
     # expect NULL object to raise error
-    expect_error(extractAttributes(NULL), "object is null")
+    tmp <- NULL
+    expect_error(.extractAttributes(tmp), "Object \"tmp\" is NULL.")
 })
 
-test_that("extractAttributes does not reject objects that exist", {
+test_that(".extractAttributes() does not reject objects that exist", {
     # pass reference of object which exists into function
-    x <- "c"
-    expect_error(extractAttributes(x), NA)
+    tmp <- "c"
+    expect_error(.extractAttributes(tmp), NA)
 })
 
-test_that("extractAttributes return NULL for an object with no attributes", {
+test_that(".extractAttributes() return NULL for an object with no attributes", {
     # create object with no attributes
-    x <- "c"
+    tmp <- "c"
     # expect no attributes to be returned
-    expect_equal(extractAttributes(x), NULL)
+    expect_equal(.extractAttributes(tmp), NULL)
 })
 
-test_that("extractAttributes logs one attribute for an object with one attribute", {
+test_that(".extractAttributes() logs one attribute for an object with one attribute", {
     # create object with one attribute
-    x <- "c"
-    attr(x, "testAttribute") <- "testValue"
+    tmp <- "c"
+    attr(tmp, "testAttribute") <- "testValue"
     # expect one attribute log text to be returned
-    result <- extractAttributes(x)
+    result <- .extractAttributes(tmp)
     expect_equal(result, "event\t|\tinput\t|\tattribute\t|\ttestAttribute\t|\ttestValue\n")
 })
 
-test_that("extractAttributes logs all attributes for an object with multiple attributes", {
+test_that(".extractAttributes() logs all attributes for an object with multiple attributes", {
     # create object with multiple attributes (more than one)
     # expect all of the attributes log text to be returned
-    x <- "c"
-    attr(x, "testAttribute1") <- "testValue1"
-    attr(x, "testAttribute2") <- "testValue2"
-    attr(x, "testAttribute3") <- "testValue3"
+    tmp <- "c"
+    attr(tmp, "testAttribute1") <- "testValue1"
+    attr(tmp, "testAttribute2") <- "testValue2"
+    attr(tmp, "testAttribute3") <- "testValue3"
     # expect one attribute log text to be returned
     result1 <- "event\t|\tinput\t|\tattribute\t|\ttestAttribute1\t|\ttestValue1\n"
     result2 <- "event\t|\tinput\t|\tattribute\t|\ttestAttribute2\t|\ttestValue2\n"
     result3 <- "event\t|\tinput\t|\tattribute\t|\ttestAttribute3\t|\ttestValue3\n"
-    expect_equal(extractAttributes(x), paste(result1, result2, result3, sep=""))
+    expect_equal(.extractAttributes(tmp), paste(result1, result2, result3, sep=""))
 })
 
 
@@ -254,10 +256,10 @@ test_that("logEvent is able to accept both objects or filenames in list of input
     eventCall <- "function1(param1, param2)"
     # call function with input name that DNE as an object or filename
     # function should error
-    expect_error(logEvent(eventTitle, eventCall, input = list(x)), "object 'x' not found")
+    expect_error(logEvent(eventTitle, eventCall, input = list(tmp)), "object 'tmp' not found")
 
     # call function with output name that DNE as object or filename
-    expect_error(logEvent(eventTitle, eventCall, output = list(x)), "object 'x' not found")
+    expect_error(logEvent(eventTitle, eventCall, output = list(tmp)), "object 'tmp' not found")
 
     # call function with NULL input
     # function should error
