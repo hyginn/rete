@@ -18,7 +18,7 @@ N/A. message is appended to the current logfile.
 }
 \details{
 The function will stop() if message is not of mode, type and class character.
-If a line is not terminated with a linebreak, a linebreak is appended.
+On windows systems, \n linebreaks are replaced with \r\n.
 }
 \examples{
 \dontrun{

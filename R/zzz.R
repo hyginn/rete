@@ -15,6 +15,10 @@
         stop("Failed to find required package \"readr\".")
     }
 
+    if (!requireNamespace("uuid", quietly = TRUE)) {
+        stop("Failed to find required package \"uuid\".")
+    }
+
     # Make list of rete global parameters
 
     # filepath of logfile
