@@ -53,6 +53,35 @@ test_that("Patient correctly extracted from barcode", {
         .filter.utils.patientFromBarcode(c("TCGA", "A3", "3307")))
 })
 
+test_that("Sample type correctly extracted from barcode", {
+    expect_equal(.filter.utils.sampleTypeFromBarcode(
+        "TCGA-A3-3307-01A-01R-0864-07", separator="-"), c(type='T', code='01'))
+
+    expect_equal(.filter.utils.sampleTypeFromBarcode,(
+        "TCGA.A3.3307.01B.01R.0864.07", separator="."), c(type='T', code='01'))
+
+    expect_equal(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.01A.01R.0864.07"), c(type='T', code='01'))
+
+    expect_equal(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.11A.01R.0864.07"), c(type='N', code='11'))
+
+    expect_equal(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.20A.01R.0864.07"), c(type='C', code='20'))
+
+    expect_error(
+        .filter.utils.sampleTypeFromBarcode("TCGA-A3-3307"))
+
+    expect_error(
+        .filter.utils.sampleTypeFromBarcode(""))
+
+    expect_error(
+        .filter.utils.sampleTypeFromBarcode(NULL))
+
+    expect_error(
+        .filter.utils.sampleTypeFromBarcode(3))
+})
+
 test_that("Path correctly concatenated on Linux", {
     skip_on_os(c("windows", "mac", "solaris"))
 
