@@ -18,7 +18,9 @@ A MAF formattted file containing TCAG OV carcinoma SNVs for 16
 genes.
 }
 \examples{
-system.file("extdata", "devSNV.maf", package="ekplektoR")
-fPath <- system.file("extdata", "devSNV.maf", package="ekplektoR")
+\dontrun{
+system.file("extdata", "devSNV.maf", package="rete")
+fPath <- system.file("extdata", "devSNV.maf", package="rete")
 myMAF <- read.delim(fPath, skip = 1, stringsAsFactors = FALSE)
+}
 }

@@ -5,33 +5,85 @@
 \title{Import network data from a STRING database file.}
 \usage{
 importNet.STRING(fName, net = "combined_score", cutoffType = "xN", val,
-  taxID = "9606", silent = FALSE, noLog = FALSE)
+  taxID = "9606", dropUnmapped = TRUE, silent = FALSE, writeLog = TRUE)
 }
 \arguments{
-\item{<fName>}{<description>.}
+\item{fName}{Filename of a STRING protein.links.detailed.v10.txt file.}
 
-\item{<net>}{<description>.}
+\item{net}{The requested network. This must be a string that exists in the
+header. The default is "combined_score".}
 
-\item{<cutoffType>}{<description>.}
+\item{cutoffType}{one of xN, xQ or xS (see Details).}
 
-\item{<val>}{<description>.}
+\item{val}{A number, quantile or score appropriate to the requested cutoff
+type.}
 
-\item{<taxID>}{<description>.}
+\item{taxID}{The NCBI tax ID prefix of the protein1 and protein2 IDs.
+Defaults to "9606" (homo sapiens)}
 
-\item{<silent>}{<description>.}
+\item{dropUnmapped}{Controls whether to drop records in which at least one
+interactor could not be mapped to HGNC gene symbol. TRUE by default.
+ by default.}
 
-\item{<noLog>}{<description>.}
+\item{silent}{Controls whether output to console should be suppressed. FALSE
+by default.}
+
+\item{writeLog}{Controls whether writing the result to the global logfile is
+enabled. TRUE by default.}
 }
 \value{
-<description>.
+a weighted, directed, simple igraph graph which is a rete gG object.
 }
 \description{
-\code{importNet.STRING} description.
+\code{importNet.STRING} imports network edges from a STRING database file,
+selects the highest confidence edges, maps ENSP IDs to HGNC gene symbols, and
+returns a weighted, directed igraph graph object of a rete gG type.
 }
-\details{
-Details.
+\section{Selecting edges}{
+
+  STRING scores are p-values * 1000, rounded to
+  integer. The function can retrieve  the highest scored edges according to
+  three different cutoff type. Type "xN" (default: 10000) retrieves the xN
+  highest scored edges. Type xQ (default 0.9) retrieves the edges with scores
+  larger than the xQ quantile. Type "xS" (default 950) retrieves all edges
+  with scores larger or equal to xS. If different values are requested, they
+  are passed in the parameter val. To read all edges, cutoff type should be
+  (the default) xN, val = Inf.
 }
-\section{<title>}{
- Additional explanation.
+
+\section{Networks}{
+
+  STRING "protein.links.detailed.v10.txt" files contain
+  several protein networks: neighborhood, fusion, cooccurence, coexpression,
+  experimental, database, textmining, and combined_score. However this
+  function is not restricted to these types, but will read one network for
+  which the column name is requested in the function's net parameter. This
+  allows users to define their own column.
+}
+
+\section{Tax ID}{
+
+  The taxID parameter is used as a sanity check on the file
+  contents. Currently only the first data record protein IDs are checked for
+  being prefixed with the tax ID. During processing all numbers and one
+  period prefixed to the ENSP ID are removed.
+}
+
+\section{Console and log}{
+
+  The taxID parameter is used as a sanity check on the
+  file contents. Currently only the first data
+}
+
+\section{The gG object}{
+
+  The function returns a rete gG object, a weighted,
+  directed, simple igraph graph in which HGNC gene symbols are vertex names,
+  and the edge attributes $weight hold the network scores. Graph attributes
+  hold metadata; use igraph::graph_attr(gG) to return: $version: the gG
+  object version; $logFile: the filename to which log information was
+  written; $inFile: the input filename of STRING data; $call: the complete
+  function call with expanded arguments; and $date: when the gG object was
+  created.
 }
 
