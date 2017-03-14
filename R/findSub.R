@@ -1,4 +1,4 @@
-findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
+findSub <- function(method="Leis",EGG,minOrd,noLog = FALSE,silent = FALSE) {
 #NOTE: THIS IS THE MOST RECENT FORM OF FINDSUB, AND HAS BEEN TESTED AND SHOWN TO WORK IN SCRIPTS
 #TITLED FINSUB_Test1.R through FINDSUB
 
@@ -79,8 +79,8 @@ findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
 
 
     #Is minOrd of correct type class and mode?
-    if ((typeof(minOrd)=="integer" || typeof(minOrd)=="double") && (as.integer(minOrd)==minOrd)) {
-        if (minOrd<2) {
+    if ((typeof(minOrd) == "integer" || typeof(minOrd) == "double") && (as.integer(minOrd) == minOrd)) {
+        if (minOrd < 2) {
             stop("minOrd must be 2 or greater")
         }
     }
@@ -89,21 +89,21 @@ findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
     }
 #removed: check for iGraph object type
     #Do we have a method type? For the time being we only have Leis
-    if (method!="Leis") {
+    if (method != "Leis") {
         stop("Error: method for edge removal
              must be Leis until later version adds new method types")
     }
     #is numeric and of class double, and a postive number (or at least 0)
     #Is noLog a logical?
-    if (class(noLog)!="logical") {
+    if (class(noLog) != "logical") {
         stop("Error: noLog must be of mode type and class logical")
     }
     #is silent logical
-    if (class(silent)!="logical") {
+    if (class(silent) != "logical") {
         stop("Error: silent must be of mode type and class logical")
     }
     #is EGG of correct EGGversion?
-    if (igraph::graph_attr(EGG, "EGGversion") != "1.0") {
+    if (igraph::graph_attr(EGG, "EGGversion")  !=  "1.0") {
         stop("Error: EGGversion must be 1.0")
     }
 
@@ -126,7 +126,7 @@ findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
 
         #check that delta is valid input
         deltaCond1<-(class(delta) == "numeric" && typeof(delta) == "double" && mode(delta) == "numeric")
-        deltaCond2<-(delta>=0)
+        deltaCond2<-(delta >= 0)
 
         if (!deltaCond1 || !deltaCond2) {
             stop("delta must be of mode and type numeric, and class double, and must be greater than
@@ -139,12 +139,12 @@ findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
     }
     else {
         #update log and write it
-        logVect=c(logVect,"Error: no method selected, ending function")
-        logFINDSUB<-data.frame(LogFINDSUB=logVect,stringsAsFactors = FALSE)
+        logVect = c(logVect,"Error: no method selected, ending function")
+        logFINDSUB<-data.frame(LogFINDSUB = logVect,stringsAsFactors = FALSE)
         if (!silent) {
             print(logVect[length(logVect)])
         }
-        save(logFINDSUB,file=logName)#This will have to be edited to save to a differnt location, perhaps
+        save(logFINDSUB,file = logName)#This will have to be edited to save to a differnt location, perhaps
         stop("No Method selected for edge removal")
     }
 
@@ -163,12 +163,12 @@ findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
     }
 #Taking Dr. Steipe's suggestions
     sN<-list()
-    cEGG <- igraph::components(EGG, mode="strong") #remaining components of EGG
+    cEGG <- igraph::components(EGG, mode = "strong") #remaining components of EGG
     aggHeatScoreVect<-numeric()
     for (i in 1:cEGG$no) { #for every component (identified by an integer btw 1 and 'no')
                             #perform below procedure to create iGraph objects for
-                            #strongly connected graph components with order>minOrd
-       if (cEGG$csize[i]>=minOrd) {
+                            #strongly connected graph components with order > minOrd
+       if (cEGG$csize[i] >= minOrd) {
            vertList<-list(names(cEGG$membership[cEGG$membership == i]))#list of vertex names
                                                                     #where vertices are members
                                                                     # of cluster i
@@ -176,12 +176,12 @@ findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
            newGraph<-igraph::induced_subgraph( EGG , vertList[[1]] )
            # creating new iGraph object from vertices in a strongly connected component
            # then ordering newGraph by edgeID
-           newGraphEdges<-igraph::as_data_frame(newGraph,what="edges")
-           newGraphVerts<-igraph::as_data_frame(newGraph,what="vertices")
+           newGraphEdges<-igraph::as_data_frame(newGraph,what = "edges")
+           newGraphVerts<-igraph::as_data_frame(newGraph,what = "vertices")
            edgeIDVect<-newGraphEdges$edgeID
            edgeIDVect<-order(edgeIDVect)
            newGraphEdges<-newGraphEdges[edgeIDVect,]
-           newGraph<-igraph::graph_from_data_frame(newGraphEdges,vertices=newGraphVerts)
+           newGraph<-igraph::graph_from_data_frame(newGraphEdges,vertices = newGraphVerts)
 
 
             #then calculating aggregate Heat Score of the included vertices
@@ -193,7 +193,7 @@ findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
            aggHeatScoreVect<-c(aggHeatScoreVect,aggHeatScore)
 
            sN<-c(sN,list(newGraph))#adding the graph to the sN
-           mess4<-paste("Component", i ,"out of", cEGG$no , "is of order>=minOrd",collapse="\n")
+           mess4<-paste("Component", i ,"out of", cEGG$no , "is of order >= minOrd",collapse="\n")
            mess5<-paste("Created subgraph for component" , i , "and calculated aggregate heat score",
                         collapse="\n")
            logVect<-c(logVect,mess4,mess5)
@@ -219,9 +219,9 @@ if (!silent) {
     print(logVect[length(logVect)])
 }
 
-if (!noLog) { #save log data if we choose noLog=FALSE
-    save(logVect, file=logName)
-}
+#if (!noLog) { #save log data if we choose noLog = FALSE
+  #  save(logVect, file = logName)
+#}
 return(sN)
 
 } #end of function
