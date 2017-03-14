@@ -1,0 +1,5 @@
+gene10	gene11	gene8	gene9
+gene1	gene12	gene19
+gene13	gene14
+gene17	gene18
+gene2	gene3
