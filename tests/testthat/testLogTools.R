@@ -82,6 +82,7 @@ test_that("logMessage works as expected with reasonable arguments", {
     expect_false(file.exists(fn))
 
     # test one message, file creation, correct addition of \n if \n is missing
+
     # platform appropriate conversions.
     if (.Platform$OS.type == "windows") {
         logMessage("a")
