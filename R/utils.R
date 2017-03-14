@@ -75,7 +75,8 @@
                                "[0-9a-f]{4}-?",
                                "[1-5]",   # version
                                "[0-9a-f]{3}-?",
-                               "[89ab][0-9a-f]{3}-?",
+                               "[89ab]",  # variant
+                               "[0-9a-f]{3}-?",
                                "[0-9a-f]{12}\\}?")
                 # Note: this rejects the NIL UUID event though it is
                 # syntactically correct as per RFC4122, in that it fails the

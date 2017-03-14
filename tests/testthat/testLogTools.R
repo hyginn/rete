@@ -80,17 +80,39 @@ test_that("logMessage works as expected with reasonable arguments", {
     fn <- unlist(getOption("rete.logfile"))
     # confirm that rete.logfile does not yet exist when we enter the test
     expect_false(file.exists(fn))
+
     # test one message, file creation, correct addition of \n if \n is missing
-    logMessage("a")
-    expect_true(file.exists(fn))  # log file created
-    #expect_equal(readChar(fn, file.info(fn)$size), "a\n")
-    # test two message elements
-    logMessage(c("b", "c"))
-    #expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\n")
-    # test no addition of \n if \n is already there
-    logMessage("d\n")
-    #expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\nd\n")
-    # test logfile can be removed
+
+    # platform appropriate conversions.
+    if (.Platform$OS.type == "windows") {
+        logMessage("a")
+        expect_true(file.exists(fn))  # log file created
+        expect_equal(readChar(fn, file.info(fn)$size), "a\r\n")
+        # test two message elements
+        logMessage(c("b", "c"))
+        expect_equal(readChar(fn, file.info(fn)$size), "a\r\nb\r\nc\r\n")
+        # test no extra \r\n if \r\n is already there
+        logMessage("d\r\n")
+        expect_equal(readChar(fn, file.info(fn)$size), "a\r\nb\r\nc\r\nd\r\n")
+        # test replacement of wrong linebreak
+        logMessage("\ne\n")
+        expect_equal(readChar(fn, file.info(fn)$size),
+                     "a\r\nb\r\nc\r\nd\r\n\r\ne\r\n")
+    } else {
+        logMessage("a")
+        expect_true(file.exists(fn))  # log file created
+        expect_equal(readChar(fn, file.info(fn)$size), "a\n")
+        # test two message elements
+        logMessage(c("b", "c"))
+        expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\n")
+        # test no extra \n if \n is already there
+        logMessage("d\n")
+        expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\nd\n")
+        # test replacement of wrong linebreak
+        logMessage("\r\ne\r\n")
+        expect_equal(readChar(fn, file.info(fn)$size), "a\nb\nc\nd\n\ne\n")
+    }
+
     # cleanup, but might as well test ...
     expect_true(file.remove(fn))
 })

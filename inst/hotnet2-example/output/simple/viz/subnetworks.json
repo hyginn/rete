@@ -1,0 +1,1122 @@
+{
+    "geneToHeat": {
+        "gene8": 4.0, 
+        "gene9": 2.0, 
+        "gene1": 15.0, 
+        "gene2": 6.0, 
+        "gene3": 5.0, 
+        "gene4": 1.0, 
+        "gene5": 3.0, 
+        "gene6": 2.0, 
+        "gene7": 1.0, 
+        "gene12": 1.0, 
+        "gene13": 1.0, 
+        "gene10": 5.0, 
+        "gene11": 1.0, 
+        "gene16": 1.0, 
+        "gene17": 1.0, 
+        "gene14": 1.0, 
+        "gene15": 1.0, 
+        "gene18": 1.0, 
+        "gene19": 1.0, 
+        "gene23": 1.0, 
+        "gene22": 1.0, 
+        "gene21": 1.0, 
+        "gene20": 1.0, 
+        "gene25": 1.0, 
+        "gene24": 1.0
+    }, 
+    "deltas": [
+        "0.0463291", 
+        "0.0260453", 
+        "0.0900611", 
+        "0.0298582"
+    ], 
+    "stats": {
+        "0.0463291": {
+            "10": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "3": {
+                "expected": 3.0, 
+                "pval": 0.9, 
+                "observed": 3
+            }, 
+            "2": {
+                "expected": 3.0, 
+                "pval": 0.9, 
+                "observed": 3
+            }, 
+            "5": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "4": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "7": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "6": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "9": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "8": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }
+        }, 
+        "0.0900611": {
+            "10": {
+                "expected": 0.6, 
+                "pval": 1.0, 
+                "observed": 0
+            }, 
+            "3": {
+                "expected": 2.2, 
+                "pval": 0.8, 
+                "observed": 2
+            }, 
+            "2": {
+                "expected": 3.4, 
+                "pval": 0.4, 
+                "observed": 5
+            }, 
+            "5": {
+                "expected": 0.7, 
+                "pval": 1.0, 
+                "observed": 0
+            }, 
+            "4": {
+                "expected": 1.2, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "7": {
+                "expected": 0.6, 
+                "pval": 1.0, 
+                "observed": 0
+            }, 
+            "6": {
+                "expected": 0.7, 
+                "pval": 1.0, 
+                "observed": 0
+            }, 
+            "9": {
+                "expected": 0.6, 
+                "pval": 1.0, 
+                "observed": 0
+            }, 
+            "8": {
+                "expected": 0.6, 
+                "pval": 1.0, 
+                "observed": 0
+            }
+        }, 
+        "0.0298582": {
+            "10": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "3": {
+                "expected": 2.1, 
+                "pval": 0.5, 
+                "observed": 3
+            }, 
+            "2": {
+                "expected": 2.1, 
+                "pval": 0.5, 
+                "observed": 3
+            }, 
+            "5": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "4": {
+                "expected": 1.5, 
+                "pval": 0.5, 
+                "observed": 2
+            }, 
+            "7": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "6": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "9": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "8": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }
+        }, 
+        "0.0260453": {
+            "10": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "3": {
+                "expected": 1.1, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "2": {
+                "expected": 1.1, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "5": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "4": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "7": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "6": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "9": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }, 
+            "8": {
+                "expected": 1.0, 
+                "pval": 1.0, 
+                "observed": 1
+            }
+        }
+    }, 
+    "subnetworks": {
+        "0.0463291": [
+            {
+                "nodes": [
+                    {
+                        "heat": 5.0, 
+                        "name": "gene10"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene11"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene13"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene14"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene15"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene16"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene17"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene18"
+                    }, 
+                    {
+                        "heat": 6.0, 
+                        "name": "gene2"
+                    }, 
+                    {
+                        "heat": 5.0, 
+                        "name": "gene3"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene4"
+                    }, 
+                    {
+                        "heat": 3.0, 
+                        "name": "gene5"
+                    }, 
+                    {
+                        "heat": -2.0, 
+                        "name": "gene6"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene7"
+                    }, 
+                    {
+                        "heat": 4.0, 
+                        "name": "gene8"
+                    }, 
+                    {
+                        "heat": 2.0, 
+                        "name": "gene9"
+                    }
+                ], 
+                "edges": [
+                    {
+                        "source": "gene10", 
+                        "target": "gene11", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene10", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene16", 
+                        "target": "gene17", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene17", 
+                        "target": "gene18", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene2", 
+                        "target": "gene3", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene3", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene5", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene6", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene7", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene8", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene9", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene7", 
+                        "target": "gene8", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene7", 
+                        "target": "gene9", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }
+                ]
+            }, 
+            {
+                "nodes": [
+                    {
+                        "heat": -15.0, 
+                        "name": "gene1"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene12"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene19"
+                    }
+                ], 
+                "edges": []
+            }, 
+            {
+                "nodes": [
+                    {
+                        "heat": 1.0, 
+                        "name": "gene23"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene24"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene25"
+                    }
+                ], 
+                "edges": [
+                    {
+                        "source": "gene23", 
+                        "target": "gene24", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene24", 
+                        "target": "gene25", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }
+                ]
+            }
+        ], 
+        "0.0900611": [
+            {
+                "nodes": [
+                    {
+                        "heat": 5.0, 
+                        "name": "gene10"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene11"
+                    }, 
+                    {
+                        "heat": 4.0, 
+                        "name": "gene8"
+                    }, 
+                    {
+                        "heat": 2.0, 
+                        "name": "gene9"
+                    }
+                ], 
+                "edges": [
+                    {
+                        "source": "gene10", 
+                        "target": "gene11", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }
+                ]
+            }, 
+            {
+                "nodes": [
+                    {
+                        "heat": -15.0, 
+                        "name": "gene1"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene12"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene19"
+                    }
+                ], 
+                "edges": []
+            }, 
+            {
+                "nodes": [
+                    {
+                        "heat": 1.0, 
+                        "name": "gene13"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene14"
+                    }
+                ], 
+                "edges": []
+            }, 
+            {
+                "nodes": [
+                    {
+                        "heat": 1.0, 
+                        "name": "gene17"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene18"
+                    }
+                ], 
+                "edges": [
+                    {
+                        "source": "gene17", 
+                        "target": "gene18", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }
+                ]
+            }, 
+            {
+                "nodes": [
+                    {
+                        "heat": 6.0, 
+                        "name": "gene2"
+                    }, 
+                    {
+                        "heat": 5.0, 
+                        "name": "gene3"
+                    }
+                ], 
+                "edges": [
+                    {
+                        "source": "gene2", 
+                        "target": "gene3", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }
+                ]
+            }
+        ], 
+        "0.0298582": [
+            {
+                "nodes": [
+                    {
+                        "heat": 5.0, 
+                        "name": "gene10"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene11"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene13"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene14"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene15"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene16"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene17"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene18"
+                    }, 
+                    {
+                        "heat": 6.0, 
+                        "name": "gene2"
+                    }, 
+                    {
+                        "heat": 5.0, 
+                        "name": "gene3"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene4"
+                    }, 
+                    {
+                        "heat": 3.0, 
+                        "name": "gene5"
+                    }, 
+                    {
+                        "heat": -2.0, 
+                        "name": "gene6"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene7"
+                    }, 
+                    {
+                        "heat": 4.0, 
+                        "name": "gene8"
+                    }, 
+                    {
+                        "heat": 2.0, 
+                        "name": "gene9"
+                    }
+                ], 
+                "edges": [
+                    {
+                        "source": "gene10", 
+                        "target": "gene11", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene10", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene16", 
+                        "target": "gene17", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene17", 
+                        "target": "gene18", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene2", 
+                        "target": "gene3", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene3", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene5", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene6", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene7", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene8", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene9", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene7", 
+                        "target": "gene8", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene7", 
+                        "target": "gene9", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }
+                ]
+            }, 
+            {
+                "nodes": [
+                    {
+                        "heat": 1.0, 
+                        "name": "gene20"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene23"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene24"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene25"
+                    }
+                ], 
+                "edges": [
+                    {
+                        "source": "gene23", 
+                        "target": "gene24", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene24", 
+                        "target": "gene25", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }
+                ]
+            }, 
+            {
+                "nodes": [
+                    {
+                        "heat": -15.0, 
+                        "name": "gene1"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene12"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene19"
+                    }
+                ], 
+                "edges": []
+            }
+        ], 
+        "0.0260453": [
+            {
+                "nodes": [
+                    {
+                        "heat": -15.0, 
+                        "name": "gene1"
+                    }, 
+                    {
+                        "heat": 5.0, 
+                        "name": "gene10"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene11"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene12"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene13"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene14"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene15"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene16"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene17"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene18"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene19"
+                    }, 
+                    {
+                        "heat": 6.0, 
+                        "name": "gene2"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene20"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene21"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene22"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene23"
+                    }, 
+                    {
+                        "heat": -1.0, 
+                        "name": "gene24"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene25"
+                    }, 
+                    {
+                        "heat": 5.0, 
+                        "name": "gene3"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene4"
+                    }, 
+                    {
+                        "heat": 3.0, 
+                        "name": "gene5"
+                    }, 
+                    {
+                        "heat": -2.0, 
+                        "name": "gene6"
+                    }, 
+                    {
+                        "heat": 1.0, 
+                        "name": "gene7"
+                    }, 
+                    {
+                        "heat": 4.0, 
+                        "name": "gene8"
+                    }, 
+                    {
+                        "heat": 2.0, 
+                        "name": "gene9"
+                    }
+                ], 
+                "edges": [
+                    {
+                        "source": "gene1", 
+                        "target": "gene2", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene10", 
+                        "target": "gene11", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene10", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene11", 
+                        "target": "gene12", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene12", 
+                        "target": "gene13", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene12", 
+                        "target": "gene14", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene12", 
+                        "target": "gene15", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene12", 
+                        "target": "gene16", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene12", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene16", 
+                        "target": "gene17", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene17", 
+                        "target": "gene18", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene18", 
+                        "target": "gene19", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene19", 
+                        "target": "gene20", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene2", 
+                        "target": "gene3", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene20", 
+                        "target": "gene21", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene20", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene21", 
+                        "target": "gene22", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene21", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene22", 
+                        "target": "gene23", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene23", 
+                        "target": "gene24", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene23", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene24", 
+                        "target": "gene25", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene25", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene3", 
+                        "target": "gene4", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene5", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene6", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene7", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene8", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene4", 
+                        "target": "gene9", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene7", 
+                        "target": "gene8", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }, 
+                    {
+                        "source": "gene7", 
+                        "target": "gene9", 
+                        "networks": [
+                            "Example"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }, 
+    "mutation_matrices": {}, 
+    "predictions": [
+        "gene1", 
+        "gene10", 
+        "gene11", 
+        "gene12", 
+        "gene13", 
+        "gene14", 
+        "gene15", 
+        "gene16", 
+        "gene17", 
+        "gene18", 
+        "gene19", 
+        "gene2", 
+        "gene20", 
+        "gene21", 
+        "gene22", 
+        "gene23", 
+        "gene24", 
+        "gene25", 
+        "gene3", 
+        "gene4", 
+        "gene5", 
+        "gene6", 
+        "gene7", 
+        "gene8", 
+        "gene9"
+    ], 
+    "ks": [
+        2, 
+        3, 
+        4, 
+        5, 
+        6, 
+        7, 
+        8, 
+        9, 
+        10
+    ]
+}
