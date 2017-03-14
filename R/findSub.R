@@ -1,4 +1,4 @@
-findsub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
+findSub <- function(method="Leis",EGG,minOrd,noLog=FALSE,silent=FALSE) {
 #NOTE: THIS IS THE MOST RECENT FORM OF FINDSUB, AND HAS BEEN TESTED AND SHOWN TO WORK IN SCRIPTS
 #TITLED FINSUB_Test1.R through FINDSUB
 
