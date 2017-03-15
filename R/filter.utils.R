@@ -49,6 +49,16 @@
 # Extract the sample type from a tumor sample barcode.  Expects a
 #   normalized barcode.
 #
+# The sample types returned are one of 'T': tumour sample, 'N': normal
+#   sample, or 'C': control.  There are more potential sample types
+#   that can exist; https://wiki.nci.nih.gov/display/TCGA/TCGA+barcode
+#   does not mention them, and their link to the Code Tables Report is
+#   broken.  https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables
+#   has a non-broken link to a list of sample type codes.  Additional
+#   sample types from that table include cell line, xenograft, recurrent
+#   blood derived cancer, and "sample type 99".  Thankfully both lists
+#   agree that there is no code '00'.
+#
 # @param barcode A tumour barcode
 # @param separator The separator used in this barcode, default '.'
 # @return The sample type, code, and vial.  In the form c(type='T',
