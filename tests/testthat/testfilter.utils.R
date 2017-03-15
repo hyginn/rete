@@ -55,22 +55,39 @@ test_that("Patient correctly extracted from barcode", {
 
 test_that("Sample type correctly extracted from barcode", {
     expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA-A3-3307-01A-01R-0864-07", separator="-"), c(type='T', code='01'))
-
-    expect_equal(.filter.utils.sampleTypeFromBarcode,(
-        "TCGA.A3.3307.01B.01R.0864.07", separator="."), c(type='T', code='01'))
+        "TCGA-A3-3307-01A-01R-0864-07", separator="-"),
+        c(type='T', code='01', vial='A'))
 
     expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA.A3.3307.01A.01R.0864.07"), c(type='T', code='01'))
+        "TCGA.A3.3307.01B.01R.0864.07", separator="."),
+        c(type='T', code='01', vial='B'))
 
     expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA.A3.3307.11A.01R.0864.07"), c(type='N', code='11'))
+        "TCGA.A3.3307.01A.01R.0864.07"), c(type='T', code='01', vial='A'))
 
     expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA.A3.3307.20A.01R.0864.07"), c(type='C', code='20'))
+        "TCGA.A3.3307.11A.01R.0864.07"), c(type='N', code='11', vial='A'))
+
+    expect_equal(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.20A.01R.0864.07"), c(type='C', code='20', vial='A'))
+
+    expect_error(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.00C.01R.0864.07"))
+
+    expect_error(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.10.01R.0864.07"))
+
+    expect_error(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.104.01R.0864.07"))
+
+    expect_error(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.100A.01R.0864.07"))
+
+    expect_error(.filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.30A.01R.0864.07"))
 
     expect_error(
-        .filter.utils.sampleTypeFromBarcode("TCGA-A3-3307"))
+        .filter.utils.sampleTypeFromBarcode("TCGA-A3-3307", separator='-'))
 
     expect_error(
         .filter.utils.sampleTypeFromBarcode(""))

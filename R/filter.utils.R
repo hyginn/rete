@@ -46,6 +46,75 @@
     return(patient)
 }
 
+# Extract the sample type from a tumor sample barcode.  Expects a
+#   normalized barcode.
+#
+# @param barcode A tumour barcode
+# @param separator The separator used in this barcode, default '.'
+# @return The sample type, code, and vial.  In the form c(type='T',
+#   code='01', vial='C'
+.filter.utils.sampleTypeFromBarcode <- function(
+        barcode, separator=".") {
+
+    if (typeof(barcode) != "character") {
+        stop("Barcode must be of type character")
+    }
+
+    bits <- strsplit(barcode, separator, fixed=TRUE)[[1]]
+    if (length(bits) < 4) {
+        stop("Barcode does not contain a sample identifier")
+    }
+
+    # Get the sample section of the barcode
+    fullSample <- bits[4]
+    if (nchar(fullSample) != 3) {
+        stop("Invalid tumour sample type")
+    }
+
+    # Get the sample type code.  Must be a two digit number between
+    #   01 and 29.
+    sampleCode <- substr(fullSample, 1, 2)
+    if (sampleCode == '00') {
+        stop("Invalid tumour sample type code")
+    }
+
+    # Determine the sample type from the sample type code.  The sample
+    #   type is identified by the first digit of the sample type code.
+    #   Unless needed, only tumour, normal, and control samples are
+    #   considered valid.
+    #   
+    # Putting this here as the NCI wiki link to the code tables report
+    #   is broken. 
+    #   https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/sample-type-codes
+    sampleType <- character()
+    sampleFlag <- substr(fullSample, 1, 1)
+    if (sampleFlag == '0') {
+        sampleType <- 'T' # Tumour
+    } else if (sampleFlag == '1') {
+        sampleType <- 'N' # Normal
+    } else if (sampleFlag == '2') {
+        sampleType <- 'C' # Control
+##    } else if (sampleFlag == '4') {
+##        sampleType <- 'R' # Recurrent
+##    } else if (sampleFlag == '5') {
+##        sampleType <- 'L' # Cell line
+##    } else if (sampleFlag == '6') {
+##        sampleType <- 'X' # Xenograft
+    } else {
+        stop("Invalid tumour sample type code")
+    }
+
+    # Pull out the vial sequence identifier, must be an upper case
+    #   letter between A and Z
+    sampleVial <- substr(fullSample, 3, 3)
+    ord <- utf8ToInt(sampleVial)
+    if (ord < 65 || ord > 90) { # 65 = A, 90 = Z
+        stop("Invalid tumour sample vial")
+    }
+
+    return(c(type=sampleType, code=sampleCode, vial=sampleVial))
+}
+
 # Guess whether a file is MAF/rSNV or RDS/rCNA
 #
 # Gets the first byte of a file, return MAF if it starts with a hash
