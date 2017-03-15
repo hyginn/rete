@@ -3,6 +3,9 @@
 # Utility functions logging and object metadata
 #
 
+
+# ==== logFileName() ===========================================================
+
 #' Define the log file name
 #'
 #' \code{logFileName} returns path and name of a file for logging events, or
@@ -88,6 +91,9 @@ logFileName <- function(fPath = getwd(), fName, setOption = FALSE) {
 }
 
 
+# ==== logMessage() ============================================================
+
+
 #' Write a message to the current log file.
 #'
 #' \code{logMessage} uses cat() to append a message to the current log
@@ -96,7 +102,7 @@ logFileName <- function(fPath = getwd(), fName, setOption = FALSE) {
 #' The function will stop() if message is not of mode, type and class character.
 #' On windows systems, \\n linebreaks are replaced with \\r\\n.
 #'
-#' @param message a character object or vector of character objects.
+#' @param msg a character object or vector of character objects.
 #' @return N/A. message is appended to the current logfile.
 #'
 #' @family log file functions
@@ -105,31 +111,31 @@ logFileName <- function(fPath = getwd(), fName, setOption = FALSE) {
 #'
 #' @examples
 #' \dontrun{
-#'   mesg <- c("note > ", Sys.Date(), "Re-run analysis.")
-#'   logMessage(mesg)
+#'   msg <- c("note > ", Sys.Date(), "Re-run analysis.")
+#'   logMessage(msg)
 #' }
 #' @export
-logMessage <- function(message) {
+logMessage <- function(msg) {
 
-    checkReport <- .checkArgs(message, like = character())
+    checkReport <- .checkArgs(msg, like = character())
     if(length(checkReport) > 0) {
         stop(checkReport)
     }
 
     # remove "\n" or "\r\n" from line-endings
-    message <- gsub("[\n\r]+$", "", message)
+    msg <- gsub("[\n\r]+$", "", msg)
 
     # replace existing line breaks with platform appropriate version
     if (.Platform$OS.type == "windows") {
         Sep <- "\r\n"
-        message <- gsub("([^\r]\n)|^\n", Sep, message)
+        msg <- gsub("([^\r]\n)|^\n", Sep, msg)
     } else {
         Sep <- "\n"
-        message <- gsub("\r\n", Sep, message)
+        msg <- gsub("\r\n", Sep, msg)
     }
 
     # append to log file, with platform appropriate separator
-    cat(message,
+    cat(msg,
         file = unlist(getOption("rete.logfile")),
         sep = Sep,
         append = TRUE)
@@ -137,20 +143,27 @@ logMessage <- function(message) {
 }
 
 
-#' Attach a UUID to an object
+# ==== getUUID() ===========================================================
+
+#' get a UUID to attach to an object
 #'
-#' \code{attachUUID} uses the uuid package to attach a $UUID attribute to
-#' a given object.
+#' \code{getUUID} uses the uuid package to prepare a UUID suitable to
+#'                be attached to a given object.
 #'
 #' The overwrite flag can be understood as follows:
-#' - if the overwrite flag is TRUE, then whether or not the object had
-#' a UUID previously or not, a new UUID attribute is attached
-#' - if the overwrite flag is FALSE, then no new UUID attribute is attached
+#' - if the object does not have a $UUID attribute, a UUID is returned
+#' - if the object has a $UUID attribute and "overwrite" is TRUE
+#'   a new UUID is returned.
+#' - if the object has a $UUID attribute and "overwrite" is FALSE, the
+#'   old UUID is returned.
 #'
-#' @param object any R object
-#' @param overwrite flag for indicating whether a UUID should be overwritten or not
-#' @return NULL if no new UUID is attached, and the value of the attached UUID if a
-#' new UUID was attached
+#'   Note: no check is done whether the original $UUID attribute
+#'   is a valid UUID.
+#'
+#' @param x an R object
+#' @param overwrite logical. Flag to control whether an existing UUID should be
+#'                  overwritten. Default FALSE.
+#' @return the value of the original UUID attribute, or a new UUID
 #'
 #' @family log file functions
 #'
@@ -162,68 +175,111 @@ logMessage <- function(message) {
 #'
 #' @examples
 #' \dontrun{
-#'   object <- "c"
-#'   attachUUID(object)
+#'   tmp <- "c"
+#'   getUUID("tmp")
 #' }
 #' @export
-attachUUID <- function(object, overwrite = TRUE) {
+getUUID <- function(x, overwrite = FALSE) {
 
-    if (is.null(object)) {
+    objectName <- deparse(substitute(x))
+    if (!exists(objectName)) {
+        stop(sprintf("Object \"%s\" does not exist.",
+                     objectName))
+    }
+
+    if (is.null(x)) {
         stop(sprintf("Object \"%s\" is NULL.",
-                     deparse(substitute(object))))
+                     objectName))
     }
 
-    if (overwrite || is.null(attr(object, "UUID"))) {
-        generatedUUID <- uuid::UUIDgenerate()
-        attr(object, "UUID") <- generatedUUID
-        return(object)
+    if (is.null(attr(x, "UUID")) || overwrite) {
+        UUID <- uuid::UUIDgenerate()
     } else {
-        return(object)
+        UUID <- attr(x, "UUID")
     }
+    return(UUID)
 
 }
 
+# ==== .extractAttributes() ====================================================
 
-.extractAttributes <- function(object, option = "input") {
+.extractAttributes <- function(object, role) {
 
     # Non-exported helper function returns all of the attributes that are
-    # attached to an object, formatted for logging.
+    # attached to an object identified by objectName, formatted for logging.
 
     # Format of the extracted attributes:
-    # event | <input/output> | attribute | <attrName1> | <attrValue1>
-    # event | <input/output> | attribute | <attrName2> | <attrValue2>
-    # event | <input/output> | attribute | <attrName3> | <attrValue3>
+    # event | input  | attribute | <attrNameN> | <attrValueN>
+    # ... or
+    # event | output | attribute | <attrNameN> | <attrValueN>
     #
-    # Paremeters:
+    # Parameters:
     #    object: any non-NULL R object
-    #    option: <input|output> , to signify the object role in the calling
-    #             function
+    #    role: <input|output> signifies the object role in the calling
+    #             function's workflow.
     # Value:
-    #    NULL if no attributes are extracted,
-    #    Vector of formatted attribute descriptions otherwise.
+    #    A zero-length string if no attributes are extracted,
+    #    a vector of formatted attribute descriptions otherwise.
+
+
+    if (missing(role)) {
+        stop("role parameter must be provided.")
+    }
+
+    r <- character()
+    r <- c(r, .checkArgs(role, like = "a", checkSize = TRUE))
+    if(length(r) > 0) {
+        stop(r)
+    }
 
     if (is.null(object)) {
-        stop(sprintf("Object \"%s\" is NULL.",
-                     deparse(substitute(object))))
+            stop(sprintf("Object \"%s\" is NULL.",
+                         deparse(substitute(object))))
     }
 
-    result <- ""
+    if (! role %in% c("input", "output")) {
+        stop(sprintf("Expecting role \"input\" or \"output\", but got \"%s\".",
+                     role))
+    }
+
+
+    result <- character()
     for (name in names(attributes(object))) {
-        result <- paste(result, "event\t|\t", option, "\t|\tattribute\t|\t", name, "\t|\t", attr(object, name), "\n", sep="")
+
+        if (length(attr(object, name)) == 1) {
+            att <- paste("\"",
+                         attr(object, name),
+                         "\"",
+                         sep = "")
+        } else if (length(attr(object, name)) < 4) {
+            att <- paste("(",
+                         paste(attr(object, name), collapse = ", "),
+                         ")",
+                         sep = "")
+        } else {
+            att <- paste("(",
+                         paste(attr(object, name)[1:3], collapse = ", "),
+                         ", ... (",
+                         length(attr(object, name)),
+                         ") )",
+                         sep = "")
+
+        }
+
+        result <- c(result,
+                    sprintf("event | %-6s | attribute | %-12s | %s",
+                            role, name, att))
     }
 
-    if (result == "") {
-        return(NULL)
-    } else {
-        return(result)
-    }
+    return(result)
 
 }
 
+# ==== logEvent() ==============================================================
 
-#' Main function for writing logs
+#' Formats an event description to be sent for attaching to the log file.
 #'
-#' \code{logEvent} generates a log of an event with:
+#' \code{logEvent} generates an event message with:
 #' - the event title
 #' - the event call
 #' - attributes of the input object
@@ -232,251 +288,229 @@ attachUUID <- function(object, overwrite = TRUE) {
 #' - function version (TODO)
 #' - file hashes of input (TODO)
 #'
-#' Format of the logging is as follows:
-#' event | input | attribute | <inputAttrName1> | <inputAttrValue1>
+#' Format of the event description is as follows:
+#' event | title  | <eventTitle>
+#' event | time   | <eventDateTime>
+#' event | call   | <eventCall>
+#' (ToDo: event | functionVersion | <functionVersion>)
+#' event | input  | attribute | <inputAttrName1> | <inputAttrValue1>
 #' event | output | attribute | <outputAttrName1> | <outputAttrValue1>
-#' event | call | <eventCall>
-#' comment | title | <eventTitle>
-#' comment | dateTime | <eventDateTime>
-#' comment | functionVersion | <functionVersion>
+#' event | end
 #'
 #'
-#' @param eventTitle the title of the event, from a predetermined categorization of events
+#' The event message is terminated by an "end event" marker, and a blank
+#' line, and it is handed off to logMessage() to append it to the
+#' log file referenced in the global variable options("rete.logfile")
+#'
+#'
+#' @param eventTitle the title of the event, from a
+#'                   predetermined categorization of events
 #' @param eventCall the function call in which the event occurred
-#' @param input the list of input objects - given a name that is both an object and filename, defaults to
-#' treating it as an object
-#' @param output the list of output objects - given a name that is both an object and filename, defaults to
-#' treating it as an object
-#' @param fPath the file path in which to log the event, defaults to getwd()
-#' @return N/A. message is appended to the logFile with \code{\link{logMessage}}.
+#' @param input vector of object names with an "input" role in the calling
+#'              function's workflow
+#' @param notes a vector of strings comprising text to be
+#'              incorporated into the event description.
+#' @param output vector of object names  with an "output" role in the calling
+#'               function's workflow
+#' @return N/A A message is appended to the log file
+#'             via \code{\link{logMessage}}.
 #'
 #' @family log file functions
 #'
 #'   ## @seealso \code{\link{logFileName}}
 #'   ## @seealso \code{\link{logMessage}}
-#'   ## @seealso \code{\link{attachUUID}}
+#'   ## @seealso \code{\link{getUUID}}
 #'   ## @seealso \code{\link{findUUID}}
 #'   ## @seealso \code{\link{getProvenance}}
 #'
 #' @examples
 #' \dontrun{
-#'     logEvent(eventTitle = "Test event", eventCall = "function1(test = \"test\")")
+#'     logEvent(eventTitle = "Test event",
+#'              eventCall = "function1(test = \"test\")")
 #' }
 #' @export
-logEvent <- function(eventTitle = NULL, eventCall = NULL, input = list(), output = list(), fPath = getwd()) {
+logEvent <- function(eventTitle,
+                     eventCall,
+                     input = character(),
+                     notes = character(),
+                     output = character()) {
 
-    # CHECK PARAMS
-    if (is.null(eventTitle)) {
-        stop("eventTitle is NULL")
+    # check parameters
+    if (missing(eventTitle)) {
+        stop("eventTitle is missing with no default.")
     }
 
-    if (is.null(eventCall)) {
-        stop("eventCall is NULL")
+    if (missing(eventCall)) {
+        stop("eventCall is missing with no default.")
     }
 
-    # validate fPATH
-    report <- .checkArgs(fPath, like = "DIR", checkSize = TRUE)
-    if(length(report) > 0) {
-        stop(report)
+    # validate parameter structure
+    r <- character()
+    r <- c(r, .checkArgs(eventTitle, like = "a", checkSize = TRUE))
+    r <- c(r, .checkArgs(eventCall,  like = "a", checkSize = TRUE))
+    r <- c(r, .checkArgs(input, like = character()))
+    if (length(notes) > 0) {
+        r <- c(r, .checkArgs(notes, like = character()))
+    }
+    r <- c(r, .checkArgs(output, like = character()))
+    if(length(r) > 0) {
+            stop(r)
     }
 
-    fPath <- gsub("/$", "", fPath)
-
-    # validate inputs
+    # validate input objects
     for (i in input) {
-        if (is.null(i)) {
-            stop("input contains NULL object")
-        } else if (!missing(i)) {
-            next
-        } else if (!file.exists(paste(fPath, i[1], sep="/"))) {
-            stop("input contains file which does not exist")
+        if (is.null(get(i))) {
+            stop("input references NULL object")
+        } else if (!exists(i)) {
+            stop(sprintf("%s%s%s",
+                 "Object \"",
+                 i,
+                 "\" in input list does not exist."))
         }
-
-        stop("input contains object which does not exist")
     }
 
-    # validate outputs
+    # validate output objects
     for (o in output) {
-        if (is.null(o)) {
-            stop("output contains NULL object")
-        } else if (!missing(o)) {
-            next
-        } else if (!file.exists(paste(fPath, o[1], sep="/"))) {
-            stop("output contains file which does not exist")
+        if (is.null(get(o))) {
+            stop("output references NULL object")
+        } else if (!exists(o)) {
+            stop(sprintf("%s%s%s",
+                         "Object \"",
+                         o,
+                         "\" in output list does not exist."))
         }
-
-        stop("output contains object which does not exist")
     }
+
+    msg <- character()
+    msg <- c(msg, paste("event | title  | ", eventTitle, sep = ""))
+    msg <- c(msg, paste("event | time   | ", Sys.time(), sep = ""))
+    msg <- c(msg, paste("event | call   | ", eventCall, sep = ""))
 
     # main event logging
     for (i in input) {
-        allAttributes <- NULL
-        # if input is object - extract attributes and write to log
-        if (!missing(i)) {
-            allAttributes <- .extractAttributes(i, "input")
-        }
+        msg <- c(msg, sprintf("event | input  | \"%s\"", i))
+        msg <- c(msg, .extractAttributes(get(i), "input"))
+    }
 
-        # if input is file
-        # need to read file and load it for attributes
-        fileName <- i[1]
-        if (file.exists(paste(fPath, fileName, sep="/"))) {
-            completePath <- paste(fPath, fileName, sep="/")
-            load(file = completePath)
-            allAttributes <- .extractAttributes(fileName, "input")
-        }
-
-        if (!is.null(allAttributes)) {
-            logMessage(allAttributes)
-        }
+    for (note in notes) {
+        msg <- c(msg, sprintf("event | note   | %s", note))
     }
 
     for (o in output) {
-        allAttributes <- NULL
-
-        # if output is object - extract attributes and write to log
-        if (!missing(o)) {
-            allAttributes <- .extractAttributes(o, "output")
-        }
-
-        # if output is file
-        # need to read file and load for attribute access
-        fileName <- o[1]
-        if (file.exists(paste(fPath, fileName, sep="/"))) {
-            completePath <- paste(fPath, fileName, sep="/")
-            load(file = completePath)
-            allAttributes <- .extractAttributes(fileName, "output")
-        }
-
-        if (!is.null(allAttributes)) {
-            logMessage(allAttributes)
-        }
+        msg <- c(msg, sprintf("event | output | \"%s\"", o))
+        msg <- c(msg, .extractAttributes(get(o), "output"))
     }
 
-    # comments logging
-    logMessage(paste("event\t|\tcall\t|\t", eventCall, sep = ""))
-    logMessage(paste("comment\t|\ttitle\t|\t", eventTitle, sep = ""))
-    logMessage(paste("comment\t|\tdateTime\t|\t", Sys.time(), sep = ""))
+    msg <- c(msg, "event | end") # attach end marker
+    msg <- c(msg, "") # attach an empty line for better readability
 
+    logMessage(msg)
 }
 
-#' Finds specific UUID in logs
+
+# ==== findUUID() ==============================================================
+
+#' Finds a specific UUID in logged events
 #'
-#' \code{findUUID} returns all mentions of a specific UUID in the logs, with all of the events
-#' and comments attached to that specific UUID.
+#' \code{findUUID} returns the event blocks that contains mentions of a
+#' requested UUID from the log files found in a given directory.
 #'
-#'
-#' @param uuid a universally unique identifier
-#' @param uuidPath the path in which to search for the logfile, if given. Otherwise, uses getwd().
-#' @return NULL if uuid is not found in logs. Otherwise, returns complete event/comment blocks.
+#' @param uuid a universally unique identifier (UUID). Checked for valid format.
+#' @param logDir the directory path in which to search the logfiles.
+#'         Defaults to the path component of getOption("rete.logfile").
+#' @param ext file extension regex pattern. Defaults to "\\.log$".
+#' @param recursive Whether to descend into subdirectories. Defaults
+#'                  to TRUE.
+#' @return character() if uuid is not found in the log files.
+#'         Otherwise, a vector with one complete event block per element, which
+#'         has the filename that conteined the event attaches as a names()
+#'         attribute.
 #'
 #' @family log file functions
 #'
 #'   ## @seealso \code{\link{logFileName}}
 #'   ## @seealso \code{\link{logMessage}}
-#'   ## @seealso \code{\link{attachUUID}}
+#'   ## @seealso \code{\link{getUUID}}
 #'   ## @seealso \code{\link{logEvent}}
 #'   ## @seealso \code{\link{getProvenance}}
 #'
 #' @examples
 #' \dontrun{
-#'
+#' NULL
 #' }
 #' @export
-findUUID <- function(uuid, uuidPath = getwd()) {
-    # check uuidPath
-    pathReport <- .checkArgs(uuidPath, like = "DIR", checkSize = TRUE)
-    if (length(pathReport) > 0) {
-        stop(pathReport)
+findUUID <- function(uuid,
+                     logDir,
+                     ext = "\\.log$",
+                     recursive = TRUE) {
+
+    if (missing(logDir)) {
+        logDir <- dirname(unlist(getOption("rete.logfile")))
+    }
+    # check parameters
+    r <- character()
+    r <- c(r, .checkArgs(uuid, like = "UUID", checkSize = TRUE))
+    r <- c(r, .checkArgs(logDir, like = "DIR", checkSize = TRUE))
+    r <- c(r, .checkArgs(ext, like = "a", checkSize = TRUE))
+    r <- c(r, .checkArgs(recursive, like = TRUE, checkSize = TRUE))
+    if (length(r) > 0) {
+        stop(r)
     }
 
-    # check valid UUID
-    uuidReport <- .checkArgs(uuid, like = "UUID")
-    if (length(uuidReport) > 0) {
-        stop(uuidReport)
-    }
-
-    # in all of the log files that are in the specific working directory, should be looking
-    # line by line to see if the UUID exists, and accumulating blocks of events/comments
-    allOccurrences <- list() # list of event blocks
-
-    allLogs <- list.files(path = uuidPath,
-                          pattern = "\\.log$",
+    allLogs <- list.files(path = logDir,
+                          pattern = ext,
                           full.names = TRUE,
-                          recursive = TRUE)
+                          recursive = recursive)
 
-    currEventBlock <- ""
-    uuidInCurrEventBlock <- FALSE
-    numOccurrences <- 1
-    prevLine <- ""
-    # for every log in all found logs, iterate through each line to find event blocks with UUID
-    for (log in allLogs) {
-        fileConnection <- file(log, open = "r")
-        for (line in readLines(fileConnection)) {
-            if (grepl(pattern = "^event", line)) {
-                # if previous line was comment, then new event starts
-                if (grepl(pattern = "^comment", prevLine)) {
-                    if (uuidInCurrEventBlock) {
-                        allOccurrences[[numOccurrences]] <- currEventBlock
-                        numOccurrences <- numOccurrences + 1
-                    }
-
-                    # reset flags
-                    currEventBlock <- ""
-                    uuidInCurrEventBlock <- FALSE
-                }
-
-                # found UUID?
-                if (grepl(pattern = uuid, line)) {
-                    uuidInCurrEventBlock <- TRUE
-                }
-            }
-            currEventBlock <- paste(currEventBlock, line, "\n", sep = "")
-            prevLine <- line
-        }
-
-        # check again before file closes
-        if (grepl(pattern = "^comment", prevLine)) {
-            if (uuidInCurrEventBlock) {
-                allOccurrences[[numOccurrences]] <- currEventBlock
-                numOccurrences <- numOccurrences + 1
-            }
-
-            # reset flags
-            currEventBlock <- ""
-            uuidInCurrEventBlock <- FALSE
-        }
-
-        close(fileConnection)
+    if (length(allLogs) == 0) {
+        stop(sprintf("No logfiles found in %s.", logDir))
     }
 
-    # should present the information as occurrences
-    if (length(allOccurrences) == 0) {
-        return(NULL)
-    } else {
-        finalResult <- ""
-        counter <- 1
-        for (occurrence in allOccurrences) {
-            finalResult <- paste(finalResult, "Occurrence ", counter, ":\n", occurrence, "\n", sep = "")
-            counter <- counter + 1
-        }
+    allEvents <- character()
 
-        return(finalResult)
+    for (fn in allLogs) {
+        # read entire file into one string, then strsplit on the
+        # boundaries of an event block
+        tmp <- unlist(strsplit(readChar(fn, file.info(fn)$size),
+                    "(?=\\nevent \\| title)|(?<=event \\| end)",
+                    perl = TRUE))
+        # find events that contain the UUID
+        tmp <- tmp[grepl(uuid, tmp)]
+        # attach the filename as name attribute
+        names(tmp) <- rep(fn, length(tmp))
+        allEvents <- c(allEvents, tmp)
     }
+
+    # add two platform-appropriate linebreaks to each event block
+    if (length(allEvents) > 0) {
+        NL2 <- paste0(.PlatformLineBreak(), .PlatformLineBreak())
+        for (i in 1:length(allEvents)) {
+            allEvents[i] <- gsub("$", NL2, allEvents[i])
+        }
+    }
+
+    return(allEvents)
 }
 
 
 #' Reconstructs provenance of object
 #'
-#' \code{getProvenance} reconstructs the provenance of an object back via its intermediaries
-#' to all input files that contributed to it
+#' \code{getProvenance} reconstructs the provenance of an object back via its
+#'                      intermediaries,  to all input files that contributed
+#'                      to it.
 #'
-#' Format of the output
+#' Format of the output... TBD.
 #'
 #'
-#'
-#' @param uuid the UUID of the object of interest
-#' @param uuidPath the path in which to search for logFile
-#' @return
+#' @param uuid a universally unique identifier (UUID). Checked for valid format.
+#' @param logDir the directory path in which to search the logfiles.
+#'         Defaults to the path component of getOption("rete.logfile").
+#' @param ext file extension regex pattern. Defaults to "\\.log$".
+#' @param recursive Whether to descend into subdirectories. Defaults
+#'                  to TRUE.
+#' @return Informative message if uuid is not found in the log files.
+#'         Otherwise, a structured report that describes the provenance of
+#'         the object that is identified by uuid.
 #'
 #' @family log file functions
 #'
@@ -488,10 +522,59 @@ findUUID <- function(uuid, uuidPath = getwd()) {
 #'
 #' @examples
 #' \dontrun{
-#'
+#' NULL
 #' }
 #' @export
-getProvenance <- function(uuid, uuidPath = getwd()) {
+getProvenance <- function(uuid,
+                          logDir,
+                          ext = "\\.log$",
+                          recursive = TRUE) {
+
+
+
+        # if (missing(logDir)) {
+        #     logDir <- dirname(unlist(getOption("rete.logfile")))
+        # }
+        # # check parameters
+        # r <- character()
+        # r <- c(r, .checkArgs(uuid, like = "UUID", checkSize = TRUE))
+        # r <- c(r, .checkArgs(logDir, like = "DIR", checkSize = TRUE))
+        # r <- c(r, .checkArgs(ext, like = "a", checkSize = TRUE))
+        # r <- c(r, .checkArgs(recursive, like = TRUE, checkSize = TRUE))
+        # if (length(r) > 0) {
+        #     stop(r)
+        # }
+        #
+        # mentions <- character()
+        # # Try finding uuid. Report if it could not be found at all.
+        # mentions <- c(mentions,
+        #               findUUID(uuid = uuid,
+        #                        logDir = logDir,
+        #                        ext = ext,
+        #                        recursive = recursive))
+        #
+        # if (length(mentions) == 0) {
+        #     stop("Requested UUID was not found in the log files.")
+        # }
+        #
+        # # Otherwise build a tree
+        # #  - root is the event that has uuid as output. There must
+        # #    only be one such node.
+        # #  - children are events that are linked via (inputUUID -> outputUUID)
+        # #  - leafs are events in which the outputUUID is created from file.
+        # #      (Functions that create objects from file must write a
+        # #       structured event message to that effect.)
+        # #  Needs a tree list structure that identifies nodes, and children
+        # #  Needs helper function to parse an event and insert it's information
+        # #  into the tree list.
+        #
+        # # Traverse the tree depth first.
+        # # summarize each node, (what happened), and its children (how
+        # # many, what are they, what are their UUIDs)
+        #
+        # # Output report.
+
+    return("Not yet implemented.")
 
 }
 # [END]

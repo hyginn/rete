@@ -4,10 +4,10 @@
 \alias{logMessage}
 \title{Write a message to the current log file.}
 \usage{
-logMessage(message)
+logMessage(msg)
 }
 \arguments{
-\item{message}{a character object or vector of character objects.}
+\item{msg}{a character object or vector of character objects.}
 }
 \value{
 N/A. message is appended to the current logfile.
@@ -22,7 +22,7 @@ On windows systems, \\n linebreaks are replaced with \\r\\n.
 }
 \examples{
 \dontrun{
-  mesg <- c("note > ", Sys.Date(), "Re-run analysis.")
-  logMessage(mesg)
+  msg <- c("note > ", Sys.Date(), "Re-run analysis.")
+  logMessage(msg)
 }
 }
