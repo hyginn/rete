@@ -100,5 +100,6 @@ importCNA.GISTIC2<- function(fFHG, dCNA, silent = FALSE, noLog = FALSE){
         write("Log end",file="test.log",append=TRUE)
     }
 
+
     }
 
