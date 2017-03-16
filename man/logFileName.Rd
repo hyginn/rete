@@ -4,7 +4,7 @@
 \alias{logFileName}
 \title{Define the log file name}
 \usage{
-logFileName(fPath = getwd(), fName, setOption = FALSE)
+logFileName(fPath, fName, setOption = FALSE)
 }
 \arguments{
 \item{fPath}{A path to a log-file directory. If missing the path is set to
@@ -28,18 +28,21 @@ Path and name of a file that can be used to log events.
   sets the global option rete.logfile.
 }
 \details{
-If fPath is missing, getwd() will be used as the path. If fPath ends with
-  a "/", that character is removed since the file.path() function will add
-  a "/" which would result in "//" if one already exists. If "//" is the
-  intended path, add an extra "/". The default file
-  name is structured as "rete_YYY-MM-DD.d.log" where YYY-MM-DD is the value
-  of Sys.Date() and d is an integer that
-  is one larger than the highest integer in a filename structured this way
-  in the fPath directory. Thus the file name is unique. If the requested
-  filename does not end with the extension ".log", that extension is added.
-  If you must have a logfile named with a different extension, you can set
-  it directly via options("rete.logfile") <- <my.special.name>.
-  If setOption is TRUE, the function sets the global option rete.logfile.
+If fPath is missing, the function checks whether getwd() contains a
+  directory called "logs". If yes, log files will be written to that
+  directory, if no, getwd() will be used as the path. This default behaviour
+  also defines the initial log file path and name on loading the package. A
+  single "/" (or "\"), path separator is removed from fPath if present, since
+  the file.path() function will add a path separator which would result in
+  doubling it otherwise. The default file name is structured as
+  "rete_YYY-MM-DD.d.log" where YYY-MM-DD is the value of Sys.Date() and d is
+  an integer that is one larger than the highest integer in a filename
+  structured this way in the fPath directory. Thus the file name is unique.
+  If the requested filename does not end with the extension ".log", that
+  extension is added. If you must have a logfile named with a different
+  extension, you can set it directly via options("rete.logfile") <-
+  <my.special.name>. If setOption is TRUE, the function sets the global
+  option rete.logfile to which \code{\link{logMessage}} appends log events.
 }
 \examples{
 logFileName()

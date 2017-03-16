@@ -41,11 +41,22 @@ test_that("logFileName() rejects erroneous arguments", {
 
 test_that("logFileName works as expected with reasonable arguments", {
     # test missing path and filename
-    expect_equal(logFileName(), file.path(getwd(), testFName))
+
+    if (dir.exists(file.path(getwd(), "logs"))) {
+        # only test correct path to subdirectory
+        expect_equal(logFileName(), file.path(getwd(), "logs", testFName))
+    } else {
+        expect_equal(logFileName(), file.path(getwd(), testFName))
+        # create, then delete "logs" subdirectory
+        dir.create(file.path(getwd(), "logs"))
+        expect_equal(logFileName(), file.path(getwd(), "logs", testFName))
+        expect_true(file.remove(file.path(getwd(), "logs")))
+    }
     # test missing path
     expect_equal(logFileName(fName = "x.log"), file.path(getwd(), "x.log"))
     # test missing filename
     expect_equal(logFileName(fPath = testPath), file.path(testPath, testFName))
+
     # test empty string filename
     expect_equal(logFileName(fName = ""), file.path(getwd(), testFName))
     # test removal of trailing /
