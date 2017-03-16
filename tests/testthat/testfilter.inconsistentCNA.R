@@ -5,10 +5,10 @@ test_that("Filtering inconsistent CNA out of an rCNA RDS file, iT set", {
     rCNAName <- tempfile()
     filter <- tempfile()
     rCNAData <- data.frame(row.names = c("HFE", "FTO", "ZNF66", "TF2"),
-        "TCGA-A3-0001-123" = c(3.0, -130.4, -1.5, 0.0),
-        "TCGA-A3-0001-124" = c(2.9, -1.3, -0.5, 0.0),
-        "TCGA-A3-0002-123" = c(1.0, -1.6, 3.0, 0.0),
-        "TCGA-A3-0002-124" = c(1.0, -1.6, 3.0, 0.0))
+        "TCGA-A3-0001-02A" = c(3.0, -130.4, -1.5, 0.0),
+        "TCGA-A3-0001-02B" = c(2.9, -1.3, -0.5, 0.0),
+        "TCGA-A3-0002-02A" = c(1.0, -1.6, 3.0, 0.0),
+        "TCGA-A3-0002-02B" = c(1.0, -1.6, 3.0, 0.0))
     saveRDS(rCNAData, file=rCNAName)
     expect_true(file.exists(rCNAName), info="Test setup (rCNA)")
     dir.create(dOut)
@@ -43,10 +43,10 @@ test_that("Filtering inconsistent CNA out of an rCNA RDS file", {
     rCNAName <- tempfile()
     filter <- tempfile()
     rCNAData <- data.frame(row.names = c("HFE", "FTO", "ZNF66", "TF2"),
-        "TCGA-A3-0001-123" = c(3.0, -130.4, -1.5, 0.0),
-        "TCGA-A3-0001-124" = c(2.9, -1.3, -0.5, 0.0),
-        "TCGA-A3-0002-123" = c(1.0, -1.6, 3.0, 0.0),
-        "TCGA-A3-0002-124" = c(1.0, -1.6, 3.0, 0.0))
+        "TCGA-A3-0001-02A" = c(3.0, -130.4, -1.5, 0.0),
+        "TCGA-A3-0001-02B" = c(2.9, -1.3, -0.5, 0.0),
+        "TCGA-A3-0002-02A" = c(1.0, -1.6, 3.0, 0.0),
+        "TCGA-A3-0002-02B" = c(1.0, -1.6, 3.0, 0.0))
     saveRDS(rCNAData, file=rCNAName)
     expect_true(file.exists(rCNAName), info="Test setup (rCNA)")
     dir.create(dOut)
@@ -81,10 +81,10 @@ test_that("Filtering inconsistent CNA out of an rSNV MAF file", {
     rCNAName <- tempfile()
     filter <- tempfile()
     rCNAData <- data.frame(row.names = c("HFE", "FTO", "ZNF66", "TF2"),
-        "TCGA-A3-0001-123" = c(3.0, -130.4, -1.5, 0.0),
-        "TCGA-A3-0001-124" = c(2.9, -1.3, -0.5, 0.0),
-        "TCGA-A3-0002-123" = c(1.0, -1.6, 3.0, 0.0),
-        "TCGA-A3-0002-124" = c(1.0, -1.6, 3.0, 0.0))
+        "TCGA-A3-0001-02A" = c(3.0, -130.4, -1.5, 0.0),
+        "TCGA-A3-0001-02B" = c(2.9, -1.3, -0.5, 0.0),
+        "TCGA-A3-0002-02A" = c(1.0, -1.6, 3.0, 0.0),
+        "TCGA-A3-0002-02B" = c(1.0, -1.6, 3.0, 0.0))
     saveRDS(rCNAData, file=rCNAName)
     expect_true(file.exists(rCNAName), info="Test setup (rCNA)")
     dir.create(dOut)
@@ -100,18 +100,18 @@ test_that("Filtering inconsistent CNA out of an rSNV MAF file", {
             "Tumor_Sample_Barcode", "UUID"), collapse="\t"),
         paste(c("TF2", "6", "123", "456", "+", "Missense_Mutation", "SNP",
             "C", "T", "T",
-            "TCGA-A3-0001-123-01W-0615-10",
+            "TCGA-A3-0001-02A-01W-0615-10",
             "8CD1CF38-DAD9-42EA-8B06-00955109F3D0"), collapse="\t"),
         paste(c("TF2", "6", "123", "456", "+", "Missense_Mutation", "SNP",
             "C", "T", "T",
-            "TCGA-A3-0002-123-01W-0615-10",
+            "TCGA-A3-0002-02A-01W-0615-10",
             "E6F5767F-E87B-4FC9-8880-CA70F434EEC9"), collapse="\t"),
         paste(c("HFE", "6", "123", "456", "+", "Missense_Mutation", "SNP",
             "C", "T", "T",
-            "TCGA-A3-0001-123-01W-0615-10",
+            "TCGA-A3-0001-02A-01W-0615-10",
             "F813F0B2-CE88-41FB-805E-40997E0E0309"), collapse="\t"),
         paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
-            "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
+            "A", "T", "G", "TCGA-A3-0002-02A-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t"))
     writeLines(rSNVData, con=rSNVName)
     expect_true(file.exists(rSNVName), info="Test setup (rSNV)")
@@ -134,10 +134,10 @@ test_that("Filtering inconsistent CNA out of an rSNV MAF file", {
             "Tumor_Sample_Barcode", "UUID"), collapse="\t"),
         paste(c("HFE", "6", "123", "456", "+", "Missense_Mutation", "SNP",
             "C", "T", "T",
-            "TCGA-A3-0001-123-01W-0615-10",
+            "TCGA-A3-0001-02A-01W-0615-10",
             "F813F0B2-CE88-41FB-805E-40997E0E0309"), collapse="\t"),
         paste(c("HFE", "6", "127", "456", "+", "Missense_Mutation", "SNP",
-            "A", "T", "G", "TCGA-A3-0002-124-01W-0615-10", 
+            "A", "T", "G", "TCGA-A3-0002-02A-01W-0615-10", 
             "7719241D-B6C8-4B13-80F6-3047C8BBFE1F"), collapse="\t")),
         info=paste(c("rSNV records with inconsistent sign removed", outFile)))
 
