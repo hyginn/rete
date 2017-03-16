@@ -177,7 +177,7 @@ test_that(".extractAttributes() throws error for missing or incorrect role", {
     expect_error(.extractAttributes("tmp"),
                  "role parameter must be provided.")
     expect_error(.extractAttributes("tmp", role = "nonsuch"),
-                 "Expecting role \"input\" or \"output\", but got \"nonsuch\".")
+    'Expecting role from ("input", "output", "using"), but got "nonsuch".')
 })
 
 test_that(".extractAttributes() logs one attribute", {

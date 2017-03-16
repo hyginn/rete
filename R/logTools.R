@@ -221,6 +221,7 @@ getUUID <- function(x, overwrite = FALSE) {
     #    A zero-length string if no attributes are extracted,
     #    a vector of formatted attribute descriptions otherwise.
 
+    supportedRoles <- c("input", "output", "using")
 
     if (missing(role)) {
         stop("role parameter must be provided.")
@@ -237,9 +238,9 @@ getUUID <- function(x, overwrite = FALSE) {
                          deparse(substitute(object))))
     }
 
-    if (! role %in% c("input", "output")) {
-        stop(sprintf("Expecting role \"input\" or \"output\", but got \"%s\".",
-                     role))
+    if (! role %in% supportedRoles) {
+        stop(sprintf("Expecting role from (\"%s\"), but got \"%s\".",
+                     paste(supportedRoles, collapse = "\", \""), role))
     }
 
 
