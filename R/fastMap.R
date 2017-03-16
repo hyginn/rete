@@ -11,8 +11,10 @@
 #' @param ID a vector of IDs to be mapped.
 #' @param hashTable the hash table to perform lookups on.
 #' @param type the type of the unmapped ID.
-#' @param quietly logical. If FALSE a warning is generated if IDs
+#' @param quietly logical. If FALSE, a warning is generated if IDs
 #'                could not be mapped.
+#' @param dev logical. For development only. If TRUE, all checks are made
+#'            but instead of actually mapping, the original IDs are returned.
 #' @return the mapped HGNC symbol or \code{ID} if not found.
 #'
 #' @family fastMap functions
@@ -23,7 +25,13 @@
 #' fastMap(c("Q9NQ94", "P01023"), fastMapUniProt)
 #' }
 #' @export
-fastMap <- function(ID, hashTable, type = "UniProt", quietly = FALSE) {
+fastMap <- function(ID,
+                    hashTable,
+                    type = "UniProt",
+                    quietly = FALSE,
+                    dev = FALSE) {
+# ToDo: remove dev option once development is done
+
     if (!is.null(attributes(hashTable)$type)) {
         if (type != attributes(hashTable)$type) {
             errorMessage <- sprintf("Expected hash table type: %s. Supplied hash table type: %s",
@@ -37,11 +45,15 @@ fastMap <- function(ID, hashTable, type = "UniProt", quietly = FALSE) {
     IDLength = length(ID)
     out <- character(length = IDLength)
     for (i in 1:IDLength) {
-        lookUp <- hashTable[[ID[i]]]
-        if (is.null(lookUp)) {
-            out[i] <- NA
+        if (dev) {   # ToDo remove this option when development is done.
+            out[i] <- ID[i]
         } else {
-            out[i] <- lookUp
+            lookUp <- hashTable[[ID[i]]]
+            if (is.null(lookUp)) {
+                out[i] <- NA
+            } else {
+                out[i] <- lookUp
+            }
         }
     }
 

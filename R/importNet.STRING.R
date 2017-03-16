@@ -198,8 +198,8 @@ importNet.STRING <- function(fName,
     netDF$b <- gsub("^[0-9]*\\.{0,1}", "", netDF$b)
 
     # map ID to gene names
-    mapA <- fastMap(netDF$a, fastMapENSP, type = "ENSP", quietly = TRUE)
-    mapB <- fastMap(netDF$b, fastMapENSP, type = "ENSP", quietly = TRUE)
+    mapA <- fastMap(netDF$a, fastMapENSP, type = "ENSP", dev = TRUE)
+    mapB <- fastMap(netDF$b, fastMapENSP, type = "ENSP", dev = TRUE)
 
     if (dropUnmapped) {
         netDF$a <- mapA

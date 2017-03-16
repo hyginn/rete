@@ -4,7 +4,7 @@
 \alias{fastMap}
 \title{Map an ID to its associated HGNC gene symbol.}
 \usage{
-fastMap(ID, hashTable, type = "UniProt", quietly = FALSE)
+fastMap(ID, hashTable, type = "UniProt", quietly = FALSE, dev = FALSE)
 }
 \arguments{
 \item{ID}{a vector of IDs to be mapped.}
@@ -13,8 +13,11 @@ fastMap(ID, hashTable, type = "UniProt", quietly = FALSE)
 
 \item{type}{the type of the unmapped ID.}
 
-\item{quietly}{logical. If FALSE a warning is generated if IDs
+\item{quietly}{logical. If FALSE, a warning is generated if IDs
 could not be mapped.}
+
+\item{dev}{logical. For development only. If TRUE, all checks are made
+but instead of actually mapping, the original IDs are returned.}
 }
 \value{
 the mapped HGNC symbol or \code{ID} if not found.
