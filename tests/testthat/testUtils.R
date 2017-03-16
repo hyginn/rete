@@ -2,12 +2,23 @@
 #
 #
 context("utility functions")
+tmpFn <- tempfile()
+writeLines("test", tmpFn)
 
 test_that(".checkArgs lets matching arguments pass", {
     # We are only counting the length of the error messsages, not contents
-    expect_equal(length(.checkArgs("~", "DIR")), 0)
-    expect_equal(length(.checkArgs("testUtils.R", "FILE_E")), 0)
-    expect_equal(length(.checkArgs("testUtils.R", "FILE_W")), 0)
+    expect_equal(length(.checkArgs(tempdir(), "DIR")), 0)
+    expect_equal(length(.checkArgs(tmpFn, "FILE_E")), 0)
+    expect_equal(length(.checkArgs(tmpFn, "FILE_W")), 0)
+
+    uuid <- "e6c946b5-fd8c-4642-8c5c-a3736d5f5bab"
+    expect_equal(length(.checkArgs(uuid, "UUID")), 0)
+    uuid <- c(uuid, "{f6af5834-005d-40e0-afb7-dde9d438e489}")
+    expect_equal(length(.checkArgs(uuid, "UUID")), 0)
+    expect_equal(length(.checkArgs(toupper(uuid), "UUID")), 0)
+    uuid <- "e6c946b5fd8c46428c5ca3736d5f5bab"
+    expect_equal(length(.checkArgs(uuid, "UUID")), 0)
+
     expect_equal(length(.checkArgs(1, 1)), 0)
     expect_equal(length(.checkArgs(1L, 1:2)), 0)
     expect_equal(length(.checkArgs(as.matrix(1:2),
@@ -28,6 +39,16 @@ test_that(".checkArgs finds argument errors", {
     expect_equal(length(.checkArgs("~/no/such/dir", "DIR")), 1)
     expect_equal(length(.checkArgs("noSuchFile", "FILE_E")), 1)
     expect_equal(length(.checkArgs("noSuchFile", "FILE_W")), 1)
+
+    uuid <- "UUID"
+    expect_equal(length(.checkArgs(uuid, "UUID")), 1)
+    uuid <- c("e6c946b5-fd8c-4642-8c5c-a3736d5f5bab", "UUID")
+    expect_equal(length(.checkArgs(uuid, "UUID")), 1)
+    uuid <- c("UUID", "UUIE", "UUIF")
+    expect_equal(length(.checkArgs(uuid, "UUID")), 3)
+    uuid <- "00000000-0000-0000-0000-000000000000"    # reject NIL UUID
+    expect_equal(length(.checkArgs(uuid, "UUID")), 1)
+
     expect_equal(length(.checkArgs(1, "1")), 3)  # mode, type and class error
     expect_equal(length(.checkArgs(1L, 1)), 2) # type and class error
     expect_equal(length(.checkArgs(1L, 1:2, checkSize = TRUE)), 1) # 1D
