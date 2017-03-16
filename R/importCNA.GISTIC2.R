@@ -60,11 +60,19 @@ importCNA.GISTIC2<- function(fFHG, dCNA, silent = FALSE, writeLog = TRUE){
                                   delim = "\t", col_names =TRUE,
                                   col_types = c(col_character(),col_integer(),
                                                 col_character(), col_double()))
-        #if (colnames(temp)[1] != "Gene Symbol"){
-            #stop("Not a valid file")
-        #}
+        # check file
+        if (colnames(temp)[1] != "Gene Symbol"){
+            stop("Not a valid file")
+        }
+        if (colnames(temp)[2] != "Locus ID"){
+            stop("Not a valid file")
+        }
+        if (colnames(temp)[3] != "Cytoband"){
+            stop("Not a valid file")
+        }
+
         # write to the proper place so it doesn't get overwritten
-        namefile<- strsplit(fFHG, "/")[[1]][3]
+        namefile<- basename(fFHG)
         fi <- paste0(dCNA, "/", namefile, ".rds")
 
         # get rid of unwanted columns
@@ -79,18 +87,23 @@ importCNA.GISTIC2<- function(fFHG, dCNA, silent = FALSE, writeLog = TRUE){
     # write to console
 
     if (silent){
-        sprintf("All files in fFHG written into %s. Success! Import from FIREHOSE complete", dCNA)
+        sprintf("File written into %s. Success! Import from FIREHOSE complete", dCNA)
     }
 
-    # write to log
 
+# ==== WRITE LOG ===========================================================
     if(writeLog) {
-        msg    <- sprintf("event > %s from importCNA.GISTIC2()\n", Sys.time())
-        msg[2] <- sprintf("note >   Created rCNA object")
-        msg[3] <- sprintf("Created %s\n",fi)
-        msg[4] <- sprintf("\n")
+        msg    <- sprintf("event > %s from importNet.STRING()\n", Sys.time())
+        msg[2] <- "note >   Returned gG object with"
+        msg[3] <- sprintf("%d vertices and %d edges.\n",
+                              igraph::gorder(gG),
+                              igraph::gsize(gG))
+        msg[4] <- sprintf("out > %s", "<object UUID and attributes>")
+        msg[5] <- "\n"
         logMessage(msg)
     }
+
+        return(gG)
 
     }
 
