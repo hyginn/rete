@@ -17,8 +17,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' fastmap("ENSG00000121410", fastMapENSP, type = "ENSP")
-#' fastmap(c("Q9NQ94", "P01023"), fastMapUniProt)
+#' fastMap("ENSG00000121410", fastMapENSP, type = "ENSP")
+#' fastMap(c("Q9NQ94", "P01023"), fastMapUniProt)
 #' }
 #' @export
 fastMap <- function(ID, hashTable, type = "UniProt") {
