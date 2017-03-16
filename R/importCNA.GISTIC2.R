@@ -16,8 +16,8 @@
 #'@family importM.COSMIC, importM.TCGA, importM.GISTIC2, importM.ProjectGenie
 #
 #'@example
-# fFHG <- "../inst/extdata/devCNA.txt"
-# dCNA <- "../inst/extdata/dCNA"
+# fFHG <- "inst/extdata/devCNA.txt"
+# dCNA <- "inst/extdata/dCNA"
 # silent <- FALSE
 # noLog <- FALSE
 #
@@ -39,3 +39,66 @@
 # GET RID OF INFORMATION NOT NEEDED (FILTER)
 # SAVE AS DATAFRAME AS RDS,  AND STORE IN DIR
 # PRINT STATUS
+#
+#
+importCNA.GISTIC2<- function(fFHG, dCNA, silent = FALSE, noLog = FALSE){
+
+    # start log file
+    if (!noLog){
+        write("Log begin",file="test.log",append=TRUE)
+        write(format(Sys.time(), "%a %b %d %X %Y"),file="test.log",append=TRUE)
+        write(fFHG,file="test.log",append=TRUE)
+        write(dCNA,file="test.log",append=TRUE)
+    }
+
+    # check if file exists
+
+    numFiles <- length(fFHG)
+    for (file in 1:numFiles){
+        if(!file.exists(fFHG[file])){
+            sprintf(" ERROR: %s does not exist. Recheck path in fFHG and try again.",fFHG[file] )
+            if (!noLog){
+                write(fFHG[file],file="test.log",append=TRUE)
+                write("ERROR: File did not exist",file="test.log",append=TRUE)
+            }
+            stop()
+        }
+    }
+
+    # Update Log
+
+    if (!noLog){
+        write("Files exist. Now parsing.",file="test.log",append=TRUE)
+    }
+
+    # read and write files in vector
+
+
+    for (f in 1:numFiles){
+        #read file into tab delimited table
+        temp <- read.delim(fFHG[f])
+        # write to the proper place
+        fi <- paste0(dCNA,"/rCNA",f,".rds")
+        # get rid of unwanted columns
+        #fi$Locus.ID <- NULL
+        #fi$Cytoband <- NULL
+        # save dataframe
+        file.create(fi)
+        saveRDS(temp, file=fi)
+    }
+
+    # write to console
+
+    if (!silent){
+        sprintf("All files in fFHG written into %s. Success! Import from FIREHOSE complete", dCNA)
+    }
+
+    # finish log file
+
+    if (!noLog){
+        write(format(Sys.time(), "%a %b %d %X %Y"),file="test.log",append=TRUE)
+        write("Log end",file="test.log",append=TRUE)
+    }
+
+    }
+
