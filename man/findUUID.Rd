@@ -2,24 +2,33 @@
 % Please edit documentation in R/logTools.R
 \name{findUUID}
 \alias{findUUID}
-\title{Finds specific UUID in logs}
+\title{Finds a specific UUID in logged events}
 \usage{
-findUUID(uuid, uuidPath = getwd())
+findUUID(uuid, logDir, ext = "\\\\.log$", recursive = TRUE)
 }
 \arguments{
-\item{uuid}{a universally unique identifier}
+\item{uuid}{a universally unique identifier (UUID). Checked for valid format.}
 
-\item{uuidPath}{the path in which to search for the logfile, if given. Otherwise, uses getwd().}
+\item{logDir}{the directory path in which to search the logfiles.
+Defaults to the path component of getOption("rete.logfile").}
+
+\item{ext}{file extension regex pattern. Defaults to "\\.log$".}
+
+\item{recursive}{Whether to descend into subdirectories. Defaults
+to TRUE.}
 }
 \value{
-NULL if uuid is not found in logs. Otherwise, returns complete event/comment blocks.
+character() if uuid is not found in the log files.
+        Otherwise, a vector with one complete event block per element, which
+        has the filename that conteined the event attaches as a names()
+        attribute.
 }
 \description{
-\code{findUUID} returns all mentions of a specific UUID in the logs, with all of the events
-and comments attached to that specific UUID.
+\code{findUUID} returns the event blocks that contains mentions of a
+requested UUID from the log files found in a given directory.
 }
 \examples{
 \dontrun{
-
+NULL
 }
 }
