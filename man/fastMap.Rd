@@ -4,17 +4,20 @@
 \alias{fastMap}
 \title{Map an ID to its associated HGNC gene symbol.}
 \usage{
-fastMap(ID, hashTable, type = "UniProt")
+fastMap(ID, hashTable, type = "UniProt", quietly = FALSE)
 }
 \arguments{
-\item{ID}{An unmapped ID.}
+\item{ID}{a vector of IDs to be mapped.}
 
-\item{hashTable}{The hash table to perform lookups on.}
+\item{hashTable}{the hash table to perform lookups on.}
 
-\item{type}{The type of the unmapped ID.}
+\item{type}{the type of the unmapped ID.}
+
+\item{quietly}{logical. If FALSE a warning is generated if IDs
+could not be mapped.}
 }
 \value{
-The mapped HGNC symbol or \code{ID} if not found.
+the mapped HGNC symbol or \code{ID} if not found.
 }
 \description{
 \code{fastMap} accesses the associated hash table
@@ -25,8 +28,8 @@ will be stored in an global option \code{rete.unmapped}.
 }
 \examples{
 \dontrun{
-fastmap("ENSG00000121410", fastMapENSP, type = "ENSP")
-fastmap(c("Q9NQ94", "P01023"), fastMapUniProt)
+fastMap("ENSG00000121410", fastMapENSP, type = "ENSP")
+fastMap(c("Q9NQ94", "P01023"), fastMapUniProt)
 }
 }
 \seealso{

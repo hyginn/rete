@@ -8,10 +8,12 @@
 #' associated HGNC gene symbol. Unmapped IDs will be returned as is and
 #' will be stored in an global option \code{rete.unmapped}.
 #'
-#' @param ID An unmapped ID.
-#' @param hashTable The hash table to perform lookups on.
-#' @param type The type of the unmapped ID.
-#' @return The mapped HGNC symbol or \code{ID} if not found.
+#' @param ID a vector of IDs to be mapped.
+#' @param hashTable the hash table to perform lookups on.
+#' @param type the type of the unmapped ID.
+#' @param quietly logical. If FALSE a warning is generated if IDs
+#'                could not be mapped.
+#' @return the mapped HGNC symbol or \code{ID} if not found.
 #'
 #' @family fastMap functions
 #'
@@ -21,7 +23,7 @@
 #' fastMap(c("Q9NQ94", "P01023"), fastMapUniProt)
 #' }
 #' @export
-fastMap <- function(ID, hashTable, type = "UniProt") {
+fastMap <- function(ID, hashTable, type = "UniProt", quietly = FALSE) {
     if (!is.null(attributes(hashTable)$type)) {
         if (type != attributes(hashTable)$type) {
             errorMessage <- sprintf("Expected hash table type: %s. Supplied hash table type: %s",
@@ -50,9 +52,14 @@ fastMap <- function(ID, hashTable, type = "UniProt") {
         out[iNA] <- ID[iNA]
         # Export unmapped IDs to the global option rete.unmapped
         options(rete.unmapped = ID[iNA])
-        warningMessage <- sprintf("%d of %d IDs could not be mapped, see getOptions('rete.unmapped') to list them all.",
-                                  unmappedCount, IDLength)
-        warning(warningMessage)
+        warningMessage <- sprintf("%d of %d IDs could not be mapped, %s %s",
+                                  unmappedCount,
+                                  IDLength,
+                                  "see getOptions('rete.unmapped')",
+                                  "to list them all.")
+        if (!quietly) {
+            warning(warningMessage)
+        }
     }
     return(out)
 }
