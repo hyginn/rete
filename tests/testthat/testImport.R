@@ -7,28 +7,22 @@ context("import networks")
 #      test correct logfile
 #      test correct attributes
 
+# pattern to grep for UUIDs
+patt<-"[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+
 test_that("importNet.STRING produces gG from STRING data", {
     gG <- importNet.STRING(fName = "dataString.txt",
                            net = "experimental",
+                           dropUnmapped = FALSE,
                            silent = TRUE,
                            writeLog = FALSE)
-    expect_equal(igraph::vcount(gG), 5)    # correct number of vertices
-    expect_equal(igraph::ecount(gG), 4)    # correct number of edges
-    expect_equal(attr(gG, "version"), "gG 1.0") # correct version
-    expect_equal(attr(gG, "inFile"), "dataString.txt") # metadata exists
+    expect_equal(igraph::vcount(gG), 5)         # correct number of vertices
+    expect_equal(igraph::ecount(gG), 4)         # correct number of edges
+    # metadata
+    expect_equal(attr(gG, "type"), "gG")        # correct type
+    expect_equal(attr(gG, "version"), "1.0")    # correct version
+    expect_true(grepl(patt, attr(gG, "UUID")))  # valid UUID
 })
-
-test_that(".df2gG simplifies the graph", {
-    netDF <- data.frame(a = c("crow", "duck", "crow", "crow"),
-                        b = c("duck", "crow", "duck", "crow"),
-                        weight = c(1, 2, 3, 4),
-                        stringsAsFactors = FALSE)
-    gG <- .df2gG(inFile = "dummy.txt", call = "dummy(arg = 1)")
-    expect_equal(igraph::vcount(gG), 2)    # only duck and crow
-    expect_equal(igraph::ecount(gG), 2)    # 1 duplicate, 1 self-edge removed
-    expect_equal(igraph::edge_attr(gG)$weight, c(3, 2)) # correct weights
-})
-
 
 
 # [END]

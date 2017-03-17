@@ -75,12 +75,11 @@ test_that(".df2gG simplifies the graph", {
                         b = c("duck", "crow", "duck", "crow"),
                         weight = c(1, 2, 3, 4),
                         stringsAsFactors = FALSE)
-    gG <- .df2gG(inFile = "dummy.txt", call = "dummy(arg = 1)")
+    gG <- .df2gG(netDF)
     expect_equal(igraph::vcount(gG), 2)    # only duck and crow
     expect_equal(igraph::ecount(gG), 2)    # 1 duplicate, 1 self-edge removed
     expect_equal(igraph::edge_attr(gG)$weight, c(3, 2)) # correct weights
 })
-
 
 
 # [END]

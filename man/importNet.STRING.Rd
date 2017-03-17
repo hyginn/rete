@@ -71,19 +71,17 @@ returns a weighted, directed igraph graph object of a rete gG type.
 
 \section{Console and log}{
 
-  The taxID parameter is used as a sanity check on the
-  file contents. Currently only the first data
+  Progress is summarized to console and results are written to the log-file
+  unless writeLog is FALSE.
 }
 
 \section{The gG object}{
 
   The function returns a rete gG object, a weighted,
   directed, simple igraph graph in which HGNC gene symbols are vertex names,
-  and the edge attributes $weight hold the network scores. Graph attributes
-  hold metadata; use igraph::graph_attr(gG) to return: $version: the gG
-  object version; $logFile: the filename to which log information was
-  written; $inFile: the input filename of STRING data; $call: the complete
-  function call with expanded arguments; and $date: when the gG object was
-  created.
+  and the edge attributes $weight hold the network scores. Metadata are
+  stored as object attributs: $type: "gG"; $version: the gG
+  object version; $UUID: the UUID which allows to retrieve detailed
+  process information from the log file with \code{\link{findUUID}}.
 }
 
