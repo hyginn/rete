@@ -2,29 +2,32 @@
 % Please edit documentation in R/logTools.R
 \name{logEvent}
 \alias{logEvent}
-\title{Main function for writing logs}
+\title{Formats an event description to be sent for attaching to the log file.}
 \usage{
-logEvent(eventTitle = NULL, eventCall = NULL, input = list(),
-  output = list(), fPath = getwd())
+logEvent(eventTitle, eventCall, input = character(), notes = character(),
+  output = character())
 }
 \arguments{
-\item{eventTitle}{the title of the event, from a predetermined categorization of events}
+\item{eventTitle}{the title of the event, from a
+predetermined categorization of events}
 
 \item{eventCall}{the function call in which the event occurred}
 
-\item{input}{the list of input objects - given a name that is both an object and filename, defaults to
-treating it as an object}
+\item{input}{vector of object names with an "input" role in the calling
+function's workflow}
 
-\item{output}{the list of output objects - given a name that is both an object and filename, defaults to
-treating it as an object}
+\item{notes}{a vector of strings comprising text to be
+incorporated into the event description.}
 
-\item{fPath}{the file path in which to log the event, defaults to getwd()}
+\item{output}{vector of object names  with an "output" role in the calling
+function's workflow}
 }
 \value{
-N/A. message is appended to the logFile with \code{\link{logMessage}}.
+N/A A message is appended to the log file
+            via \code{\link{logMessage}}.
 }
 \description{
-\code{logEvent} generates a log of an event with:
+\code{logEvent} generates an event message with:
 - the event title
 - the event call
 - attributes of the input object
@@ -34,16 +37,22 @@ N/A. message is appended to the logFile with \code{\link{logMessage}}.
 - file hashes of input (TODO)
 }
 \details{
-Format of the logging is as follows:
-event | input | attribute | <inputAttrName1> | <inputAttrValue1>
+Format of the event description is as follows:
+event | title  | <eventTitle>
+event | time   | <eventDateTime>
+event | call   | <eventCall>
+(ToDo: event | functionVersion | <functionVersion>)
+event | input  | attribute | <inputAttrName1> | <inputAttrValue1>
 event | output | attribute | <outputAttrName1> | <outputAttrValue1>
-event | call | <eventCall>
-comment | title | <eventTitle>
-comment | dateTime | <eventDateTime>
-comment | functionVersion | <functionVersion>
+event | end
+
+The event message is terminated by an "end event" marker, and a blank
+line, and it is handed off to logMessage() to append it to the
+log file referenced in the global variable options("rete.logfile")
 }
 \examples{
 \dontrun{
-    logEvent(eventTitle = "Test event", eventCall = "function1(test = \\"test\\")")
+    logEvent(eventTitle = "Test event",
+             eventCall = "function1(test = \\"test\\")")
 }
 }

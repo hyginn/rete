@@ -2,6 +2,14 @@
 #
 # internal (non-exported) utility functions
 
+.PlatformLineBreak <- function() {
+    # returns "\r\n" on windows, "\n" otherwise
+    if (.Platform$OS.type == "windows") {
+        return("\r\n")
+    } else {
+        return("\n")
+    }
+}
 
 
 .checkArgs <- function(x, like, checkSize = FALSE) {
@@ -38,6 +46,7 @@
     name <- deparse(substitute(x)) # the name of the parameter to check
 
     report <- character()  # init
+    NL <- .PlatformLineBreak()
 
     # === keyword specific checks ==============================================
     if (class(like) == "character" && length(like) == 1 &&
@@ -46,29 +55,32 @@
             if (like == "DIR" && ! dir.exists(el)) {
                 # el must be a valid directory
                 report <- c(report,
-                            sprintf(".checkArgs> \"%s\" %s%s%s",
+                            sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
                                     "error: directory ",
                                     el,
-                                    " does not exist.\n"))
+                                    " does not exist.",
+                                    NL))
             }
             if (like == "FILE_E" && ! file.exists(el)) {
                 # el must be an existing file (or directory)
                 report <- c(report,
-                            sprintf(".checkArgs> \"%s\" %s%s%s",
+                            sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
                                     "error: file ",
                                     el,
-                                    " does not exist.\n"))
+                                    " does not exist.",
+                                    NL))
             }
             if (like == "FILE_W" && file.access(el, mode = 2) != 0) {
                 # el must be a writable filename (i.e. must also exist)
                 report <- c(report,
-                            sprintf(".checkArgs> \"%s\" %s%s%s",
+                            sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
                                     "error: \"",
                                     el,
-                                    "\" is not a writable file.\n"))
+                                    "\" is not a writable file.",
+                                    NL))
             }
             if (like == "UUID") {
                 patt <- paste0("\\{?[0-9a-f]{8}-?", # braces, hyphens optional
@@ -83,11 +95,12 @@
                 # semantic requirements for this package.
                 if (! grepl(patt, el, ignore.case = TRUE)) {
                     report <- c(report,
-                                sprintf(".checkArgs> \"%s\" %s%s%s",
+                                sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                         name,
                                         "error: \"",
                                         el,
-                                        "\" is not a valid UUID.\n"))
+                                        "\" is not a valid UUID.",
+                                        NL))
                 }
             }
         }
@@ -96,70 +109,76 @@
     # === mode/typeof/class checks =============================================
     if (mode(x) != mode(like)) {
         report <- c(report,
-                    sprintf(".checkArgs> \"%s\" %s%s%s%s%s",
+                    sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s",
                             name,
                             "mode error: argument has mode \"",
                             mode(x),
                             "\" but function expects mode \"",
                             mode(like),
-                            "\".\n"))
+                            "\".",
+                            NL))
     }
 
     if (typeof(x) != typeof(like)) {
         report <- c(report,
-                    sprintf(".checkArgs> \"%s\" %s%s%s%s%s",
+                    sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s",
                             name,
                             "type error: argument has type \"",
                             typeof(x),
                             "\" but function expects type \"",
                             typeof(like),
-                            "\".\n"))
+                            "\".",
+                            NL))
     }
 
     if (checkSize) {
         if (is.null(dim(like))) { # expect 1D objects
             if (!is.null(dim(x))) { # x is not 1D
                 report <- c(report,
-                            sprintf(".checkArgs> \"%s\" %s%s%s",
+                            sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
                                     "dimension error: argument has dim (",
                                     paste(dim(x), collapse = ", "),
-                                    ") but function expects 1D object.\n"))
+                                    ") but function expects 1D object.",
+                                    NL))
 
             } else if (length(x) != length(like)) { # x is 1D but unequal length
                 report <- c(report,
-                            sprintf(".checkArgs> \"%s\" %s%s%s%s%s",
+                            sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s",
                                     name,
                                     "length error: argument has length ",
                                     length(x),
                                     " but function expects length ",
                                     length(like),
-                                    ".\n"))
+                                    ".",
+                                    NL))
             }
         } else { # expect xD objects
             if (is.null(dim(x)) || dim(x) != dim(like)) { # x is 1D or != dim()
                 report <- c(report,
-                            sprintf(".checkArgs> \"%s\" %s%s%s%s%s",
+                            sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s",
                                     name,
                                     "dimension error: argument has dim (",
                                     if (is.null(dim(x))) "NULL" else
                                         paste(dim(x), collapse = ", "),
                                     ") but function expects dim (",
                                     paste(dim(like), collapse = ", "),
-                                    ").\n"))
+                                    ").",
+                                    NL))
             }
         }
     } # if (checkSize)
 
     if (class(x) != class(like)) {
         report <- c(report,
-                    sprintf(".checkArgs> \"%s\" %s%s%s%s%s",
+                    sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s",
                             name,
                             "class error: argument has class \"",
                             class(x),
                             "\" but function expects class \"",
                             class(like),
-                            "\".\n"))
+                            "\".",
+                            NL))
     }
 
 
@@ -167,18 +186,19 @@
     if (class(like) == "igraph") {
         if (length(igraph::graph_attr(x)) != length(igraph::graph_attr(like))) {
             report <- c(report,
-                        sprintf(".checkArgs> \"%s\" %s%d%s%d%s",
+                        sprintf(".checkArgs> \"%s\" %s%d%s%d%s%s",
                                 name,
                                 "graph attribute error: argument has ",
                                 length(igraph::graph_attr(x)),
                                 " attributes but function expects ",
                                 length(igraph::graph_attr(like)),
-                                ".\n"))
+                                ".",
+                                NL))
         } else if (length(igraph::graph_attr(like)) > 0) { # attributes exist
             if (!isTRUE(all.equal(sort(names(igraph::graph_attr(x))),
                                   sort(names(igraph::graph_attr(like)))))) {
                 report <- c(report,
-                            sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s",
+                            sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s%s",
                                     name,
                                     "graph attribute name error:",
                                     " argument has names (",
@@ -187,21 +207,23 @@
                                     " but function expects (",
                                     paste(names(igraph::graph_attr(like)),
                                           collapse =", "),
-                                    ").\n"))
+                                    ").",
+                                    NL))
             } else { # both objects' attribute names are equal
                 # check graph object "version" attribute
                 if ("version" %in% names(igraph::graph_attr(like)) &&
                     igraph::graph_attr(x)$version !=
                     igraph::graph_attr(like)$version) {
                     report <- c(report,
-                                sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s",
+                                sprintf(".checkArgs> \"%s\" %s%s%s%s%s%s%s",
                                         name,
                                         "graph version error:",
                                         " argument has version \"",
                                         igraph::graph_attr(x)$version,
                                         "\" but function expects \"",
                                         igraph::graph_attr(like)$version,
-                                        "\".\n"))
+                                        "\".",
+                                        NL))
                 }
             }
         }

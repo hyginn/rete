@@ -4,25 +4,34 @@
 \alias{getProvenance}
 \title{Reconstructs provenance of object}
 \usage{
-getProvenance(uuid, uuidPath = getwd())
+getProvenance(uuid, logDir, ext = "\\\\.log$", recursive = TRUE)
 }
 \arguments{
-\item{uuid}{the UUID of the object of interest}
+\item{uuid}{a universally unique identifier (UUID). Checked for valid format.}
 
-\item{uuidPath}{the path in which to search for logFile}
+\item{logDir}{the directory path in which to search the logfiles.
+Defaults to the path component of getOption("rete.logfile").}
+
+\item{ext}{file extension regex pattern. Defaults to "\\.log$".}
+
+\item{recursive}{Whether to descend into subdirectories. Defaults
+to TRUE.}
 }
 \value{
-
+Informative message if uuid is not found in the log files.
+        Otherwise, a structured report that describes the provenance of
+        the object that is identified by uuid.
 }
 \description{
-\code{getProvenance} reconstructs the provenance of an object back via its intermediaries
-to all input files that contributed to it
+\code{getProvenance} reconstructs the provenance of an object back via its
+                     intermediaries,  to all input files that contributed
+                     to it.
 }
 \details{
-Format of the output
+Format of the output... TBD.
 }
 \examples{
 \dontrun{
-
+NULL
 }
 }
