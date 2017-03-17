@@ -1,17 +1,18 @@
 # importNet.TCGA.R
 
-#' Import MAF files from source and coverts them to rSNV files.
+#' Import MAF files from source and converts them to rSNV files.
 #'
 #' \code{importSNV.TCGA} imports maf, creates rSNV, returns rSNV
 #'
 #' @section MAF file:...
 #'
 #' @param fMAF vector of MAF file names
-#' @param rSNV new rSNV file name to be created or the one to be merged with
+#' @param rSNV rSNV file to merged new MAF data with
 #' @param silent Controls whether output to console should be suppressed. FALSE
 #'   by default.
-#' @param noLog Controls whether writing the result to the global logfile is
+#' @param writeLog Controls whether writing the result to the global logfile is
 #'   enabled. TRUE by default.
+#' @param na.rm remove all rows with NA values as attributes and drop from DF
 #' @return rSNV file name containg data from all MAF files
 #'
 #' @family
@@ -21,57 +22,54 @@
 #'
 #'   ## @examples ## \dontrun{ ## importNet.STRING(IN, OUT) ## }
 #' @export
-importSNV.TCGA <- function(fMAF,
+importSNV.TCGA <- function(  fMAF,
                              rSNV,
                              silent = FALSE,
-                             noLog = TRUE) {
+                             writeLog = TRUE,
+                             na.rm = TRUE) {
 
     # ==== PARAMETERS ==========================================================
 
     # NL <- .PlatformLineBreak()
-    # cutoffTypes <- c("xS", "xQ", "xN")
-    # defaultValues <- c(xS = 950, xQ = 0.9, xN = 10000)
-    #
-    # if (missing(val)) {
-    #     val <- defaultValues[cutoffType]
-    # }
-    #
     # # Read header and one contents line
     # tmp <- readLines(fName, n = 2)
-    #
-    # # Parse for requested column. STRING data is " "-delimited.
-    # header <- unlist(strsplit(tmp[1], " "))
-    # iCol <- which(net == header)  # column that contains the requested net
-    #
-    # data   <- unlist(strsplit(tmp[2], " "))
-
 
     # ==== VALIDATIONS =========================================================
 
     # General parameter checks
     cR <- character()
-    cR <- c(cR, .checkArgs(fMAF,        like = c("FILE_E"),   checkSize = TRUE))
-    cR <- c(cR, .checkArgs(rSNV,      like = "FILE_E",        checkSize = TRUE))
+    cR <- c(cR, .checkArgs(fMAF,         like = rep("FILE_E", length(fMAF)),
+                                                            checkSize = TRUE))
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(na.rm,        like = logical(1), checkSize = TRUE))
 
     if(length(cR) > 0) {
         stop(cR)
     }
 
-    #  Validate the vector of MAF file names parameter
-    #  Validate rSNV as an existing file or create new file
+    #  Validate the vector of MAF file names parameter by checking
+    #  extension (.maf, .txt, .tsv. gz(?), .zip(?)) and header
+
+    #  Validate rSNV as an existing file
+    #  If not, create rSNV file as empty
+    #  If rSNV exists, load file
+    #  write to myNotes how many lines/rows did rSNV start with
+
+    myNotes <- c("Number of rows originally in rSNV - ")
 
     # ==== READ DATA ===========================================================
 
     # reading data will occur in multiple steps to avoid storing too much data on
     # the disk drive and cause overload when handeling large files
 
-    # step 0: run terminal comand to gzip all folders and subfolders and remove
-    #         unwanted files like stdout, stdin, manifest etc..
-    # step 1: go through diseases for which data is available and open file
+    # step 1: go through fMAF input vector list of files and open first file
+    read::read_delim()
+    # open columns 1,5,6,7,8,9,10,11,12,13,16,33
     # step 2: read lines from file and process data as indicated in "EXTRACT" below
+    # typecheck and error handling
     # step 3: save processed data to new/merge to rSNV file
+    #         merge temp data to dataframe and delete temp data
     # step 4: close file
     # step 5: repeat steps 1-4 for next disease MAF file avilable.
 
@@ -93,6 +91,7 @@ importSNV.TCGA <- function(fMAF,
 
     # read each sample from file and parse the columns listed above and write them
     # to the rSNV file.
+    # write missing/dropped to log HERE
     # incase of missing value add index of sample entry in rSNV to vector 'missingValues'
     # when we reach the last sample close file and open new file.
 
@@ -117,10 +116,11 @@ importSNV.TCGA <- function(fMAF,
         # Compile function call record
         myCall <- character()
         myCall[1] <- "importSNV.TCGA("
-        myCall[2] <- sprintf("rMAF = \"%s\", ", fName)
-        myCall[3] <- sprintf("rSNV = \"%s\", ", net)
+        myCall[2] <- sprintf("fMAF = \"%s\", ", paste(fMAF, collapse=" "))
+        myCall[3] <- sprintf("rSNV = \"%s\", ", rSNV)
         myCall[4] <- sprintf("silent = %s, ", as.character(silent))
         myCall[5] <- sprintf("writeLog = %s)", as.character(writeLog))
+        myCall[6] <- sprintf("na.rm = %s)", as.character(na.rm))
         myCall <- paste0(myCall, collapse = "")
 
         # indicate input object name(s)
@@ -129,14 +129,6 @@ importSNV.TCGA <- function(fMAF,
         # Record progress information
         myNotes <- character()
         myNotes <- c(myNotes, sprintf("Files processed - ", nDone))
-        nyNotes <- c(myNotes, sprintf("Files pending - ", nPend))
-        myNotes <- c(myNotes, sprintf("Progress in percentage =
-                                      Size of Data Processed/Total Size of Data",
-                                      nComplete))
-        for (i in missingEntry) {
-            myNotes <- c(myNotes, sprintf("Found missing entry at index
-                                          K of rSNV", K))
-        }
 
         # indicate output object name(s)
         myOutput = c("rSNV")
@@ -149,7 +141,7 @@ importSNV.TCGA <- function(fMAF,
                  output = myOutput)
     }
 
-    return(gG)
+    return(rSNV)
 }
 
 
