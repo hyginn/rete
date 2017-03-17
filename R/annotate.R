@@ -1,7 +1,11 @@
-# Annotate Graphs
-#
+# annotate.R
+
 #' Produce annotated gene graph where vertices have scores
 #' attributed to genes.
+#'
+#' \code{annotateGraph} takes as inputs a gene heat hashtable and a gene graph,
+#' and annotates the graph with gene heats that have been calculated by the
+#' scoring function. It then returns an AGG (annotated gene graph).
 #'
 #' @param gH List of genes and their associated score (mutational frequncy of
 #'           mutSigCV value)
@@ -12,9 +16,8 @@
 #'   enabled. TRUE by default.
 #' @return AGG object with annotated vertices
 #'
-#'   ## @examples ## \dontrun{
-#'     annotateGraph(gH, gG)
-#'   }
+#' @examples
+# \dontrun{ annotateGraph(gH, gG) }
 #'
 #' @export
 annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
@@ -38,14 +41,30 @@ annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
                      gGName))
     }
 
+    if (class(writeLog) != "logical") {
+        stop("Error: writeLog must be of mode type and class logical")
+    }
+
+    if (class(silent) != "logical") {
+        stop("Error: silent must be of mode type and class logical")
+    }
+
     # == EXTRACT ALL VERTICES =================================================
+    if (!silent) { cat("Reading all vertices from ", gGName) }
+
     allVertices <- igraph::vertex_attr(gG)$name
 
+    if (!silent) { cat("Finished reading all vertices from ", gGName) }
+
     # == CREATED ORDERED VECTOR OF HEAT ASSIGNMENTS ===========================
+    if (!silent) { cat("Creating ordered vector of heat assignments") }
+
     numVerticesAnnotated <- 0
     heatAssignments <- c()
+
     for (i in 1:length(allVertices)) {
-        if (!is.null(gH[[allVertices[i]]])) {
+
+        if (!is.null(gH[[allVertices[i]]]) && !is.na(gH[[allVertices[i]]])) {
             heatAssignments[i] <- gH[[allVertices[i]]]
         } else {
             heatAssignments[i] <- 0
@@ -54,8 +73,15 @@ annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
         numVerticesAnnotated <- numVerticesAnnotated + 1
 
     }
+
+    if (!silent) { cat("Finished creating ordered vector of heat assignments") }
+
     # == ATTACH CORRESPONDING VERTEX ANNOTATIONS TO AGG =========================
+    if (!silent) { cat("Attaching corresponding vertex annotations to AGG") }
+
     AGG <- igraph::set_vertex_attr(gG, name = "heat", value = heatAssignments)
+
+    if (!silent) { cat("Finished attaching corresponding vertex annotations to AGG") }
 
     # ==== SETUP METADATA ======================================================
     meta <- list(type = "AGG",
@@ -63,7 +89,7 @@ annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
                  UUID = uuid::UUIDgenerate())
 
     if (!silent) {
-        # cat()
+        cat()
     }
 
     if (writeLog) {
@@ -83,11 +109,11 @@ annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
         # indicate output object name(s)
         logOutput = c("AGG")
 
-        # send info to log file
-        # logEvent(eventTitle = logTitle,
-        #          eventCall = logCall,
-        #          notes = logNotes,
-        #          output = logOutput)
+        # # send info to log file
+        logEvent(eventTitle = logTitle,
+                 eventCall = logCall,
+                 notes = logNotes,
+                 output = logOutput)
     }
 
     # ==== ATTACH METADATA =====================================================

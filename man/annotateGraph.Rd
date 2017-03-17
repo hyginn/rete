@@ -21,12 +21,12 @@ enabled. TRUE by default.}
 }
 \value{
 AGG object with annotated vertices
-
-  ## @examples ## \dontrun{
-    annotateGraph(gH, gG)
-  }
 }
 \description{
-Produce annotated gene graph where vertices have scores
-attributed to genes.
+\code{annotateGraph} takes as inputs a gene heat hashtable and a gene graph,
+and annotates the graph with gene heats that have been calculated by the
+scoring function. It then returns an AGG (annotated gene graph).
+}
+\examples{
+
 }
