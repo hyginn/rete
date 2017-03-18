@@ -30,6 +30,8 @@ annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
         stop(sprintf("Object \"%s\" is NULL.",
                      gHName))
     }
+    # Professor Steipe's .checkArgs()
+
 
     # TODO: Need to check for environment variable, not really objects... how?
     # if (!exists(gH)) {
@@ -49,44 +51,48 @@ annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
         stop("Error: silent must be of mode type and class logical")
     }
 
+    NL <- .PlatformLineBreak()
+
     # == EXTRACT ALL VERTICES =================================================
-    if (!silent) { cat("Reading all vertices from ", gGName) }
+    if (!silent) { cat("Reading all vertices from ", gGName, NL) }
 
     allVertices <- igraph::vertex_attr(gG)$name
 
-    if (!silent) { cat("Finished reading all vertices from ", gGName) }
+    if (!silent) { cat("Finished reading all vertices from ", gGName, NL) }
 
     # == CREATED ORDERED VECTOR OF HEAT ASSIGNMENTS ===========================
-    if (!silent) { cat("Creating ordered vector of heat assignments") }
+    if (!silent) { cat("Creating ordered vector of heat assignments", NL) }
 
     numVerticesAnnotated <- 0
-    heatAssignments <- c()
+    heatAssignments <- numeric(length(allVertices))
 
     for (i in 1:length(allVertices)) {
-
         if (!is.null(gH[[allVertices[i]]]) && !is.na(gH[[allVertices[i]]])) {
             heatAssignments[i] <- gH[[allVertices[i]]]
+            numVerticesAnnotated <- numVerticesAnnotated + 1
         } else {
             heatAssignments[i] <- 0
         }
-
-        numVerticesAnnotated <- numVerticesAnnotated + 1
-
     }
 
-    if (!silent) { cat("Finished creating ordered vector of heat assignments") }
+    if (!silent) { cat("Finished creating ordered vector of heat assignments", NL) }
 
     # == ATTACH CORRESPONDING VERTEX ANNOTATIONS TO AGG =========================
-    if (!silent) { cat("Attaching corresponding vertex annotations to AGG") }
+    if (!silent) { cat("Attaching corresponding vertex annotations to AGG", NL) }
 
     AGG <- igraph::set_vertex_attr(gG, name = "heat", value = heatAssignments)
 
-    if (!silent) { cat("Finished attaching corresponding vertex annotations to AGG") }
+    if (!silent) { cat("Finished attaching corresponding vertex annotations to AGG", NL) }
 
     # ==== SETUP METADATA ======================================================
     meta <- list(type = "AGG",
                  version = "1.0",
                  UUID = uuid::UUIDgenerate())
+
+    # ==== ATTACH METADATA =====================================================
+    for (name in names(meta)) {
+        attr(AGG, name) <- meta[[name]]
+    }
 
     if (!silent) {
         cat()
@@ -98,13 +104,13 @@ annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
         # Compile function call record
         logCall <- character()
         logCall[1] <- "annotateGraph("
-        logCall[2] <- sprintf("gH = \"%s\", ", as.character(gHName))
-        logCall[3] <- sprintf("gG = \"%s\", ", as.character(gGName))
+        logCall[2] <- sprintf("gH = \"%s\", ", gHName)
+        logCall[3] <- sprintf("gG = \"%s\", ", gGName)
         logCall <- paste0(logCall, collapse = "")
 
         # Record progress information
         logNotes <- character()
-        logNotes <- c(logNotes, sprintf("Annotated %s vertices", numVerticesAnnotated))
+        logNotes <- c(logNotes, sprintf("Annotated %s of %s vertices", numVerticesAnnotated, length(allVertices)))
 
         # indicate output object name(s)
         logOutput = c("AGG")
@@ -114,11 +120,6 @@ annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {
                  eventCall = logCall,
                  notes = logNotes,
                  output = logOutput)
-    }
-
-    # ==== ATTACH METADATA =====================================================
-    for (name in names(meta)) {
-        attr(AGG, name) <- meta[[name]]
     }
 
     return(AGG)
