@@ -1,4 +1,4 @@
-# importNet.TCGA.R
+# importSNV.TCGA.R
 
 #' Import MAF files from source and converts them to rSNV files.
 #'
@@ -8,11 +8,11 @@
 #'
 #' @param fMAF vector of MAF file names
 #' @param rSNV rSNV file to merged new MAF data with
+#' @param na.rm remove all rows with NA values as attributes and drop from DF
 #' @param silent Controls whether output to console should be suppressed. FALSE
 #'   by default.
 #' @param writeLog Controls whether writing the result to the global logfile is
 #'   enabled. TRUE by default.
-#' @param na.rm remove all rows with NA values as attributes and drop from DF
 #' @return rSNV file name containg data from all MAF files
 #'
 #' @family
@@ -20,13 +20,13 @@
 #'   ## @seealso \code{\link{fastMap}} fastMap() is used internally to map ENSP
 #'   IDs to gene symbols.
 #'
-#'   ## @examples ## \dontrun{ ## importNet.STRING(IN, OUT) ## }
+#'   ## @examples ## \dontrun{ ## importSNV.TCGA(IN, OUT) ## }
 #' @export
 importSNV.TCGA <- function(  fMAF,
                              rSNV,
+                             na.rm = TRUE,
                              silent = FALSE,
-                             writeLog = TRUE,
-                             na.rm = TRUE) {
+                             writeLog = TRUE){
 
     # ==== PARAMETERS ==========================================================
 
@@ -91,21 +91,10 @@ importSNV.TCGA <- function(  fMAF,
 
     # read each sample from file and parse the columns listed above and write them
     # to the rSNV file.
-    # write missing/dropped to log HERE
-    # incase of missing value add index of sample entry in rSNV to vector 'missingValues'
+    # handle missing N/A values if na.rm == TRUE
     # when we reach the last sample close file and open new file.
 
     # ==== "HANDLE" - MISSING VALUES =============================================
-
-    # Incase we encounter missing attributes for samples
-    # Add the sample entry to the rSNV file but record the line number
-    # or the index of that entry.
-    # Make a vector of all entries with missing values
-    # Report all missing entries in the log Below.
-
-    # can also have and option to drop all entries with missing values
-
-    # ====  =================================================
 
     # ==== WRITE LOG ===========================================================
 
@@ -136,7 +125,7 @@ importSNV.TCGA <- function(  fMAF,
         # send info to log file
         logEvent(eventTitle = myTitle,
                  eventCall = myCall,
-#                input = character(),
+                 input = character(fMAF, rSNV),
                  notes = myNotes,
                  output = myOutput)
     }
