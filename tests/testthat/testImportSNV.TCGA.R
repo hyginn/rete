@@ -11,7 +11,7 @@ test_that("parameter errors are correctly handled", {
     # if rSNV parameter is provided, rSNV file does not exist
     # if rSNV parameter is provided, but is NULL
     # if rSNV parameter is provided, but is non-string value
-    # if rSNV is not provided, new file could not be created (in case of no  write permissons)
+    # if rSNV is not provided, new file could not be created (file name conflict)
     # if na.rm is not given logical input
     # if silent is not given logical input
     # write.log is not given logical input
@@ -57,6 +57,17 @@ test_that("silent and write works as intended", {
     # if writeLog=TRUE, check if logs are written to it correctly
     # if writeLog=FALSE, check that no log file is created
     # if writeLog=FALSE, cmake sure no log files are written
+})
+
+test_that("test that columns contains valid values", {
+    # (not sure if this is necessary, do we just assume input data is correct?)
+    # check if we are using the correct MAF versions like 2.4 or lower etc.
+    # check if variant_class contains valid values from known list
+    # check if vairant_type contains valid values from known list
+    # check UUID format
+    # check chromosome value
+    # check start position and end are integers
+    # check tumor sample barcode is correct format
 })
 
 # [END]
