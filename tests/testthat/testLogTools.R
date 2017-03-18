@@ -290,24 +290,16 @@ test_that("logEvent writes a structured message", {
     fn <- unlist(getOption("rete.logfile"))
     if (file.exists(fn)) { file.remove(fn)}
 
-    # The assignments below looks convoluted, but are necessary to ensure
-    # the attributes arrive with the objects in the global environment
-    # even when test_that() creates them in the package environment. If we
-    # don't do that, get() fails to find the right object when
-    # .extractAttributes() is executed in the test environment.
     testAsset_04 <- TRUE
     attr(testAsset_04, "UUID") <- uuid::UUIDgenerate()
-    # assign("testAsset_04", testAsset_04, envir = .GlobalEnv)
 
     testAsset_05 <- 1:10
     attr(testAsset_05, "att") <- "a1"
     attr(testAsset_05, "UUID") <- uuid::UUIDgenerate()
-    # assign("testAsset_05", testAsset_05, envir = .GlobalEnv)
 
     testAsset_06 <- letters
     names(testAsset_06) <- LETTERS
     attr(testAsset_06, "UUID") <- uuid::UUIDgenerate()
-    # assign("testAsset_06", testAsset_06, envir = .GlobalEnv)
 
     logEvent(eventTitle = "test 1",
              eventCall = "f1(p = P)",
