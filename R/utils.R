@@ -39,8 +39,13 @@
     #     report <- .checkArgs(EGG, like = getOptions("rete.EGGprototype"))
     #
     # ToDo:
-    #     Check specifically for a versions graph attribute if this is
-    #     an igraph object produced by a rete function.
+    #     - Check specifically for a versions graph attribute if this is
+    #           an igraph object produced by a rete function.
+    #     - Check individual elements of like if like is vector and
+    #           checksize has passed.
+    #     - Check size first.
+    #     - Add parameter exhaustive = FALSE and internal flag ABORT to
+    #           abort after first failed check.
     #
 
     name <- deparse(substitute(x)) # the name of the parameter to check

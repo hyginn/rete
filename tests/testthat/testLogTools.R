@@ -122,63 +122,57 @@ test_that("logMessage works as expected with reasonable arguments", {
 })
 
 
-# ==== getUUID() ============================================================
+# ==== getUUID() ===============================================================
 if(exists("tmp")) { rm(tmp) }
 # pattern to grep for UUIDs
 patt<-"[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
 
-# These test can only be run interactively because of scoping issues when
-# getUUID is run through test_that(). Apparently locally created/modified
-# objects are not on the search path...
-
 test_that("getUUID rejects inappropriate objects", {
 
-    if(exists("testAsset_01", envir = .GlobalEnv)) {
-        rm("testAsset_01", envir = .GlobalEnv)
-    }
-    expect_error(getUUID(testAsset_01), 'Object "testAsset_01" does not exist.')
-
-    assign("testAsset_01", NULL, envir = .GlobalEnv)
-    expect_error(getUUID(testAsset_01), 'Object "testAsset_01" is NULL.')
-    rm("testAsset_01", envir = .GlobalEnv)
+    expect_error(getUUID("testAsset_01"),
+                 'Object "testAsset_01" does not exist.')
+    "testAsset_01" <- NULL
+    expect_error(getUUID("testAsset_01"),
+                 'Object "testAsset_01" is NULL.')
+    rm("testAsset_01")
 })
 
 test_that("getUUID gets an UUID for an object that has none", {
-    assign("testAsset_02", "a", envir = .GlobalEnv)
-    myUUID <- getUUID(testAsset_02)
+    testAsset_02 <- "a"
+    myUUID <- getUUID("testAsset_02")
     expect_true(grepl(patt, myUUID))
-    rm("testAsset_02", envir = .GlobalEnv)
+    rm("testAsset_02")
 })
 
 test_that("getUUID returns the old UUID if the object has one", {
-    assign("testAsset_03", "b", envir = .GlobalEnv)
+    testAsset_03 <- "b"
     attr(testAsset_03, "UUID") <- "fakeUUID"
-    expect_equal(getUUID(testAsset_03), "fakeUUID")
-    rm("testAsset_03", envir = .GlobalEnv)
+    expect_equal(getUUID("testAsset_03"), "fakeUUID")
+    rm("testAsset_03")
 })
 
 test_that("getUUID returns a new UUID if overwrite is TRUE", {
-    assign("testAsset_04", "b", envir = .GlobalEnv)
+    testAsset_04 <- "c"
     attr(testAsset_04, "UUID") <- "fakeUUID"
-    expect_true(grepl(patt, getUUID(testAsset_04, overwrite = TRUE)))
-    rm("testAsset_04", envir = .GlobalEnv)
+    expect_true(grepl(patt, getUUID("testAsset_04", overwrite = TRUE)))
+    rm("testAsset_04")
 })
 
 # ==== .extractAttributes() ====================================================
 
 if (exists("tmp")) { rm(tmp) }
 test_that(".extractAttributes() rejects an object that does not exist", {
-    expect_error(.extractAttributes(tmp, role = "input"),
-                 "object 'tmp' not found")
+    expect_error(.extractAttributes("tmp", role = "input"),
+                 "Object \"tmp\" does not exist.")
 })
 
 test_that(".extractAttributes() rejects NULL objects", {
     tmp <- NULL
-    expect_error(.extractAttributes(tmp, role = "input"),
+    expect_error(.extractAttributes("tmp", role = "input"),
                  "Object \"tmp\" is NULL.")
 })
 
-test_that(".extractAttributes() returns character() if object has no attributes", {
+test_that(".extractAttributes() returns character() if object has none", {
     tmp <- "c"
     expect_equal(.extractAttributes("tmp", role ="input"), character())
 })
@@ -193,13 +187,13 @@ test_that(".extractAttributes() throws error for missing or incorrect role", {
 test_that(".extractAttributes() logs one attribute", {
     tmp <- "c"
     attr(tmp, "x") <- "u"
-    expect_equal(.extractAttributes(tmp, role = "input"),
+    expect_equal(.extractAttributes("tmp", role = "input"),
                  "event | input  | attribute | x            | \"u\"")
     attr(tmp, "x") <- c("u", "v")
-    expect_equal(.extractAttributes(tmp, role = "output"),
+    expect_equal(.extractAttributes("tmp", role = "output"),
                  "event | output | attribute | x            | (u, v)")
     attr(tmp, "x") <- LETTERS
-    expect_equal(.extractAttributes(tmp, role = "input"),
+    expect_equal(.extractAttributes("tmp", role = "input"),
         "event | input  | attribute | x            | (A, B, C, ... (26) )")
 })
 
@@ -207,14 +201,14 @@ test_that(".extractAttributes() logs multiple attributes", {
     tmp <- "c"
     attr(tmp, "x") <- "u"
     attr(tmp, "y") <- c("u", "v")
-    result <- .extractAttributes(tmp, role = "input")
+    result <- .extractAttributes("tmp", role = "input")
 
     expect_equal(result[1],
                  "event | input  | attribute | x            | \"u\"")
     expect_equal(result[2],
                  "event | input  | attribute | y            | (u, v)")
 
-    result <- .extractAttributes(tmp, role = "output")
+    result <- .extractAttributes("tmp", role = "output")
     expect_equal(result[1],
                  "event | output | attribute | x            | \"u\"")
     expect_equal(result[2],
@@ -303,17 +297,17 @@ test_that("logEvent writes a structured message", {
     # .extractAttributes() is executed in the test environment.
     testAsset_04 <- TRUE
     attr(testAsset_04, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_04", testAsset_04, envir = .GlobalEnv)
+    # assign("testAsset_04", testAsset_04, envir = .GlobalEnv)
 
     testAsset_05 <- 1:10
     attr(testAsset_05, "att") <- "a1"
     attr(testAsset_05, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_05", testAsset_05, envir = .GlobalEnv)
+    # assign("testAsset_05", testAsset_05, envir = .GlobalEnv)
 
     testAsset_06 <- letters
     names(testAsset_06) <- LETTERS
     attr(testAsset_06, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_06", testAsset_06, envir = .GlobalEnv)
+    # assign("testAsset_06", testAsset_06, envir = .GlobalEnv)
 
     logEvent(eventTitle = "test 1",
              eventCall = "f1(p = P)",
@@ -357,9 +351,9 @@ test_that("logEvent writes a structured message", {
     logResult <- readLines(fn)
     expect_equal(length(logResult), 30)
 
-    rm("testAsset_04", envir = .GlobalEnv)
-    rm("testAsset_05", envir = .GlobalEnv)
-    rm("testAsset_06", envir = .GlobalEnv)
+    rm("testAsset_04")
+    rm("testAsset_05")
+    rm("testAsset_06")
 })
 
 # ==== findUUID() ==============================================================
@@ -390,17 +384,14 @@ test_that("findUUID() returns the correct number of events", {
 
     testAsset_04 <- TRUE
     attr(testAsset_04, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_04", testAsset_04, envir = .GlobalEnv)
 
     testAsset_05 <- 1:10
     attr(testAsset_05, "att") <- "a1"
     attr(testAsset_05, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_05", testAsset_05, envir = .GlobalEnv)
 
     testAsset_06 <- letters
     names(testAsset_06) <- LETTERS
     attr(testAsset_06, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_06", testAsset_06, envir = .GlobalEnv)
 
     logEvent(eventTitle = "test 1",
              eventCall = "doAThing(thing)",
@@ -417,7 +408,6 @@ test_that("findUUID() returns the correct number of events", {
     a4UUIDold <- attr(testAsset_04, "UUID")
     a4UUIDnew <- uuid::UUIDgenerate()
     attr(testAsset_04, "UUID") <- a4UUIDnew
-    assign("testAsset_04", testAsset_04, envir = .GlobalEnv)
 
     a5UUID    <- attr(testAsset_05, "UUID")
     xxUUID    <- uuid::UUIDgenerate()
@@ -448,14 +438,14 @@ test_that("findUUID() returns the correct number of events", {
     expect_true(grepl("^event | title  | test", events[3]))
     expect_true(grepl("^event | end$", events[3]))
 
-    rm("testAsset_04", envir = .GlobalEnv)
-    rm("testAsset_05", envir = .GlobalEnv)
-    rm("testAsset_06", envir = .GlobalEnv)
+    rm("testAsset_04")
+    rm("testAsset_05")
+    rm("testAsset_06")
 
 })
 
 
-# ==== getProvenance() ==============================================================
+# ==== getProvenance() =========================================================
 
 
 #
@@ -464,14 +454,17 @@ test_that("findUUID() returns the correct number of events", {
 # test_that("function throws error if object does not exist", {
 #     # call function with object which does not exist
 #     # expect function to error
-#     ### bs> IF you pass an UUID, your function needs to test whether the object is structured like an UUID.
+#     ### bs> IF you pass an UUID, your function needs to test whether the
+#              object is structured like an UUID.
 #     ### bs> you should use the .checkArgs() function for that and I will add a
 #     ### bs> keyword directive    like = "UUID"  to .checkArgs() . Good?
 #     ### wt> great, thank you.
 # })
 #
-# test_that("function throws error if object's uuid does not exist in the logs", {
-#     # set up mock log file with uuids that will not be called by the function test
+# test_that("function throws error if object's uuid does not exist
+#            in the logs", {
+#     # set up mock log file with uuids that will not be called by the
+#       function test
 #     # call function with object uuid which does not occur in the logs
 #     # expect function to error
 #     ### bs> I would not call this an error. I think this test is actually
@@ -485,18 +478,24 @@ test_that("findUUID() returns the correct number of events", {
 #     ### bs> yes. .checkArgs has an option for that
 # })
 #
-# ### bs> I think it would be useful to also throw an error if there are no log files at all in
+# ### bs> I think it would be useful to also throw an error if there are no log
+#         files at all in
 # ### bs> the directory since that's almost certainly not intended.
 # ### wt> yes, will add pseudocode.
 #
-# test_that("given an object whose UUID occurs in the logs, returns the correct provenance", {
-#     # set up multiple log events where a particular object was manipulated, from a filename without a UUID
+# test_that("given an object whose UUID occurs in the logs, returns the
+#           correct provenance", {
+#     # set up multiple log events where a particular object was manipulated,
+#      from a filename without a UUID
 #     # call function with valid object and directory
-#     # expect function to return the intermediaries of UUIDs and events which lead up to the current state of the object
-#     ### bs> Here too: you need to decide what is being returned. Probably full event blocks plus filenames.
+#     # expect function to return the intermediaries of UUIDs and events which
+#      lead up to the current state of the object
+#     ### bs> Here too: you need to decide what is being returned. Probably full
+#      event blocks plus filenames.
 # })
 #
-# ### bs> provenance can be branching since objects can have multiple parents. Need to test that these are correctly queued
+# ### bs> provenance can be branching since objects can have multiple parents.
+#  Need to test that these are correctly queued
 # ### bs> and handled. Suggest depth-first, not breadth-first.
 
 # Cleanup after testing
