@@ -17,7 +17,9 @@
 #' @return AGG object with annotated vertices
 #'
 #' @examples
-# \dontrun{ annotateGraph(gH, gG) }
+#' \dontrun{
+#'     annotateGraph(gH, gG)
+#' }
 #'
 #' @export
 annotateGraph <- function(gH, gG, silent = FALSE, writeLog = TRUE) {

@@ -28,5 +28,8 @@ and annotates the graph with gene heats that have been calculated by the
 scoring function. It then returns an AGG (annotated gene graph).
 }
 \examples{
+\dontrun{
+    annotateGraph(gH, gG)
+}
 
 }
