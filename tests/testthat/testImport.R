@@ -3,6 +3,13 @@
 #
 context("import networks")
 
+# ==== BEGIN SETUP AND PREPARE =================================================
+OLOG <- as.character(getOption("rete.logfile"))   # save original logfile name
+logFileName(fPath = tempdir(), setOption = TRUE)  # make tempdir() the log dir
+NL <- .PlatformLineBreak()
+# ==== END SETUP AND PREPARE ===================================================
+
+
 # ToDo test parameter handling
 #      test correct logfile
 #      test correct attributes
@@ -15,7 +22,7 @@ test_that("importNet.STRING produces gG from STRING data", {
                            net = "experimental",
                            dropUnmapped = FALSE,
                            silent = TRUE,
-                           writeLog = FALSE)
+                           writeLog = TRUE)
     expect_equal(igraph::vcount(gG), 5)         # correct number of vertices
     expect_equal(igraph::ecount(gG), 4)         # correct number of edges
     # metadata
@@ -24,5 +31,12 @@ test_that("importNet.STRING produces gG from STRING data", {
     expect_true(grepl(patt, attr(gG, "UUID")))  # valid UUID
 })
 
+
+
+# ==== BEGIN TEARDOWN AND RESTORE ==============================================
+fn <- unlist(getOption("rete.logfile"))
+if (file.exists(fn)) { file.remove(fn)}
+options("rete.logfile" = OLOG)
+# ==== END  TEARDOWN AND RESTORE ===============================================
 
 # [END]
