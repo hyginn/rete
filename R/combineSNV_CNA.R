@@ -20,42 +20,45 @@
 #'
 #'
 #' @examples
-#' \dontrun{combine(fName=file_names, fgX="combined_data.txt", silent=TRUE, noLog=FALSE)}
+#' \dontrun{combine(fName=file_names, fgX="combined_data.RDS", silent=TRUE, noLog=FALSE)}
 #'
 #' @export
 combineSNV_CNA <- function(fname, fgX, silent=FALSE, noLog=FALSE) {
     #' pseudo code
-    #' hashVector <- ()
-    #' index <- 1
+    #' hashTable <- new.env()
     #' read from input files and store hash
     #' for (i <- 1, i <= length(fname), i++) {
     #'  fcurrent <- fname[i]
     #'  if fcurrent is CNA {
     #'      loadRDS(fcurrent)
     #'      for each variation:
-    #'          cnaCount <- count copy number variation
-    #'          hashVector[index] <- hash(cnaCount)
-    #'          index++
+    #'          key = hash(<gene symbol>:CNA:<as.character(round(<copy number>))>)
+    #'          if key is in hashTable:
+    #'              hashTable[[key]] <- hashTable[[key]] + 1
+    #'          else:
+    #'              hashTable[[key]] <- 1
     #'  }
     #'  else if fcurrent is MUT {
     #'      load(fcurrent)
     #'      for each row:
-    #'          mutCout <- count observed mutation
-    #'          hashVector[index] <- hash(mutCount)
-    #'          index++
-    #'  }
+    #'          key = hash(<gene symbol>:SNV:<position>:<variant class>)
+    #'          if key is in hashTable:
+    #'              hashTable[[key]] <- hashTable[[key]] + 1
+    #'          else:
+    #'              hashTable[[key]] <- 1
     #' }
-    #' sort hash
-    #' hashVector <- sort(hash_vector)
-    #' count <- (length(hash_vector))
     #'
-    #' write to output gX file from hash
-    #' fout <- file(fgX)
-    #' for (j <- 1, j <= count, j++) {
-    #'  line <- read hash hashVector[j]
-    #'  write line to fout
-    #' }
-    #' close(fout)
+    #'
+    #'
+    #' retrieve all keys from hashTable and strplit them to sym, type, pos and class
+    #' hashVector = hashTable[!is.na(hashTable)]
+    #' sort hashVector
+    #' store retrieve 4 classes in a dataframe
+    #' for key in hashVector:
+    #'  retrieve value from hashTable using keys in hashVector
+    #' count <- length(hashVector)
+    #'
+    #' save(dataframe, fgX)
     #'
     #' ToDo add silent and log to reading from data files and writing to output files
     #' return(count)
