@@ -5,10 +5,11 @@
 .PlatformLineBreak <- function() {
     # returns "\r\n" on windows, "\n" otherwise
     if (.Platform$OS.type == "windows") {
-        return("\r\n")
+        NL <- "\r\n"
     } else {
-        return("\n")
+        NL <- "\n"
     }
+    return(NL)
 }
 
 
