@@ -39,7 +39,7 @@ combineSNV_CNA <- function(fname, fgX, silent=FALSE, noLog=FALSE) {
     #'              hashTable[[key]] <- 1
     #'  }
     #'  else if fcurrent is MUT {
-    #'      load(fcurrent)
+    #'      loadRDS(fcurrent)
     #'      for each row:
     #'          key = hash(<gene symbol>:SNV:<position>:<variant class>)
     #'          if key is in hashTable:
@@ -50,9 +50,10 @@ combineSNV_CNA <- function(fname, fgX, silent=FALSE, noLog=FALSE) {
     #'
     #'
     #'
-    #' retrieve all keys from hashTable and strplit them to sym, type, pos and class
-    #' hashVector = hashTable[!is.na(hashTable)]
+    #' retrieve all keys from hashTable
+    #' hashVector = hashTable[!is.na(hashTable)] or hashVector <- keys(hashTable)
     #' sort hashVector
+    #' strplit them to sym, type, pos and class
     #' store retrieve 4 classes in a dataframe
     #' for key in hashVector:
     #'  retrieve value from hashTable using keys in hashVector
