@@ -78,8 +78,8 @@ test_that("a corrupt input does not lead to corrupted output", {
 
 
 # ==== BEGIN TEARDOWN AND RESTORE ==============================================
-fn <- unlist(getOption("rete.logfile"))
-if (file.exists(fn)) { file.remove(fn)}
+logName <- unlist(getOption("rete.logfile"))
+if (file.exists(logName)) { file.remove(logName)}
 options("rete.logfile" = OLOG)
 # ==== END  TEARDOWN AND RESTORE ===============================================
 
