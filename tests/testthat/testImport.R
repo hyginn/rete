@@ -147,7 +147,21 @@ test_that("importNet.STRING() produces gG from STRING data", {
 })
 
 
-test_that("importNet.STRING() does not produce gG from corrupt data", {
+test_that("importNet.STRING() doesn't leak output if silent = TRUE", {
+    fN <- "dataSTRING.txt"
+    testF <- tempfile()
+    capture.output(gG <- importNet.STRING(fName = fN,
+                                          net = "experimental",
+                                          dropUnmapped = FALSE,
+                                          silent = TRUE,
+                                          writeLog = FALSE),
+                   file = testF)
+    expect_equal(length(readLines(testF)), 0)
+    expect_true(file.remove(testF))
+})
+
+
+test_that("importNet.STRING() doesn't produce gG from corrupt data", {
     # ToDo:
     #  - stop on missing NL on last line
     #  - stop on NA in ID
