@@ -139,22 +139,29 @@ logMessage <- function(msg) {
         stop(checkReport)
     }
 
-    # remove "\n" or "\r\n" from line-endings
-    msg <- gsub("[\n\r]+$", "", msg)
+    NL <- .PlatformLineBreak()
 
-    # replace existing line breaks with platform appropriate version
-    if (.Platform$OS.type == "windows") {
-        Sep <- "\r\n"
-        msg <- gsub("([^\r]\n)|^\n", Sep, msg)
-    } else {
-        Sep <- "\n"
-        msg <- gsub("\r\n", Sep, msg)
-    }
+    TOK <- uuid::UUIDgenerate()
 
-    # append to log file, with platform appropriate separator
+    # Remove all line-end linebreaks
+    msg <- gsub("[\r\n]+$", "", msg)
+
+    # Replace all windows linebreaks with token
+    msg <- gsub("\r\n", TOK, msg)
+
+    # Replace all unix linebreaks with token
+    msg <- gsub("\n", TOK, msg)
+
+    # Replace all tokens with platform specific SEP
+    msg <- gsub(TOK, NL, msg)
+
+    # Add correct separators to line-ends
+    msg <- gsub("$", NL, msg)
+
+    # append msg to log file
     cat(msg,
         file = unlist(getOption("rete.logfile")),
-        sep = Sep,
+        sep = "",
         append = TRUE)
 
 }
