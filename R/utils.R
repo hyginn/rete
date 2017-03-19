@@ -63,9 +63,9 @@
                 report <- c(report,
                             sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
-                                    "error: directory ",
+                                    "error: directory \"",
                                     el,
-                                    " does not exist.",
+                                    "\" does not exist.",
                                     NL))
             }
             if (like == "FILE_E" && ! file.exists(el)) {
@@ -73,9 +73,9 @@
                 report <- c(report,
                             sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
-                                    "error: file ",
+                                    "error: file \"",
                                     el,
-                                    " does not exist.",
+                                    "\" does not exist.",
                                     NL))
             }
             if (like == "FILE_W" && file.access(el, mode = 2) != 0) {
