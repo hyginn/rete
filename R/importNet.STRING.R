@@ -78,28 +78,18 @@ importNet.STRING <- function(fName,
     #         since this changes the number of edges above cutoff.
     # ToDo: write tests for that
     # ToDo: fix the fastMap() call
+    # ToDo: stop on incomplete last line - suspect corrupt file
 
     #
 
     # ==== PARAMETERS ==========================================================
 
-    NL <- .PlatformLineBreak()
     cutoffTypes <- c("xS", "xQ", "xN")
     defaultValues <- c(xS = 950, xQ = 0.9, xN = 10000)
 
     if (missing(val)) {
         val <- defaultValues[cutoffType]
     }
-
-    # Read header and one contents line
-    tmp <- readLines(fName, n = 2)
-
-    # Parse for requested column. STRING data is " "-delimited.
-    header <- unlist(strsplit(tmp[1], " "))
-    iCol <- which(net == header)  # column that contains the requested net
-
-    data   <- unlist(strsplit(tmp[2], " "))
-
 
     # ==== VALIDATIONS =========================================================
 
@@ -120,27 +110,36 @@ importNet.STRING <- function(fName,
 
     #  Validate the cutoffType parameter
     if (!cutoffType %in% cutoffTypes) {
-        stop(paste0("Parameter error:", NL,
+        stop(paste0("Parameter error:", "\n",
                     "Valid cutoff types: ",
-                    "\"", paste(cutoffTypes, collapse = "\" | \""), "\"", NL,
-                    "Found: \"", cutoffType, "\"", NL))
+                    "\"", paste(cutoffTypes, collapse = "\" | \""), "\"", "\n",
+                    "Found: \"", cutoffType, "\"", "\n"))
     }
+
+    # Read header and one contents line
+    tmp <- readLines(fName, n = 2)
+
+    data   <- unlist(strsplit(tmp[2], " "))
 
     #  Validate theInteractor ID format
     patt <- paste(taxID, ".ENSP", sep = "")
     if (length(grep(patt, data[1:2])) != 2) {
-        stop(paste0("ID error:", NL,
-                    "Expected format ", sprintf("<%s....>", patt), NL,
-                    "Found: <",paste(data[1:2], collapse = "> and <"), ">", NL))
+        stop(paste0("ID error:", "\n",
+                    "Expected format ", sprintf("<%s....>", patt), "\n",
+                    "Found: <",paste(data[1:2], collapse = "> and <"), ">", "\n"))
     }
+
+    # Parse for requested column. STRING data is " "-delimited.
+    header <- unlist(strsplit(tmp[1], " "))
+    iCol <- which(net == header)  # column that contains the requested net
 
     #  Validate that the requested network exists in data
     if (length(iCol) != 1) {
-        stop(paste0("Request error:", NL,
-                    "Requested network type is ", sprintf("\"%s\"", net), NL,
+        stop(paste0("Request error:", "\n",
+                    "Requested network type is ", sprintf("\"%s\"", net), "\n",
                     "Found network type(s): <",
                     paste(header[3:length(header)], collapse = ", "),
-                    ">", NL))
+                    ">", "\n"))
     }
 
     # ==== READ DATA ===========================================================
@@ -163,7 +162,7 @@ importNet.STRING <- function(fName,
     colnames(netDF) <- c("a", "b", "weight")
 
     nIn <- nrow(netDF)
-    if (!silent) { cat("done. (", nIn, " edges)", NL) }
+    if (!silent) { cat("done. (", nIn, " edges)", "\n") }
 
 
     # ==== SELECT EDGES ========================================================
