@@ -5,6 +5,17 @@ context("utility functions")
 tmpFn <- tempfile()
 writeLines("test", tmpFn)
 
+
+test_that(".platformLineBreak() returns the correct linebreak", {
+    if (.Platform$OS.type == "windows") {
+        NL <- "\r\n"
+    } else {
+        NL <- "\n"
+    }
+    expect_equal(.PlatformLineBreak(), NL)
+})
+
+
 test_that(".checkArgs lets matching arguments pass", {
     # We are only counting the length of the error messsages, not contents
     expect_equal(length(.checkArgs(tempdir(), "DIR")), 0)
@@ -67,7 +78,6 @@ test_that(".checkArgs finds argument errors", {
     igraph::graph_attr(gF)$version <- "noMatch"
     expect_equal(length(.checkArgs(gF, gG)), 1) # version error
 })
-
 
 
 test_that(".df2gG simplifies the graph", {
