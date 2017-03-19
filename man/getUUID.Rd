@@ -4,10 +4,10 @@
 \alias{getUUID}
 \title{get a UUID to attach to an object}
 \usage{
-getUUID(x, overwrite = FALSE)
+getUUID(objectName, overwrite = FALSE)
 }
 \arguments{
-\item{x}{an R object}
+\item{objectName}{char. Name of an R object}
 
 \item{overwrite}{logical. Flag to control whether an existing UUID should be
 overwritten. Default FALSE.}
@@ -17,7 +17,7 @@ the value of the original UUID attribute, or a new UUID
 }
 \description{
 \code{getUUID} uses the uuid package to prepare a UUID suitable to
-               be attached to a given object.
+               be attached to an object identified by objectName.
 }
 \details{
 The overwrite flag can be understood as follows:

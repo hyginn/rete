@@ -139,22 +139,29 @@ logMessage <- function(msg) {
         stop(checkReport)
     }
 
-    # remove "\n" or "\r\n" from line-endings
-    msg <- gsub("[\n\r]+$", "", msg)
+    NL <- .PlatformLineBreak()
 
-    # replace existing line breaks with platform appropriate version
-    if (.Platform$OS.type == "windows") {
-        Sep <- "\r\n"
-        msg <- gsub("([^\r]\n)|^\n", Sep, msg)
-    } else {
-        Sep <- "\n"
-        msg <- gsub("\r\n", Sep, msg)
-    }
+    TOK <- uuid::UUIDgenerate()
 
-    # append to log file, with platform appropriate separator
+    # Remove all line-end linebreaks
+    msg <- gsub("[\r\n]+$", "", msg)
+
+    # Replace all windows linebreaks with token
+    msg <- gsub("\r\n", TOK, msg)
+
+    # Replace all unix linebreaks with token
+    msg <- gsub("\n", TOK, msg)
+
+    # Replace all tokens with platform specific SEP
+    msg <- gsub(TOK, NL, msg)
+
+    # Add correct separators to line-ends
+    msg <- gsub("$", NL, msg)
+
+    # append msg to log file
     cat(msg,
         file = unlist(getOption("rete.logfile")),
-        sep = Sep,
+        sep = "",
         append = TRUE)
 
 }
@@ -165,7 +172,7 @@ logMessage <- function(msg) {
 #' get a UUID to attach to an object
 #'
 #' \code{getUUID} uses the uuid package to prepare a UUID suitable to
-#'                be attached to a given object.
+#'                be attached to an object identified by objectName.
 #'
 #' The overwrite flag can be understood as follows:
 #' - if the object does not have a $UUID attribute, a UUID is returned
@@ -177,7 +184,7 @@ logMessage <- function(msg) {
 #'   Note: no check is done whether the original $UUID attribute
 #'   is a valid UUID.
 #'
-#' @param x an R object
+#' @param objectName char. Name of an R object
 #' @param overwrite logical. Flag to control whether an existing UUID should be
 #'                  overwritten. Default FALSE.
 #' @return the value of the original UUID attribute, or a new UUID
@@ -196,23 +203,35 @@ logMessage <- function(msg) {
 #'   getUUID("tmp")
 #' }
 #' @export
-getUUID <- function(x, overwrite = FALSE) {
+getUUID <- function(objectName, overwrite = FALSE) {
 
-    objectName <- deparse(substitute(x))
-    if (!exists(objectName)) {
-        stop(sprintf("Object \"%s\" does not exist.",
-                     objectName))
+    found <- FALSE
+    for (frame in rev(sys.parents())) {
+        if (exists(objectName, frame = frame, inherits = FALSE)) {
+            obj <- get(objectName, envir = sys.frame(frame))
+            found <- TRUE
+            break()
+        }
     }
+    if (! found) { stop(sprintf("Object \"%s\" does not exist.", objectName)) }
 
-    if (is.null(x)) {
+    if (is.null(obj)) {
         stop(sprintf("Object \"%s\" is NULL.",
                      objectName))
     }
 
-    if (is.null(attr(x, "UUID")) || overwrite) {
+
+    # if (! is.null(get0(objectName, envir = parent.frame(99)))) {
+    #     obj <- get(objectName, envir = parent.frame(99))
+    # } else {
+    #     obj <- get(objectName)
+    # }
+
+
+    if (is.null(attr(obj, "UUID")) || overwrite) {
         UUID <- uuid::UUIDgenerate()
     } else {
-        UUID <- attr(x, "UUID")
+        UUID <- attr(obj, "UUID")
     }
     return(UUID)
 
@@ -220,10 +239,13 @@ getUUID <- function(x, overwrite = FALSE) {
 
 # ==== .extractAttributes() ====================================================
 
-.extractAttributes <- function(object, role) {
+.extractAttributes <- function(obName, role) {
 
     # Non-exported helper function returns all of the attributes that are
     # attached to an object identified by objectName, formatted for logging.
+    # Function looks for the object first in the parent.frame(), then on the
+    # normal search path. This fixes a problem that object could not be found if
+    # the function was called via the test_that environment.
 
     # Format of the extracted attributes:
     # event | input  | attribute | <attrNameN> | <attrValueN>
@@ -231,57 +253,68 @@ getUUID <- function(x, overwrite = FALSE) {
     # event | output | attribute | <attrNameN> | <attrValueN>
     #
     # Parameters:
-    #    object: any non-NULL R object
-    #    role: <input|output> signifies the object role in the calling
-    #             function's workflow.
+    #    obName: char. Name of a non-NULL R object
+    #    role:   <input|output|using> signifies the object role in the calling
+    #               function's workflow.
     # Value:
     #    A zero-length string if no attributes are extracted,
     #    a vector of formatted attribute descriptions otherwise.
 
     supportedRoles <- c("input", "output", "using")
 
+    # ==== PARAMETER CHECKS ====================================================
     if (missing(role)) {
         stop("role parameter must be provided.")
     }
 
     r <- character()
-    r <- c(r, .checkArgs(role, like = "a", checkSize = TRUE))
+    r <- c(r, .checkArgs(obName, like = "a", checkSize = TRUE))
+    r <- c(r, .checkArgs(role,   like = "a", checkSize = TRUE))
     if(length(r) > 0) {
         stop(r)
-    }
-
-    if (is.null(object)) {
-            stop(sprintf("Object \"%s\" is NULL.",
-                         deparse(substitute(object))))
     }
 
     if (! role %in% supportedRoles) {
         stop(sprintf("Expecting role from (\"%s\"), but got \"%s\".",
                      paste(supportedRoles, collapse = "\", \""), role))
     }
+    # ==== GET OBJECT ==========================================================
+    found <- FALSE
+    for (frame in rev(sys.parents())) {
+        if (exists(obName, frame = frame, inherits = FALSE)) {
+            myOb <- get(obName, envir = sys.frame(frame))
+            found <- TRUE
+            break()
+        }
+    }
+    if (! found) { stop(sprintf("Object \"%s\" does not exist.", obName)) }
+
+    if (is.null(myOb)) {
+        stop(sprintf("Object \"%s\" is NULL.", obName))
+    }
 
 
+    # ==== COMPILE OUTPUT STRING ===============================================
     result <- character()
-    for (name in names(attributes(object))) {
+    for (name in names(attributes(myOb))) {
 
-        if (length(attr(object, name)) == 1) {
+        if (length(attr(myOb, name)) == 1) {
             att <- paste("\"",
-                         attr(object, name),
+                         attr(myOb, name),
                          "\"",
                          sep = "")
-        } else if (length(attr(object, name)) < 4) {
+        } else if (length(attr(myOb, name)) <= 3) {
             att <- paste("(",
-                         paste(attr(object, name), collapse = ", "),
+                         paste(attr(myOb, name), collapse = ", "),
                          ")",
                          sep = "")
         } else {
             att <- paste("(",
-                         paste(attr(object, name)[1:3], collapse = ", "),
+                         paste(attr(myOb, name)[1:3], collapse = ", "),
                          ", ... (",
-                         length(attr(object, name)),
+                         length(attr(myOb, name)),
                          ") )",
                          sep = "")
-
         }
 
         result <- c(result,
@@ -375,27 +408,21 @@ logEvent <- function(eventTitle,
             stop(r)
     }
 
-    # validate input objects
-    for (i in input) {
-        if (is.null(get(i))) {
-            stop("input references NULL object")
-        } else if (!exists(i)) {
-            stop(sprintf("%s%s%s",
-                 "Object \"",
-                 i,
-                 "\" in input list does not exist."))
+    # validate objects
+    for (obName in c(input, output)) {
+        # find the object
+        for (frame in rev(sys.parents())) {
+            if (exists(obName, frame = frame, inherits = FALSE)) {
+                myOb <- get(obName, envir = sys.frame(frame))
+                found <- TRUE
+                break()
+            }
         }
-    }
+        if (! found) { stop(sprintf("Object \"%s\" does not exist.", obName)) }
 
-    # validate output objects
-    for (o in output) {
-        if (is.null(get(o))) {
-            stop("output references NULL object")
-        } else if (!exists(o)) {
-            stop(sprintf("%s%s%s",
-                         "Object \"",
-                         o,
-                         "\" in output list does not exist."))
+        # validate the object
+        if (is.null(myOb)) {
+            stop(sprintf("Object \"%s\" is NULL.", obName))
         }
     }
 
@@ -407,7 +434,7 @@ logEvent <- function(eventTitle,
     # main event logging
     for (i in input) {
         msg <- c(msg, sprintf("event | input  | \"%s\"", i))
-        msg <- c(msg, .extractAttributes(get(i), "input"))
+        msg <- c(msg, .extractAttributes(i, "input"))
     }
 
     for (note in notes) {
@@ -416,7 +443,7 @@ logEvent <- function(eventTitle,
 
     for (o in output) {
         msg <- c(msg, sprintf("event | output | \"%s\"", o))
-        msg <- c(msg, .extractAttributes(get(o), "output"))
+        msg <- c(msg, .extractAttributes(o, "output"))
     }
 
     msg <- c(msg, "event | end") # attach end marker
