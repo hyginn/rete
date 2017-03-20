@@ -205,5 +205,4 @@ logName <- unlist(getOption("rete.logfile"))
 if (file.exists(logName)) { file.remove(logName)}
 options("rete.logfile" = OLOG)
 # ==== END  TEARDOWN AND RESTORE ===============================================
-
 # [END]
