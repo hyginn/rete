@@ -5,10 +5,11 @@
 .PlatformLineBreak <- function() {
     # returns "\r\n" on windows, "\n" otherwise
     if (.Platform$OS.type == "windows") {
-        return("\r\n")
+        NL <- "\r\n"
     } else {
-        return("\n")
+        NL <- "\n"
     }
+    return(NL)
 }
 
 
@@ -39,8 +40,13 @@
     #     report <- .checkArgs(EGG, like = getOptions("rete.EGGprototype"))
     #
     # ToDo:
-    #     Check specifically for a versions graph attribute if this is
-    #     an igraph object produced by a rete function.
+    #     - Check specifically for a versions graph attribute if this is
+    #           an igraph object produced by a rete function.
+    #     - Check individual elements of like if like is vector and
+    #           checksize has passed.
+    #     - Check size first.
+    #     - Add parameter exhaustive = FALSE and internal flag ABORT to
+    #           abort after first failed check.
     #
 
     name <- deparse(substitute(x)) # the name of the parameter to check
@@ -57,9 +63,9 @@
                 report <- c(report,
                             sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
-                                    "error: directory ",
+                                    "error: directory \"",
                                     el,
-                                    " does not exist.",
+                                    "\" does not exist.",
                                     NL))
             }
             if (like == "FILE_E" && ! file.exists(el)) {
@@ -67,9 +73,9 @@
                 report <- c(report,
                             sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
-                                    "error: file ",
+                                    "error: file \"",
                                     el,
-                                    " does not exist.",
+                                    "\" does not exist.",
                                     NL))
             }
             if (like == "FILE_W" && file.access(el, mode = 2) != 0) {
