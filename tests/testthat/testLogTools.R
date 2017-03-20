@@ -5,12 +5,13 @@ context("Tools for reading and writing log files")
 
 # Save the original ...
 OLOG <- as.character(getOption("rete.logfile"))
-testPath <- tempdir()
-testFName <- paste("rete_", Sys.Date(), ".1.log", sep = "")
 NL <- .PlatformLineBreak()
 
 
 # ==== logFileName() ===========================================================
+
+testPath <- tempdir()
+testFName <- paste("rete_", Sys.Date(), ".1.log", sep = "")
 
 test_that("logFileName() rejects erroneous arguments", {
     # test non-existing path
@@ -39,36 +40,88 @@ test_that("logFileName() rejects erroneous arguments", {
     expect_error(logFileName(setOption = c(TRUE, TRUE)))
 })
 
+
 test_that("logFileName works as expected with reasonable arguments", {
-    # test missing path and filename
-    expect_equal(logFileName(), file.path(getwd(), testFName))
-    # test missing path
+
+    # test missing path becomes getwd() or getwd()/logs
+    if (dir.exists(file.path(getwd(), "logs"))) {
+        expect_equal(dirname(logFileName()), file.path(getwd(), "logs"))
+    } else {
+        expect_equal(dirname(logFileName()), getwd())
+    }
+
+    # remove ".log" files from testPath if any exist
+    if (length(list.files(path = testPath,
+                          all.files = TRUE,
+                          pattern = "\\.log$")) > 0 ) {
+        invisible(file.remove(list.files(path = testPath,
+                                         all.files = TRUE,
+                                         pattern = "\\.log$",
+                                         full.names = TRUE)))
+    }
+
+    # initial state: no ".log" files in testPath
+    expect_true(length(list.files(path = testPath,
+                                  all.files = TRUE,
+                                  pattern = "\\.log$")) == 0)
+
+    # Actual tests:
+    # test missing path becomes getwd()
     expect_equal(logFileName(fName = "x.log"), file.path(getwd(), "x.log"))
     # test missing filename
     expect_equal(logFileName(fPath = testPath), file.path(testPath, testFName))
     # test empty string filename
     expect_equal(logFileName(fName = ""), file.path(getwd(), testFName))
-    # test removal of trailing /
+    # test removal of trailing / from path
     expect_equal(logFileName(fPath = paste(getwd(), "/", sep = "")),
                  file.path(getwd(), testFName))
     # test increment of logfilename
+    # create a file with a log-file pattern
     writeLines("test", file.path(testPath, testFName))
     expect_equal(logFileName(fPath = testPath),
                  file.path(testPath, gsub("\\.1\\.log", ".2.log", testFName)))
     # cleanup, but might as well test ...
     expect_true(file.remove(file.path(testPath, testFName)))
+
     # test update of rete.logfile
-    options("rete.logfile" = "no/such.log") # break it ..
-    logFileName(fPath = testPath, setOption = TRUE) # fix it ..
+    options("rete.logfile" = "no/such.log") # break global filename ..
+    invisible(logFileName(fPath = testPath, setOption = TRUE)) # fix it ..
     expect_true(unlist(getOption("rete.logfile")) ==
                  file.path(testPath, testFName))
+
+    # final state:: no ".log" files in testPath
+    expect_true(length(list.files(path = testPath,
+                                  all.files = TRUE,
+                                  pattern = "\\.log$")) == 0)
+
 })
 
+
+# ==== logMessage() tests ======================================================
+
+# set up fresh state
+testPath <- tempdir()
+testFName <- paste("rete_", Sys.Date(), ".1.log", sep = "")
+if (dir.exists(file.path(testPath, "logs"))) {
+    if (file.exists(logFileName(fPath = testPath))) {
+        file.remove(logFileName(fPath = testPath))
+    }
+    file.remove(file.path(testPath, "logs"))
+}
+
+if (file.exists(logFileName(fPath = testPath))) {
+    file.remove(logFileName(fPath = testPath))
+}
+
+invisible(logFileName(fPath = testPath, setOption = TRUE))
+
+
 test_that("logMessage() rejects erroneous arguments", {
-    # set rete.logfile to a useable file
-    logFileName(fPath = testPath, setOption = TRUE)
+    # get the log file name
+    FN <- unlist(getOption("rete.logfile"))
+
     # confirm that rete.logfile does not yet exist when we enter the test
-    expect_false(file.exists(unlist(getOption("rete.logfile"))))
+    expect_false(file.exists(FN))
     # test missing message
     expect_error(logMessage())
     # test NULL message
@@ -77,97 +130,96 @@ test_that("logMessage() rejects erroneous arguments", {
     expect_error(logMessage(TRUE))
     expect_error(logMessage(as.matrix(c("a", "b"))))
     # confirm that rete.logfile was not created during the failed tests
-    expect_false(file.exists(unlist(getOption("rete.logfile"))))
+    expect_false(file.exists(FN))
 })
 
-fn <- unlist(getOption("rete.logfile"))
+
 test_that("logMessage works as expected with reasonable arguments", {
+    # get the log file name
+    FN <- unlist(getOption("rete.logfile"))
+
     # confirm that rete.logfile does not yet exist when we enter the test
-    expect_false(file.exists(fn))
+    expect_false(file.exists(FN))
 
     # test one message, file creation, correct addition of \n if \n is missing
-
-    # test that conversions create the right lienbreaks for
-    # windows and unix
     logMessage("a")
-    expect_true(file.exists(fn))  # log file created
-    expect_equal(readChar(fn, file.info(fn)$size),
+    expect_true(file.exists(FN))  # log file created
+    expect_equal(readChar(FN, file.info(FN)$size),
                  paste0("a", NL))
     # test two message elements
     logMessage(c("b", "c"))
-    expect_equal(readChar(fn, file.info(fn)$size),
+    expect_equal(readChar(FN, file.info(FN)$size),
                  paste0("a", NL, "b", NL, "c", NL))
     # test no extra \n if \n is already there
     logMessage(paste0("d", NL))
-    expect_equal(readChar(fn, file.info(fn)$size),
+    expect_equal(readChar(FN, file.info(FN)$size),
                  paste0("a", NL, "b", NL, "c", NL, "d", NL))
-    # test replacement of wrong linebreak
-    logMessage("\r\ne\n")
-    expect_equal(readChar(fn, file.info(fn)$size),
-                 paste0("a", NL, "b", NL, "c", NL, "d", NL, NL, "e", NL))
+    # test correct empty line
+    logMessage("")
+    expect_equal(readChar(FN, file.info(FN)$size),
+                 paste0("a", NL, "b", NL, "c", NL, "d", NL, NL))
+    # test replacement of wrong internal linebreak
+    logMessage("e\nf\r\ng\n")
+    expect_equal(readChar(FN, file.info(FN)$size),
+                 paste0("a", NL, "b", NL, "c", NL, "d", NL, NL,
+                        "e", NL, "f", NL, "g", NL))
 
     # cleanup, but might as well test ...
-    expect_true(file.remove(fn))
+    expect_true(file.remove(FN))
 })
 
 
-# ==== getUUID() ============================================================
-if(exists("tmp")) { rm(tmp) }
+# ==== getUUID() ===============================================================
+
 # pattern to grep for UUIDs
 patt<-"[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
 
-# These test can only be run interactively because of scoping issues when
-# getUUID is run through test_that(). Apparently locally created/modified
-# objects are not on the search path...
-
 test_that("getUUID rejects inappropriate objects", {
 
-    if(exists("testAsset_01", envir = .GlobalEnv)) {
-        rm("testAsset_01", envir = .GlobalEnv)
-    }
-    expect_error(getUUID(testAsset_01), 'Object "testAsset_01" does not exist.')
-
-    assign("testAsset_01", NULL, envir = .GlobalEnv)
-    expect_error(getUUID(testAsset_01), 'Object "testAsset_01" is NULL.')
-    rm("testAsset_01", envir = .GlobalEnv)
+    expect_error(getUUID("testAsset_01"),
+                 'Object "testAsset_01" does not exist.')
+    "testAsset_01" <- NULL
+    expect_error(getUUID("testAsset_01"),
+                 'Object "testAsset_01" is NULL.')
+    rm("testAsset_01")
 })
 
 test_that("getUUID gets an UUID for an object that has none", {
-    assign("testAsset_02", "a", envir = .GlobalEnv)
-    myUUID <- getUUID(testAsset_02)
+    testAsset_02 <- "a"
+    myUUID <- getUUID("testAsset_02")
     expect_true(grepl(patt, myUUID))
-    rm("testAsset_02", envir = .GlobalEnv)
+    rm("testAsset_02")
 })
 
 test_that("getUUID returns the old UUID if the object has one", {
-    assign("testAsset_03", "b", envir = .GlobalEnv)
+    testAsset_03 <- "b"
     attr(testAsset_03, "UUID") <- "fakeUUID"
-    expect_equal(getUUID(testAsset_03), "fakeUUID")
-    rm("testAsset_03", envir = .GlobalEnv)
+    expect_equal(getUUID("testAsset_03"), "fakeUUID")
+    rm("testAsset_03")
 })
 
 test_that("getUUID returns a new UUID if overwrite is TRUE", {
-    assign("testAsset_04", "b", envir = .GlobalEnv)
+    testAsset_04 <- "c"
     attr(testAsset_04, "UUID") <- "fakeUUID"
-    expect_true(grepl(patt, getUUID(testAsset_04, overwrite = TRUE)))
-    rm("testAsset_04", envir = .GlobalEnv)
+    expect_true(grepl(patt, getUUID("testAsset_04", overwrite = TRUE)))
+    rm("testAsset_04")
 })
 
 # ==== .extractAttributes() ====================================================
 
 if (exists("tmp")) { rm(tmp) }
 test_that(".extractAttributes() rejects an object that does not exist", {
-    expect_error(.extractAttributes(tmp, role = "input"),
-                 "object 'tmp' not found")
+    expect_error(.extractAttributes("tmp", role = "input"),
+                 "Object \"tmp\" does not exist.")
 })
 
 test_that(".extractAttributes() rejects NULL objects", {
     tmp <- NULL
-    expect_error(.extractAttributes(tmp, role = "input"),
+    expect_error(.extractAttributes("tmp", role = "input"),
                  "Object \"tmp\" is NULL.")
 })
 
-test_that(".extractAttributes() returns character() if object has no attributes", {
+test_that(".extractAttributes() returns character() if object has none", {
     tmp <- "c"
     expect_equal(.extractAttributes("tmp", role ="input"), character())
 })
@@ -182,13 +234,13 @@ test_that(".extractAttributes() throws error for missing or incorrect role", {
 test_that(".extractAttributes() logs one attribute", {
     tmp <- "c"
     attr(tmp, "x") <- "u"
-    expect_equal(.extractAttributes(tmp, role = "input"),
+    expect_equal(.extractAttributes("tmp", role = "input"),
                  "event | input  | attribute | x            | \"u\"")
     attr(tmp, "x") <- c("u", "v")
-    expect_equal(.extractAttributes(tmp, role = "output"),
+    expect_equal(.extractAttributes("tmp", role = "output"),
                  "event | output | attribute | x            | (u, v)")
     attr(tmp, "x") <- LETTERS
-    expect_equal(.extractAttributes(tmp, role = "input"),
+    expect_equal(.extractAttributes("tmp", role = "input"),
         "event | input  | attribute | x            | (A, B, C, ... (26) )")
 })
 
@@ -196,14 +248,14 @@ test_that(".extractAttributes() logs multiple attributes", {
     tmp <- "c"
     attr(tmp, "x") <- "u"
     attr(tmp, "y") <- c("u", "v")
-    result <- .extractAttributes(tmp, role = "input")
+    result <- .extractAttributes("tmp", role = "input")
 
     expect_equal(result[1],
                  "event | input  | attribute | x            | \"u\"")
     expect_equal(result[2],
                  "event | input  | attribute | y            | (u, v)")
 
-    result <- .extractAttributes(tmp, role = "output")
+    result <- .extractAttributes("tmp", role = "output")
     expect_equal(result[1],
                  "event | output | attribute | x            | \"u\"")
     expect_equal(result[2],
@@ -214,8 +266,8 @@ test_that(".extractAttributes() logs multiple attributes", {
 # ==== logEvent() ==============================================================
 
 logFileName(testPath, testFName, setOption = TRUE)
-fn <- unlist(getOption("rete.logfile"))
-if (file.exists(fn)) { file.remove(fn)}
+FN <- unlist(getOption("rete.logfile"))
+if (file.exists(FN)) { file.remove(FN)}
 
 test_that("logEvent raises an error if title and/or call are missing", {
     expect_error(logEvent())
@@ -276,33 +328,25 @@ test_that("logEvent raises an error if objects don't exist or are NULL", {
 
 
 test_that("The previous tests did not lead to creating a logfile", {
-    expect_false(file.exists(fn))
+    expect_false(file.exists(FN))
 })
 
 
 test_that("logEvent writes a structured message", {
 
-    fn <- unlist(getOption("rete.logfile"))
-    if (file.exists(fn)) { file.remove(fn)}
+    FN <- unlist(getOption("rete.logfile"))
+    if (file.exists(FN)) { file.remove(FN)}
 
-    # The assignments below looks convoluted, but are necessary to ensure
-    # the attributes arrive with the objects in the global environment
-    # even when test_that() creates them in the package environment. If we
-    # don't do that, get() fails to find the right object when
-    # .extractAttributes() is executed in the test environment.
     testAsset_04 <- TRUE
     attr(testAsset_04, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_04", testAsset_04, envir = .GlobalEnv)
 
     testAsset_05 <- 1:10
     attr(testAsset_05, "att") <- "a1"
     attr(testAsset_05, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_05", testAsset_05, envir = .GlobalEnv)
 
     testAsset_06 <- letters
     names(testAsset_06) <- LETTERS
     attr(testAsset_06, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_06", testAsset_06, envir = .GlobalEnv)
 
     logEvent(eventTitle = "test 1",
              eventCall = "f1(p = P)",
@@ -310,9 +354,9 @@ test_that("logEvent writes a structured message", {
              notes = c("lorem ipsum", "dolor sit amet"),
              output = "testAsset_06")
 
-    expect_true(file.exists(fn))
+    expect_true(file.exists(FN))
 
-    logResult <- readLines(fn)
+    logResult <- readLines(FN)
 
     expect_equal(logResult[1],  "event | title  | test 1")
     expect_true(grepl("event | time   | [0-9 -:]$",
@@ -343,18 +387,17 @@ test_that("logEvent writes a structured message", {
              notes = c("lorem ipsum", "dolor sit amet"),
              output = "testAsset_06")
 
-    logResult <- readLines(fn)
+    logResult <- readLines(FN)
     expect_equal(length(logResult), 30)
 
-    rm("testAsset_04", envir = .GlobalEnv)
-    rm("testAsset_05", envir = .GlobalEnv)
-    rm("testAsset_06", envir = .GlobalEnv)
+    rm("testAsset_04")
+    rm("testAsset_05")
+    rm("testAsset_06")
+    file.remove(FN)
 })
 
 # ==== findUUID() ==============================================================
 
-# Precondition: log file exists as created above.
-#               objects exist as created above
 
 test_that("findUUID() rejects invalid arguments", {
     tmpUUID <- uuid::UUIDgenerate()
@@ -369,27 +412,24 @@ test_that("findUUID() rejects invalid arguments", {
 })
 
 test_that("findUUID() stops if no log files in logDir", {
-    expect_error(findUUID(uuid = uuid::UUIDgenerate(), ext = "no.such.log$"))
+    expect_error(findUUID(uuid = tmpUUID, ext = "no.such.log$"))
 })
 
 test_that("findUUID() returns the correct number of events", {
 
-    fn <- unlist(getOption("rete.logfile"))
-    if (file.exists(fn)) { file.remove(fn)}
+    FN <- unlist(getOption("rete.logfile"))
+    if (file.exists(FN)) { file.remove(FN)}
 
     testAsset_04 <- TRUE
     attr(testAsset_04, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_04", testAsset_04, envir = .GlobalEnv)
 
     testAsset_05 <- 1:10
     attr(testAsset_05, "att") <- "a1"
     attr(testAsset_05, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_05", testAsset_05, envir = .GlobalEnv)
 
     testAsset_06 <- letters
     names(testAsset_06) <- LETTERS
     attr(testAsset_06, "UUID") <- uuid::UUIDgenerate()
-    assign("testAsset_06", testAsset_06, envir = .GlobalEnv)
 
     logEvent(eventTitle = "test 1",
              eventCall = "doAThing(thing)",
@@ -406,7 +446,6 @@ test_that("findUUID() returns the correct number of events", {
     a4UUIDold <- attr(testAsset_04, "UUID")
     a4UUIDnew <- uuid::UUIDgenerate()
     attr(testAsset_04, "UUID") <- a4UUIDnew
-    assign("testAsset_04", testAsset_04, envir = .GlobalEnv)
 
     a5UUID    <- attr(testAsset_05, "UUID")
     xxUUID    <- uuid::UUIDgenerate()
@@ -417,7 +456,7 @@ test_that("findUUID() returns the correct number of events", {
              output = "testAsset_06")
 
     # the event log
-    #  - contain no mentions of xxUUID
+    #  - contains no mentions of xxUUID
     #  - one mention of a4UUIDnew
     #  - two mentions of a4UUIDold
     #  - three mentions of a5UUID
@@ -437,14 +476,14 @@ test_that("findUUID() returns the correct number of events", {
     expect_true(grepl("^event | title  | test", events[3]))
     expect_true(grepl("^event | end$", events[3]))
 
-    rm("testAsset_04", envir = .GlobalEnv)
-    rm("testAsset_05", envir = .GlobalEnv)
-    rm("testAsset_06", envir = .GlobalEnv)
-
+    rm("testAsset_04")
+    rm("testAsset_05")
+    rm("testAsset_06")
+    file.remove(FN)
 })
 
 
-# ==== getProvenance() ==============================================================
+# ==== getProvenance() =========================================================
 
 
 #
@@ -453,14 +492,17 @@ test_that("findUUID() returns the correct number of events", {
 # test_that("function throws error if object does not exist", {
 #     # call function with object which does not exist
 #     # expect function to error
-#     ### bs> IF you pass an UUID, your function needs to test whether the object is structured like an UUID.
+#     ### bs> IF you pass an UUID, your function needs to test whether the
+#              object is structured like an UUID.
 #     ### bs> you should use the .checkArgs() function for that and I will add a
 #     ### bs> keyword directive    like = "UUID"  to .checkArgs() . Good?
 #     ### wt> great, thank you.
 # })
 #
-# test_that("function throws error if object's uuid does not exist in the logs", {
-#     # set up mock log file with uuids that will not be called by the function test
+# test_that("function throws error if object's uuid does not exist
+#            in the logs", {
+#     # set up mock log file with uuids that will not be called by the
+#       function test
 #     # call function with object uuid which does not occur in the logs
 #     # expect function to error
 #     ### bs> I would not call this an error. I think this test is actually
@@ -474,23 +516,29 @@ test_that("findUUID() returns the correct number of events", {
 #     ### bs> yes. .checkArgs has an option for that
 # })
 #
-# ### bs> I think it would be useful to also throw an error if there are no log files at all in
+# ### bs> I think it would be useful to also throw an error if there are no log
+#         files at all in
 # ### bs> the directory since that's almost certainly not intended.
 # ### wt> yes, will add pseudocode.
 #
-# test_that("given an object whose UUID occurs in the logs, returns the correct provenance", {
-#     # set up multiple log events where a particular object was manipulated, from a filename without a UUID
+# test_that("given an object whose UUID occurs in the logs, returns the
+#           correct provenance", {
+#     # set up multiple log events where a particular object was manipulated,
+#      from a filename without a UUID
 #     # call function with valid object and directory
-#     # expect function to return the intermediaries of UUIDs and events which lead up to the current state of the object
-#     ### bs> Here too: you need to decide what is being returned. Probably full event blocks plus filenames.
+#     # expect function to return the intermediaries of UUIDs and events which
+#      lead up to the current state of the object
+#     ### bs> Here too: you need to decide what is being returned. Probably full
+#      event blocks plus filenames.
 # })
 #
-# ### bs> provenance can be branching since objects can have multiple parents. Need to test that these are correctly queued
+# ### bs> provenance can be branching since objects can have multiple parents.
+#  Need to test that these are correctly queued
 # ### bs> and handled. Suggest depth-first, not breadth-first.
 
 # Cleanup after testing
-fn <- unlist(getOption("rete.logfile"))
-if (file.exists(fn)) { file.remove(fn)}
+FN <- unlist(getOption("rete.logfile"))
+if (file.exists(FN)) { file.remove(FN)}
 
 options("rete.logfile" = OLOG)
 
