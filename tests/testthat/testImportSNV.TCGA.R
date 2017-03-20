@@ -1,5 +1,11 @@
 # testImportSNV.TCGA.R
 
+# ==== BEGIN SETUP AND PREPARE =================================================
+OLOG <- as.character(getOption("rete.logfile"))   # save original logfile name
+logFileName(fPath = tempdir(), setOption = TRUE)  # make tempdir() the log dir
+NL <- .PlatformLineBreak()
+# ==== END SETUP AND PREPARE ===================================================
+
 context("Tools for importing MAF files into a rSNV file")
 
 test_that("parameter errors are correctly handled", {
@@ -192,5 +198,12 @@ test_that("test that columns contains valid values", {
 
     # check start position and end are integers
 })
+
+
+# ==== BEGIN TEARDOWN AND RESTORE ==============================================
+logName <- unlist(getOption("rete.logfile"))
+if (file.exists(logName)) { file.remove(logName)}
+options("rete.logfile" = OLOG)
+# ==== END  TEARDOWN AND RESTORE ===============================================
 
 # [END]
