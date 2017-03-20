@@ -57,7 +57,7 @@ testthat::test_that("bad input", {
     )
 })
 
-
+# this should cover output tests
 testthat::test_that("It works", {
     importCNA.GISTIC2("inst/extdata/devCNA.txt","inst/extdata/dCNA", FALSE, FALSE)
     expect_equal(readRDS("inst/extdata/dCNA/rCNA1.rds"),
