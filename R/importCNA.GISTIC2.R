@@ -5,26 +5,22 @@
 # produces an rCNA object saved as a RDS file.
 #
 #
+#
 #'@param fFHG Local fully qualified path of Firehose GISTIC2 CNA file.
 #'@param dCNA The local fully qualified path of a directory to store the rCNA RDS file(s).
 #'@param silent Boolean. Default: FALSE. Whether or not to write progress information to console.
 #'@param noLog Boolean. Default: FALSE. Whether or not to log results.
-#
-#
+#'@return gG object
+#'@notRun {
 #'@family importM.COSMIC, importM.TCGA, importM.GISTIC2, importM.ProjectGenie
-#
+#}
 #'@example
 # fFHG <- "inst/extdata/devCNA.txt"
 # dCNA <- "inst/extdata/dCNA"
 # silent <- FALSE
 # writeLog <- TRUE
-#
-# importCNA.GISTIC2(fFHG, dCNA, silent = FALSE, writeLog = TRUE)
-#
-# Input - all_data_by_genes.txt from the GISTIC2 output from FireHose
-# saved locally
-#
-# Output - rCNA file
+# importCNA.GISTIC2("inst/extdata/devCNA.txt", "inst/extdata/dCNA")
+#'@export
 #
 #
 #
@@ -41,8 +37,7 @@ importCNA.GISTIC2<- function(fFHG, dCNA, silent = FALSE, writeLog = TRUE){
 
     cR <- character()
     cR <- c(cR, .checkArgs(fFHG,        like = "devCNA.txt",   checkSize = TRUE))
-    cR <- c(cR, .checkArgs(dCNA,        like = "inst/extdata/dCNA",
-                           checkSize = TRUE))
+    cR <- c(cR, .checkArgs(dCNA, like = "DIR", checkSize = TRUE))
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
 
@@ -76,8 +71,8 @@ importCNA.GISTIC2<- function(fFHG, dCNA, silent = FALSE, writeLog = TRUE){
         fi <- paste0(dCNA, "/", namefile, ".rds")
 
         # get rid of unwanted columns
-        #fi$Locus.ID <- NULL
-        #fi$Cytoband <- NULL
+        temp$`Locus ID` <- NULL
+        temp$Cytoband <- NULL
 
         # save dataframe
         file.create(fi)
@@ -91,19 +86,20 @@ importCNA.GISTIC2<- function(fFHG, dCNA, silent = FALSE, writeLog = TRUE){
     }
 
 
+    # call df2gG
+
+    .df2gG(fi,call = "import CNA from GISTIC2")
+
 # ==== WRITE LOG ===========================================================
-    if(writeLog) {
-        msg    <- sprintf("event > %s from importNet.STRING()\n", Sys.time())
-        msg[2] <- "note >   Returned gG object with"
-        msg[3] <- sprintf("%d vertices and %d edges.\n",
-                              igraph::gorder(gG),
-                              igraph::gsize(gG))
-        msg[4] <- sprintf("out > %s", "<object UUID and attributes>")
-        msg[5] <- "\n"
-        logMessage(msg)
-    }
+    # send info to log file
+    logEvent(eventTitle = myTitle,
+             eventCall = myCall,
+             #                input = character(),
+             notes = myNotes,
+             output = myOutput)
+
 
         return(gG)
 
-    }
-
+}
+# END
