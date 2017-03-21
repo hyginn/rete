@@ -1,10 +1,33 @@
 # testDummy.R
 #
 # Dummy tests as a template for unit testing in test-driven development
-# for the rete project.
+# for the rete project. If you test code that writes information to log-files,
+# turn logging off for all tests except for one specific block in which
+# you verify and validate your logs. Do not use your own log-file but
+# rely on the global option taht is set in the setup block. We have good
+# code samples for most test you will need - if you are not sure where to find
+# them, ask. Do not reinvent the wheel, but write your code according to the
+# principles you find in the existing files.
+#
+# Structure your tests according to the three principles expressed below:
+#    test_that("parameter errors are correctly handled", { ... })
+#    test_that("a sane input gives an expected output", { ... })
+#    test_that("a corrupt input does not lead to corrupted output", { ...})
+
+
 context("<Dummy tests>")
 
-# for demonstration only - remove!
+
+# ==== BEGIN SETUP AND PREPARE =================================================
+OLOG <- as.character(getOption("rete.logfile"))   # save original logfile name
+logFileName(fPath = tempdir(), setOption = TRUE)  # make tempdir() the log dir
+NL <- .PlatformLineBreak()
+# ==== END SETUP AND PREPARE ===================================================
+
+
+
+
+# for demonstration only - remove this code!
 dummyF <- function(a) {
     if (is.null(a) || length(a) == 0 || !is.numeric(a)) { stop() }
     attr(a, "date") <- Sys.Date()
@@ -52,5 +75,12 @@ test_that("a corrupt input does not lead to corrupted output", {
     expect_error(dummyF(NA))
 })
 
+
+
+# ==== BEGIN TEARDOWN AND RESTORE ==============================================
+logName <- unlist(getOption("rete.logfile"))
+if (file.exists(logName)) { file.remove(logName)}
+options("rete.logfile" = OLOG)
+# ==== END  TEARDOWN AND RESTORE ===============================================
 
 # [END]
