@@ -18,12 +18,13 @@
     # i: the current iteration
     # l: the total number of iterations
     # nCh: width of the progress bar
-    ticks <- round(seq(1, l-1, length.out = nCh))
+    WID <- min(l-1, nCh)
+    ticks <- round(seq(1, l-1, length.out = WID))
     if (i < l) {
         if (any(i == ticks)) {
             p <- which(i == ticks)
             p1 <- paste(rep("#", p), collapse = "")
-            p2 <- paste(rep("-", nCh - p), collapse = "")
+            p2 <- paste(rep("-", WID - p), collapse = "")
             cat(sprintf("\r|%s%s|", p1, p2))
             utils::flush.console()
         }
