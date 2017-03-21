@@ -65,51 +65,51 @@ importSNV.TCGA <- function(  fMAF,
 
     mafHeaderCheck <- function(file) {
         headValid <- TRUE
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,1] == "Hugo_Symbol") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,5] == "Chromosome") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,6] == "Start_Position") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,7] == "End_Position") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,8] == "Strand") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,9] == "Variant_Classification") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,10] == "Variant_Type") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,11] == "Reference_Allele") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,12] == "Tumor_Seq_Allele1") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,13] == "Tumor_Seq_Allele2") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,16] == "Tumor_Sample_Barcode") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,21] == "Tumor_Sample_UUID") {
             headValid <- FALSE
         }
@@ -120,51 +120,51 @@ importSNV.TCGA <- function(  fMAF,
 
     rSNVheadercheck <- function(file) {
         headValid <- TRUE
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,1] == "sym") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,5] == "chr") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,6] == "start") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,7] == "end") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,8] == "strand") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,9] == "class") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,10] == "type") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,11] == "aRef") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,12] == "a1") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,13] == "a2") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,16] == "TCGA") {
             headValid <- FALSE
         }
-        if (! read.table("BRCA.maf", header = FALSE, fill = NA, stringsAsFactors = FALSE,
+        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,21] == "UUID") {
             headValid <- FALSE
         }
