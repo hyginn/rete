@@ -51,66 +51,79 @@ test_that("parameter errors are correctly handled", {
 
 test_that("a sane input gives an expected output with differnt input parameters", {
 
-    # make small input (testIn)
-    # have an input file, rows too big to import manually here (testIn)
+    # make small input (testIn) ----------------------------------------------------
+    input0 <- c("Hugo_Symbol" , "Entrez_Gene_Id" , "Center" , "NCBI_Build" , "Chromosome" , "Start_Position" , "End_Position" , "Strand" , "Variant_Classification" , "Variant_Type" , "Reference_Allele" , "Tumor_Seq_Allele1" , "Tumor_Seq_Allele2" , "dbSNP_RS" , "dbSNP_Val_Status" , "Tumor_Sample_Barcode" , "Matched_Norm_Sample_Barcode" , "Match_Norm_Seq_Allele1" , "Match_Norm_Seq_Allele2" , "Tumor_Validation_Allele1" , "Tumor_Validation_Allele2" , "Match_Norm_Validation_Allele1" , "Match_Norm_Validation_Allele2" , "Verification_Status" , "Validation_Status" , "Mutation_Status" )
+    input1 <- c("TMEM201" , 199953 , "WUGSC" , "GRCh38" , "chr1" , 9607661 , 9607661 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09" , "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a", "c.1265C>T" , "p.Pro422Leu", "p.P422L" , "ENST00000340381")
+    input2 <- c("PTCHD2" , 57540 , "WUGSC" , "GRCh38" , "chr1" , 11516130 , 11516130 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09" , "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.1718C>T" , "p.Ala573Val" , "p.A573V" , "ENST00000294484")
+    input3 <- c("VWA5B1" , 127731 , "WUGSC" , "GRCh38" , "chr1" , 20319393 , 20319393 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09", "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.853C>T" , "p.Pro285Ser" , "p.P285S" , "ENST00000375079")
+
+    trueIn <- rbind(input0,input1,input2,input3)
+    write.table(trueIn,  file="testIn", sep="\t", append=FALSE, row.names =
+                    FALSE, col.names = FALSE, quote = FALSE)
 
     # make small output for that input manually (testOut)
-    write("# metadata \n# 1 \n# 2  \n# 3 \n# 4 \n# 5 \n# metadata END\n", "testOut")
     header <- c("sym", "chr", "start", "end", "strand", "class", "type", "aRef", "a1", "a2", "TCGA", "UUID")
-    write(header, "testOut", ncolumns = 12, sep = "\t", append = TRUE)
     sample1 <-c("TMEM201", "chr1", 9607661, 9607661, "+", "Missense_Mutation", "SNP", "C", "C", "T", "TCGA-QQ-A8VF-01A-11D-A37C-09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
     sample2 <- c("PTCHD2", "chr1", 11516130, 11516130, "+", "Missense_Mutation", "SNP", "C", "C", "T", "TCGA.QQ.A8VF.01A.11D.A37C.09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
     sample3 <- c("VWA5B1", "chr1",	20319393,	20319393,	"+",	"Missense_Mutation",	"SNP", 	"C",	"C",	"T", "TCGA-QQ-A8VF-01A-11D-A37C-09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
-    sample4 <- c("TXLNA", "chr1",	32192719,	32192719,	"+",	"Silent",	"SNP",	"C",	"C",	"T", "TCGA-QQ-A8VF-01A-11D-A37C-09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
-    sample5 <- c("NFYC", "chr1",	40770537,	40770537,	"+",	"Silent",	"SNP",	"C",	"C",	"A", "TCGA-QQ-A8VF-01A-11D-A37C-09",	"2109690d-e8b1-4b5c-9a39-21af273324cf")
 
-    trueOut <- rbind(sample1,sample2,sample3,sample4,sample5)
+    trueOut <- rbind(header,sample1,sample2,sample3)
 
     # run the module on only fMAF as parameter (moduleOut)
     moduleOut <- importSNV.TCGA(c("testIn"))
     # check if manual output = module output
-    # skip 7 for metadata lines just for now
-    module <- read.csv("moduleOut", skip=7, sep = "\t")
+    module <- read.csv(moduleOut, sep = "\t")
     all.equal(trueOut, module)
 
-    # test input with rSNV as input
+    # test input with rSNV as input ---------------------------------------------
     #  have an input file, rows too big to import manually here (testInPre)
+    input0 <- c("Hugo_Symbol" , "Entrez_Gene_Id" , "Center" , "NCBI_Build" , "Chromosome" , "Start_Position" , "End_Position" , "Strand" , "Variant_Classification" , "Variant_Type" , "Reference_Allele" , "Tumor_Seq_Allele1" , "Tumor_Seq_Allele2" , "dbSNP_RS" , "dbSNP_Val_Status" , "Tumor_Sample_Barcode" , "Matched_Norm_Sample_Barcode" , "Match_Norm_Seq_Allele1" , "Match_Norm_Seq_Allele2" , "Tumor_Validation_Allele1" , "Tumor_Validation_Allele2" , "Match_Norm_Validation_Allele1" , "Match_Norm_Validation_Allele2" , "Verification_Status" , "Validation_Status" , "Mutation_Status" )
+    input3 <- c("VWA5B1" , 127731 , "WUGSC" , "GRCh38" , "chr1" , 20319393 , 20319393 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09", "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.853C>T" , "p.Pro285Ser" , "p.P285S" , "ENST00000375079")
+
+    trueInPre <- rbind(input0,input3)
+
+    write.table(trueInPre,  file="testInPre", sep="\t", append=FALSE, row.names =
+                    FALSE, col.names = FALSE, quote = FALSE)
 
     # test output for rSNV as input
-    sample1 <- c("VWA5B1", "chr1",	20319393,	20319393,	"+",	"Missense_Mutation",	"SNP", 	"C",	"C",	"T", "TCGA-QQ-A8VF-01A-11D-A37C-09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
-    sample2 <- c("TXLNA", "chr1",	32192719,	32192719,	"+",	"Silent",	"SNP",	"C",	"C",	"T", "TCGA-QQ-A8VF-01A-11D-A37C-09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
-    sample3 <- c("NFYC", "chr1",	40770537,	40770537,	"+",	"Silent",	"SNP",	"C",	"C",	"A", "TCGA-QQ-A8VF-01A-11D-A37C-09",	"2109690d-e8b1-4b5c-9a39-21af273324cf")
-    trueOutPre <- rbind(sample1,sample2,sample3)
+    trueOutPre <- trueOut
 
     # run the module on fMAF and rSNV as parameters
-    moduleOutPre <- importSNV.TCGA(c("testInPre"), "module02")
-    modulePre <- read.csv("moduleOutPre", skip=7, sep = "\t")
+    moduleOutPre1 <- importSNV.TCGA(c("testInPre"), "module02")
+    modulePre1 <- read.csv(moduleOutPre1, sep = "\t")
     # add to prexisting rSNV file
-    all.equal(trueOutPre, modulePre)
+    all.equal(trueOutPre, modulePre1)
 
     # run the module on fMAF and rSNV and silent as parameters
-    moduleOutPre <- importSNV.TCGA(c("testInPre"), "module02", silent=TRUE)
-    modulePre <- read.csv("moduleOutPre", skip=7, sep = "\t")
+    moduleOutPre2 <- importSNV.TCGA(c("testInPre"), "module02", silent=TRUE)
+    modulePre2 <- read.csv(moduleOutPre2, sep = "\t")
     # add to prexisting rSNV file
-    all.equal(trueOutPre, modulePre)
+    all.equal(trueOutPre, modulePre2)
 
     # run the module on fMAF, rSNV, silent and writeLog as parameters
-    moduleOutPre <- importSNV.TCGA(c("testInPre"), "module02", silent=FALSE, writeLog=TRUE)
-    modulePre <- read.csv("moduleOutPre", skip=7, sep = "\t")
+    moduleOutPre3 <- importSNV.TCGA(c("testInPre"), "module02", silent=FALSE, writeLog=TRUE)
+    modulePre3 <- read.csv(moduleOutPre3, sep = "\t")
     # add to prexisting rSNV file
-    all.equal(trueOutPre, modulePre)
+    all.equal(trueOutPre, modulePre3)
 
-    # test input with rSNV as input and NA values
+    # test input with rSNV as input and NA values -------------------------------------------
     #  have an input file, rows too big to import manually here (testInNA)
+    input0 <- c("Hugo_Symbol" , "Entrez_Gene_Id" , "Center" , "NCBI_Build" , "Chromosome" , "Start_Position" , "End_Position" , "Strand" , "Variant_Classification" , "Variant_Type" , "Reference_Allele" , "Tumor_Seq_Allele1" , "Tumor_Seq_Allele2" , "dbSNP_RS" , "dbSNP_Val_Status" , "Tumor_Sample_Barcode" , "Matched_Norm_Sample_Barcode" , "Match_Norm_Seq_Allele1" , "Match_Norm_Seq_Allele2" , "Tumor_Validation_Allele1" , "Tumor_Validation_Allele2" , "Match_Norm_Validation_Allele1" , "Match_Norm_Validation_Allele2" , "Verification_Status" , "Validation_Status" , "Mutation_Status" )
+    input3 <- c("VWA5B1" , 127731 , "WUGSC" , "GRCh38" , "chr1" , 20319393 , 20319393 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09", "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.853C>T" , "p.Pro285Ser" , "p.P285S" , "ENST00000375079")
+
+    trueInNA <- rbind(input0,input3)
+
+    write.table(trueInNA,  file="testInNA", sep="\t", append=FALSE, row.names =
+                    FALSE, col.names = FALSE, quote = FALSE)
 
     # test output for rSNV as input and NA values
-    sample1 <- c("VWA5B1", "chr1",	20319393,	20319393,	"+",	"Missense_Mutation",	"SNP", 	"C",	"C",	"T", "TCGA-QQ-A8VF-01A-11D-A37C-09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
+    header <- c("sym", "chr", "start", "end", "strand", "class", "type", "aRef", "a1", "a2", "TCGA", "UUID")
 
-    trueOutNA <- rbind(sample1)
+    trueOutNA <- rbind(header)
 
     # run the module on fMAF, rSNV, silent, writeLog and na.rm as parameters
-    moduleOutNA <- importSNV.TCGA(c("testInNA"), "moduleNA", silent=FALSE, writeLog=FALSE, na.rm=TRUE)
-    moduleNA <- read.csv("moduleOutNA", skip=7, sep = "\t")
+    moduleOutNA <- importSNV.TCGA(c("testInNA"), silent=FALSE, writeLog=FALSE, na.rm=TRUE)
+    moduleNA <- read.csv(moduleOutNA, sep = "\t")
     # add to prexisting rSNV file
     all.equal(trueOutNA, moduleNA)
 })
@@ -134,10 +147,6 @@ test_that("silent and write works as intended", {
     capture.output(importSNV.TCGA(c("testIn"), silent = TRUE), file = testF)
     expect_equal(length(readLines(testF)), 0)
     expect_true(file.remove(testF))
-
-    # if writeLog=TRUE, check if log file is created
-
-    # if writeLog=TRUE, check if logs are written to it correctly
 
 })
 
