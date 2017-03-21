@@ -51,7 +51,7 @@ test_that("parameter errors are correctly handled", {
 
 test_that("a sane input gives an expected output with differnt input parameters", {
 
-    # make small input (testIn) ----------------------------------------------------
+    # MAKE SMALL INPUT (testIn) ----------------------------------------------------
     input0 <- c("Hugo_Symbol" , "Entrez_Gene_Id" , "Center" , "NCBI_Build" , "Chromosome" , "Start_Position" , "End_Position" , "Strand" , "Variant_Classification" , "Variant_Type" , "Reference_Allele" , "Tumor_Seq_Allele1" , "Tumor_Seq_Allele2" , "dbSNP_RS" , "dbSNP_Val_Status" , "Tumor_Sample_Barcode" , "Matched_Norm_Sample_Barcode" , "Match_Norm_Seq_Allele1" , "Match_Norm_Seq_Allele2" , "Tumor_Validation_Allele1" , "Tumor_Validation_Allele2" , "Match_Norm_Validation_Allele1" , "Match_Norm_Validation_Allele2" , "Verification_Status" , "Validation_Status" , "Mutation_Status" )
     input1 <- c("TMEM201" , 199953 , "WUGSC" , "GRCh38" , "chr1" , 9607661 , 9607661 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09" , "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a", "c.1265C>T" , "p.Pro422Leu", "p.P422L" , "ENST00000340381")
     input2 <- c("PTCHD2" , 57540 , "WUGSC" , "GRCh38" , "chr1" , 11516130 , 11516130 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09" , "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.1718C>T" , "p.Ala573Val" , "p.A573V" , "ENST00000294484")
@@ -61,7 +61,7 @@ test_that("a sane input gives an expected output with differnt input parameters"
     write.table(trueIn,  file="testIn", sep="\t", append=FALSE, row.names =
                     FALSE, col.names = FALSE, quote = FALSE)
 
-    # make small output for that input manually (testOut)
+    # MAKE SMALL OUTPUT (trueOut) --------------------------------------------------
     header <- c("sym", "chr", "start", "end", "strand", "class", "type", "aRef", "a1", "a2", "TCGA", "UUID")
     sample1 <-c("TMEM201", "chr1", 9607661, 9607661, "+", "Missense_Mutation", "SNP", "C", "C", "T", "TCGA-QQ-A8VF-01A-11D-A37C-09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
     sample2 <- c("PTCHD2", "chr1", 11516130, 11516130, "+", "Missense_Mutation", "SNP", "C", "C", "T", "TCGA.QQ.A8VF.01A.11D.A37C.09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
@@ -73,9 +73,13 @@ test_that("a sane input gives an expected output with differnt input parameters"
     moduleOut <- importSNV.TCGA(c("testIn"))
     # check if manual output = module output
     module <- read.csv(moduleOut, sep = "\t")
-    all.equal(trueOut, module)
 
-    # test input with rSNV as input ---------------------------------------------
+    # TEST fMAF parameter ==========================================================
+    all.equal(trueOut, module)
+    #===============================================================================
+
+
+    # test input ----------------------------------------------------------------
     #  have an input file, rows too big to import manually here (testInPre)
     input0 <- c("Hugo_Symbol" , "Entrez_Gene_Id" , "Center" , "NCBI_Build" , "Chromosome" , "Start_Position" , "End_Position" , "Strand" , "Variant_Classification" , "Variant_Type" , "Reference_Allele" , "Tumor_Seq_Allele1" , "Tumor_Seq_Allele2" , "dbSNP_RS" , "dbSNP_Val_Status" , "Tumor_Sample_Barcode" , "Matched_Norm_Sample_Barcode" , "Match_Norm_Seq_Allele1" , "Match_Norm_Seq_Allele2" , "Tumor_Validation_Allele1" , "Tumor_Validation_Allele2" , "Match_Norm_Validation_Allele1" , "Match_Norm_Validation_Allele2" , "Verification_Status" , "Validation_Status" , "Mutation_Status" )
     input3 <- c("VWA5B1" , 127731 , "WUGSC" , "GRCh38" , "chr1" , 20319393 , 20319393 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09", "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.853C>T" , "p.Pro285Ser" , "p.P285S" , "ENST00000375079")
@@ -85,29 +89,45 @@ test_that("a sane input gives an expected output with differnt input parameters"
     write.table(trueInPre,  file="testInPre", sep="\t", append=FALSE, row.names =
                     FALSE, col.names = FALSE, quote = FALSE)
 
+    # test rSNV input file
+    header <- c("sym", "chr", "start", "end", "strand", "class", "type", "aRef", "a1", "a2", "TCGA", "UUID")
+    snvInput1 <-c("TMEM201", "chr1", 9607661, 9607661, "+", "Missense_Mutation", "SNP", "C", "C", "T", "TCGA-QQ-A8VF-01A-11D-A37C-09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
+    snvInput2 <- c("PTCHD2", "chr1", 11516130, 11516130, "+", "Missense_Mutation", "SNP", "C", "C", "T", "TCGA.QQ.A8VF.01A.11D.A37C.09", "2109690d-e8b1-4b5c-9a39-21af273324cf")
+
+    module <- rbind(header,snvInput1, snvInput2)
+
+    write.table(module,  file="module2", sep="\t", append=
+
     # test output for rSNV as input
     trueOutPre <- trueOut
 
+    # TEST fMAF, rSNV parameters ====================================================
     # run the module on fMAF and rSNV as parameters
     moduleOutPre1 <- importSNV.TCGA(c("testInPre"), "module02")
     modulePre1 <- read.csv(moduleOutPre1, sep = "\t")
     # add to prexisting rSNV file
     all.equal(trueOutPre, modulePre1)
+    #===============================================================================
 
+    # TEST fMAF, rSNV, silent parameters ============================================
     # run the module on fMAF and rSNV and silent as parameters
     moduleOutPre2 <- importSNV.TCGA(c("testInPre"), "module02", silent=TRUE)
     modulePre2 <- read.csv(moduleOutPre2, sep = "\t")
     # add to prexisting rSNV file
     all.equal(trueOutPre, modulePre2)
+    #===============================================================================
 
+    # TEST fMAF, rSNV, silent, wrtieLog parameters =================================
     # run the module on fMAF, rSNV, silent and writeLog as parameters
     moduleOutPre3 <- importSNV.TCGA(c("testInPre"), "module02", silent=FALSE, writeLog=TRUE)
     modulePre3 <- read.csv(moduleOutPre3, sep = "\t")
     # add to prexisting rSNV file
     all.equal(trueOutPre, modulePre3)
+    #===============================================================================
+
 
     # test input with rSNV as input and NA values -------------------------------------------
-    #  have an input file, rows too big to import manually here (testInNA)
+    # have an input file, rows too big to import manually here (testInNA)
     input0 <- c("Hugo_Symbol" , "Entrez_Gene_Id" , "Center" , "NCBI_Build" , "Chromosome" , "Start_Position" , "End_Position" , "Strand" , "Variant_Classification" , "Variant_Type" , "Reference_Allele" , "Tumor_Seq_Allele1" , "Tumor_Seq_Allele2" , "dbSNP_RS" , "dbSNP_Val_Status" , "Tumor_Sample_Barcode" , "Matched_Norm_Sample_Barcode" , "Match_Norm_Seq_Allele1" , "Match_Norm_Seq_Allele2" , "Tumor_Validation_Allele1" , "Tumor_Validation_Allele2" , "Match_Norm_Validation_Allele1" , "Match_Norm_Validation_Allele2" , "Verification_Status" , "Validation_Status" , "Mutation_Status" )
     input3 <- c("VWA5B1" , 127731 , "WUGSC" , "GRCh38" , "chr1" , 20319393 , 20319393 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09", "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.853C>T" , "p.Pro285Ser" , "p.P285S" , "ENST00000375079")
 
@@ -121,11 +141,13 @@ test_that("a sane input gives an expected output with differnt input parameters"
 
     trueOutNA <- rbind(header)
 
+    # TEST fMAF, rSNV, silent, wrtieLog parameters, na.rm ==========================
     # run the module on fMAF, rSNV, silent, writeLog and na.rm as parameters
     moduleOutNA <- importSNV.TCGA(c("testInNA"), silent=FALSE, writeLog=FALSE, na.rm=TRUE)
     moduleNA <- read.csv(moduleOutNA, sep = "\t")
     # add to prexisting rSNV file
     all.equal(trueOutNA, moduleNA)
+    #===============================================================================
 })
 
 
