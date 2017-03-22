@@ -3,8 +3,8 @@
 #' Import mutation data from a COSMIC database.
 #'
 #' \code{importM.COSMIC}
-#' Imports a tsv file containing CNV data from COSMIC. Imports a TSV file
-#' mapping COSMIC gene IDs to HGNC gene symbols, required to match a CNV gene
+#' Imports a tsv file containing CNA data from COSMIC. Imports a TSV file
+#' mapping COSMIC gene IDs to HGNC gene symbols, required to match a CNA gene
 #' symbol to an HGNC gene symbol (replaced by calls to fastMap()).
 #' Returns an rCNA object in an RDS, where column names represents samples
 #' (as TCGA-SampleID (note that the required information for a proper TCGA
@@ -12,15 +12,17 @@
 #' for this data is specific to COSMIC data)), row names are HGNC gene
 #' symbols, and the values represent copy number.
 #'
-#' @section COSMIC CNV :
-#' The format of the COSMIC CNV data is as follows.
-#' (through sfpt, run get with this path:
+#' @section COSMIC CNA :
+#' The format of the COSMIC CNA data is as follows.
+#' (through sftp, run get with this path:
 #' /files/grch38/cosmic/v80/CosmicCompleteCNA.tsv.gz)
 #'
 #' [col number] Heading
-#' [1] CNV_ID
+#' [1] CNA_ID
 #' [2] Gene ID
-#' [4] Sample/Tumour ID
+#' [3] Gene Name
+#' [4] Sample ID
+#' [5] Tumour ID
 #' [6] Primary Site
 #' [7-9] Site Subtype 1-3
 #' [10] Primary Histology
@@ -33,22 +35,7 @@
 #' [19] GRCh Coordinate System
 #' [20] Genomic Coordinates of Variation
 #'
-#' @section (Replaced with fastMap()) COSMIC HGNC:
-#' The format of the COSMIC HGNC data is as follows.
-#' (through sfpt, run get with this path:
-#' /files/grch38/cosmic/v80/CosmicHGNC.tsv.gz)
-#'
-#' [col number] Heading
-#' [1] COSMIC Gene ID
-#' [2] COSMIC Gene Name
-#' [3] Entrez ID
-#' [4] HGNC ID
-#' [5] Mutated? (does gene have coding mutations? (y/n))
-#' [6] Cancer Cencus? (is gene in cancer cencus? (y/n))
-#' [7] Expert Curated? (created by team of expert curators? (y/n))
-#'
-#' @param fNameCNV The path to a TSV file with CNV data from COSMIC.
-#' #@param fNameHGNC The path to a TSV file with HGNC mapping data from COSMIC.
+#' @param fNameCNA The path to a TSV file with CNA data from COSMIC.
 #' @param outFName The path to an output file for the rCNA RDS object. Only
 #'   required if writeToFile == TRUE. Must be .rds file type.
 #' @param writeToFile Controls whether to serialize rCNA RDS object.
@@ -57,7 +44,7 @@
 #'   by default.
 #' @param writeLog Controls whether writing the result to the global logfile is
 #'   enabled. TRUE by default.
-#' @return Return rCNA object of COSMIC CNV data as RDS.
+#' @return Return rCNA object of COSMIC CNA data as RDS.
 #'
 #' @family importM.COSMIC, importM.TCGA, importM.GISTIC2, importM.ProjectGenie
 #'
@@ -66,40 +53,31 @@
 #'
 #' @examples
 #' \dontrun{
-#' fNameCNV <- "./../test/COSMIC/testCosmicCNA.tsv"
+#' fNameCNA <- "./../test/COSMIC/testCosmicCNA.tsv"
 #'
-#' importM.COSMIC(fNameCNV,
+#' importM.COSMIC(fNameCNA,
 #'                writeToFile = FALSE,
 #'                silent = TRUE,
 #'                writeLog = FALSE)
 #' }
 #' @export
-importM.COSMIC <- function(fNameCNV,
-                           #fNameHGNC,
+importM.COSMIC <- function(fNameCNA,
                            outFName,
                            writeToFile = FALSE,
                            silent = FALSE,
                            writeLog = TRUE) {
 
-    # fNameCNV <- "testCosmicCNA.tsv"
-    # outFName <- "cosmicCNV.rds"
-    # fNameHGNC <- "CosmicHGNC.tsv"
-
     # ==== PARAMETER TYPE VALIDATION ==========================================
 
-    # Check that fNameCNV is a string.
-    if(!is.character(fNameCNV)) {
-        stop("fNameCNV is not a valid string.")
-    }
+    # General parameter checks
+    cR <- character()
+    cR <- c(cR, .checkArgs(fNameCNA,     like = "FILE_E",   checkSize = TRUE))
+    cR <- c(cR, .checkArgs(writeToFile,  like = logical(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
 
-    # # Check that fNameHGNC is a string.
-    # if(!is.character(fNameHGNC)) {
-    #     stop("fNameHGNC is not a valid string.")
-    # }
-
-    # Check that writeToFile is a logical.
-    if (!is.logical(writeToFile)) {
-        stop("writeToFile is not a valid logical.")
+    if(length(cR) > 0) {
+        stop(cR)
     }
 
     if (writeToFile) {
@@ -123,80 +101,26 @@ importM.COSMIC <- function(fNameCNV,
         }
     }
 
-    # Check that silent is a logical.
-    if (!is.logical(silent)) {
-        stop("silent is not a valid logicial.")
-    }
-
-    # Check that writeLog is a logical.
-    if (!is.logical(writeLog)) {
-        stop("writeLog is not a valid logicial.")
+    # Check that file provided at path fNameCNA exists
+    if (!file.exists(fNameCNA)) {
+        stop("Parameter error:\n   File specified at fNameCNA not found.")
     }
 
 
-    # ==== PARAMETER VALUE VALIDATION =========================================
-
-    # Check that file provided at path fNameCNV exists
-    if (!file.exists(fNameCNV)) {
-        stop("Parameter error:\n   File specified at fNameCNV not found.")
-    }
-
-    # # Check that file provided at path fNameHGNC exists
-    # if (!file.exists(fNameHGNC)) {
-    #     stop("Parameter error:\n   File specified at fNameHGNC not found.")
-    # }
-
-
-    ## REPLACED BY CALLS TO fastMap() ##
-    # # ==== READ COSMIC HGNC DATA AND CREATE COSMIC_ID->HGNC MAP================
-    #
-    # # Read header line from fNameHGNC file
-    # tmpHeader <- readLines(fNameHGNC, n = 1)
-    #
-    # # Create character vector of col names from header string
-    # header <- unlist(strsplit(tmpHeader[1], "\t"))
-    #
-    # # The required columns from Cosmic HGNC table
-    # required <- c("COSMIC_ID", "HGNC_ID")
-    #
-    # # Find the column numbers in the header that match headings in required
-    # iCol <- which(header %in% required)
-    #
-    # # Create a column mask for readr::read_delim()
-    # readMask <- paste(paste(rep("_", length(header)),
-    #                         collapse = ""),
-    #                   sep = "")
-    #
-    # # Set target columns to characters
-    # for (col in iCol) {
-    #     substr(readMask, col, col) <- "c"
-    # }
-    #
-    # # Read only the selected columns from Cosmic HGNC file
-    # dataHGNC <- readr::read_delim(file = fNameHGNC,
-    #                               delim = "\t",
-    #                               col_types = readMask,
-    #                               n_max = Inf)
-    #
-    # # Create a map of Cosmic IDs to HGNC IDs
-    # HGNCmap <- dataHGNC[["HGNC_ID"]]
-    # names(HGNCmap) <- dataHGNC[["COSMIC_ID"]]
-
-
-    # ==== READ COSMIC CNV DATA ===============================================
+    # ==== READ COSMIC CNA DATA ===============================================
 
     if (!silent) {
-        cat("Reading CNV data from ", fNameCNV, " ...\n")
+        cat("Reading CNA data from ", fNameCNA, " ...\n")
     }
 
-    # Read header line from fNameCNV file
-    tmpHeader <- readLines(fNameCNV, n = 1)
+    # Read header line from fNameCNA file
+    tmpHeader <- readLines(fNameCNA, n = 1)
 
     # Create character vector of col names from header string
     header <- unlist(strsplit(tmpHeader[1], "\t"))
 
-    # The required columns from Cosmic CNV table
-    required <- c("ID_GENE", "ID_SAMPLE", "ID_TUMOUR", "TOTAL_CN")
+    # The required columns from Cosmic CNA table
+    required <- c("gene_name", "ID_SAMPLE", "ID_TUMOUR", "TOTAL_CN")
 
     # Find the column numbers in the header that match headings in required
     iCol <- which(header %in% required)
@@ -211,91 +135,69 @@ importM.COSMIC <- function(fNameCNV,
         substr(readMask, col, col) <- "c"
     }
 
-    # Read only the selected columns from Cosmic CNV file
-    dataCNV <- readr::read_delim(file = fNameCNV,
+    # Read only the selected columns from Cosmic CNA file
+    dataCNA <- readr::read_delim(file = fNameCNA,
                                  delim = "\t",
                                  col_types = readMask,
                                  n_max = Inf)
 
     if (!silent) {
-        cat("Done reading from ", fNameCNV, ".\n")
+        cat("Done reading from ", fNameCNA, ".\n")
     }
 
-    # ==== MAP COSMIC IDs TO HGNC GENE SYMBOLS ================================
-
-    ## Used the following call to generate fastMapCosmic.rds:
-    ## fastMapGenerate("hgnc_complete_set.txt", "symbol",
-    ##                 "cosmic", type = "Cosmic",
-    ##                 outputName = "../inst/extdata/fastMapCosmic.rds")
-
-    # load fastMap hash table
-    fastMapCosmic <- readRDS(system.file("extdata",
-                                       "fastMapCosmic.rds",
-                                       package = "rete"))
-
-    # Validate that the type of the hash table is "Cosmic"
-    if (!is.null(attributes(fastMapCosmic)$type)) {
-        if ("Cosmic" != attributes(fastMapCosmic)$type) {
-            stop(sprintf("Expected hash table type: Cosmic.\nSupplied hash table type: %s",
-                         attributes(fastMapCosmic)$type))
-        }
-    } else {
-        stop("Supplied hash table does not have a type attribute.")
+    if (nrow(dataCNA) == 0) {
+        stop("Input error: No CNAs found in file.")
     }
 
+    # Subtract 2 from each CNA count
+    if (!any(dataCNA$TOTAL_CN < 0)) {
+        dataCNA$TOTAL_CN <-
+            as.numeric(dataCNA$TOTAL_CN[dataCNA$TOTAL_CN >= 0]) - 2
+    }
 
     # ==== CONSTRUCT rCNA OBJECT ==============================================
 
     if (!silent) {
-        cat("Generating rCNA object using CNA data in ", fNameCNV, ".\n")
+        cat("Generating rCNA object using CNA data in ", fNameCNA, ".\n")
     }
 
-    barcodes <- c()
-    hgncSym <- c()
+    # Generate and get unique barcodes
+    dataCNA$barcode <- paste("TCGA", dataCNA$ID_SAMPLE, dataCNA$ID_TUMOUR, sep = "-" )
+    barcodes <- unique(dataCNA$barcode)
 
-    for (i in 1:nrow(dataCNV)) {
+    # Get unique HGNC symbols
+    hgncSym <- unique(dataCNA$gene_name)
 
-        # Generate all barcodes for the mutations in dataCNV
-        barcodes <- append(barcodes,
-                           paste("TCGA-",
-                                 dataCNV[i,]$ID_SAMPLE, "-",
-                                 dataCNV[i,]$ID_TUMOUR,
-                                 sep = ""))
-
-        # Generate all HGNC symbols using fastMap()
-        hgncSym <- append(hgncSym,
-                          fastMap(dataCNV[i,]$ID_GENE,
-                                  fastMapCosmic,
-                                  type = "Cosmic",
-                                  dev = TRUE))
-
-    }
-
-    # Create a matrix for storing CNV counts.
+    # Create a matrix for storing CNA counts.
     #     nrow is equal to number of unique HGNC symbols
     #     ncol is equal to the number of unique barcodes.
-    rCNA <- matrix(nrow = length(unique(hgncSym)),
-                   ncol = length(unique(barcodes)))
+    rCNAMatrix <- (matrix(nrow = length(hgncSym),
+                    ncol = length(barcodes)))
+
+    rCNA <- data.frame(rCNAMatrix)
 
     # Set the row and column names of rCNA to the
     # unique HGNC symbols and unique barcodes
-    rownames(rCNA) <- unique(hgncSym)
-    colnames(rCNA) <- unique(barcodes)
+    rownames(rCNA) <- hgncSym
+    colnames(rCNA) <- barcodes
 
     # Populate rCNA matrix with CNA counts
-    for (i in 1:nrow(dataCNV)) {
-        rCNA[fastMap(dataCNV[i,]$ID_GENE,
-                     fastMapCosmic,
-                     type = "Cosmic",
-                     dev = TRUE),
-             paste("TCGA-",
-                   dataCNV[i,]$ID_SAMPLE, "-",
-                   dataCNV[i,]$ID_TUMOUR,
-                   sep = "")] <- as.numeric(dataCNV[i,]$TOTAL_CN)
+    for (i in 1:nrow(dataCNA)) {
+        rCNA[dataCNA$gene_name[i], dataCNA$barcode[i]] <-
+            as.numeric(dataCNA$TOTAL_CN[i])
+
+        # Present a progress bar.
+        if (!silent) {
+            .pBar(i, nrow(dataCNA))
+            Sys.sleep(0.003)
+        }
     }
 
     if (!silent) {
         cat("rCNA object successfully generated.\n")
+        cat(sprintf("  Number of unqie samples: %d\n", ncol(rCNA)))
+        cat(sprintf("  Number of unique genes: %d\n", nrow(rCNA)))
+        cat(sprintf("  Total number of CNAs: %d\n", sum(as.numeric(dataCNA$TOTAL_CN))))
     }
 
 
@@ -308,7 +210,7 @@ importM.COSMIC <- function(fNameCNV,
         # Compile function call record
         myCall <- character()
         myCall[1] <- "importM.COSMIC("
-        myCall[2] <- sprintf("fnameCNV = \"%s\", ", fNameCNV)
+        myCall[2] <- sprintf("fnameCNA = \"%s\", ", fNameCNA)
         if (writeToFile) {
             myCall[3] <- sprintf("outFName = \"%s\", ", outFName)
         } else {
@@ -321,18 +223,18 @@ importM.COSMIC <- function(fNameCNV,
 
         # Record progress information
         myNotes <- character()
-        myNotes <- c(myNotes, sprintf("Read %s CNAs from file.", nrow(dataCNV)))
+        myNotes <- c(myNotes, sprintf("Read %s CNAs from file.", nrow(dataCNA)))
         if (writeToFile)
             myNotes <- c(myNotes, sprintf("Wrote rCNA object to %s.", outFName))
 
         # indicate output object name(s)
-        # myOutput = c("rCNA")
+        myOutput = c("rCNA")
 
         # send info to log file
         logEvent(eventTitle = myTitle,
                  eventCall = myCall,
-                 notes = myNotes
-                 # output = myOutput
+                 notes = myNotes,
+                 output = myOutput
         )
     }
 

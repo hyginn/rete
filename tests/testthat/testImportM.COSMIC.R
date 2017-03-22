@@ -3,35 +3,97 @@
 #
 context("import COSMIC mutations")
 
-test_that("importM.COSMIC correctly returns rCNA from Cosmic CNV data", {
+# ==== BEGIN SETUP AND PREPARE =================================================
+OLOG <- as.character(getOption("rete.logfile"))   # save original logfile name
+logFileName(fPath = tempdir(), setOption = TRUE)  # make tempdir() the log dir
+NL <- .PlatformLineBreak()
+
+testPath <- tempdir()
+testFName <- paste("importM_COSMIC_", Sys.Date(), ".rds", sep = "")
+# ==== END SETUP AND PREPARE ===================================================
+
+
+test_that("importM.COSMIC returns error when file not found", {
+
+    expect_error(
+        importM.COSMIC(fName = "testCosmicCNA2.tsv"))
+})
+
+test_that("importM.COSMIC returns error when fNameCNA is not a valid string", {
+    expect_error(
+        importM.COSMIC(fNameCNA = 0))
+})
+
+test_that("importM.COSMIC returns error when silent is not a valid logical", {
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
+                       silent = 0))
+})
+
+test_that("importM.COSMIC returns error when writeLog is not a valid logical", {
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
+                       writeLog = 0))
+})
+
+test_that("importM.COSMIC returns error when writeToFile is not a valid logical", {
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
+                       writeToFile = 0))
+})
+
+test_that("importM.COSMIC saves to RDS file only when writeToFile is TRUE", {
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
+                       outFName = "cosmicCNA.rds",
+                       writeToFile = FALSE))
+})
+
+test_that("importM.COSMIC only accepts outFNames of type .rds.", {
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
+                       outFName = "cosmicCNA.txt",
+                       writeToFile = TRUE))
+})
+
+test_that("importM.COSMIC returns error when outFNames is not string.", {
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
+                       outFName = 0,
+                       writeToFile = TRUE))
+})
+
+test_that("importM.COSMIC correctly returns rCNA from Cosmic CNA data", {
     fName <- "testCosmicCNA.tsv"
 
-    expected <- matrix(nrow = 10,
+    expectedMatrix <- matrix(nrow = 10,
                        ncol = 1)
 
-    rownames(expected) <- c(106410,
-                            107031,
-                            55218,
-                            66769,
-                            106400,
-                            101525,
-                            106281,
-                            84805,
-                            69781,
-                            69785)
+    expected <- data.frame(expectedMatrix)
+
+    rownames(expected) <- c("DAZ4",
+                            "FAM106A",
+                            "LCE3C",
+                            "PRY",
+                            "RBMY1D_ENST00000382680",
+                            "GYG2P1",
+                            "DAZ1_ENST00000382510",
+                            "ENSG00000196115",
+                            "RBMY1E",
+                            "DAZ2")
 
     colnames(expected) <- c("TCGA-683665-611825")
 
-    expected["106410", "TCGA-683665-611825"] <- 10
-    expected["107031", "TCGA-683665-611825"] <- 0
-    expected["55218", "TCGA-683665-611825"] <- 0
-    expected["66769", "TCGA-683665-611825"] <- 7
-    expected["106400", "TCGA-683665-611825"] <- 0
-    expected["101525", "TCGA-683665-611825"] <- 5
-    expected["106281", "TCGA-683665-611825"] <- 7
-    expected["84805", "TCGA-683665-611825"] <- 0
-    expected["69781", "TCGA-683665-611825"] <- 0
-    expected["69785", "TCGA-683665-611825"] <- 7
+    expected["DAZ4", "TCGA-683665-611825"] <- 8
+    expected["FAM106A", "TCGA-683665-611825"] <- -2
+    expected["LCE3C", "TCGA-683665-611825"] <- -2
+    expected["PRY", "TCGA-683665-611825"] <- 5
+    expected["RBMY1D_ENST00000382680", "TCGA-683665-611825"] <- -2
+    expected["GYG2P1", "TCGA-683665-611825"] <- 3
+    expected["DAZ1_ENST00000382510", "TCGA-683665-611825"] <- 5
+    expected["ENSG00000196115", "TCGA-683665-611825"] <- -2
+    expected["RBMY1E", "TCGA-683665-611825"] <- -2
+    expected["DAZ2", "TCGA-683665-611825"] <- 5
 
     expect_equal(importM.COSMIC(fName,
                                 writeToFile = FALSE,
@@ -42,7 +104,7 @@ test_that("importM.COSMIC correctly returns rCNA from Cosmic CNV data", {
 
 test_that("importM.COSMIC outputs rCNA RDS to file.", {
     fName <- "testCosmicCNA.tsv"
-    outName <- "outCosmicCNA.rds"
+    outName <- paste(testPath, testFName, sep = "")
 
     expected <- importM.COSMIC(fName,
                                outName,
@@ -50,62 +112,23 @@ test_that("importM.COSMIC outputs rCNA RDS to file.", {
                                silent = TRUE,
                                writeLog = FALSE)
 
-    result <- readRDS("outCosmicCNA.rds")
-
-    file.remove("outCosmicCNA.rds")
+    result <- readRDS(outName)
 
     expect_equal(result,
                  expected)
 })
 
-test_that("importM.COSMIC returns error when file not found", {
-
+test_that("importM.COSMIC returns error when CNA input data is corrupt.", {
     expect_error(
-        importM.COSMIC(fName = "testCosmicCNA2.tsv"))
+        importM.COSMIC(fNameCNA = "testCosmicCNAEmpty.tsv")
+        )
 })
 
-test_that("importM.COSMIC returns error when fNameCNV is not a valid string", {
-    expect_error(
-        importM.COSMIC(fNameCNV = 0))
-})
 
-test_that("importM.COSMIC returns error when silent is not a valid logical", {
-    expect_error(
-        importM.COSMIC(fNameCNV = "testCosmicCNA.tsv",
-                       silent = 0))
-})
-
-test_that("importM.COSMIC returns error when writeLog is not a valid logical", {
-    expect_error(
-        importM.COSMIC(fNameCNV = "testCosmicCNA.tsv",
-                       writeLog = 0))
-})
-
-test_that("importM.COSMIC returns error when writeToFile is not a valid logical", {
-    expect_error(
-        importM.COSMIC(fNameCNV = "testCosmicCNA.tsv",
-                       writeToFile = 0))
-})
-
-test_that("importM.COSMIC saves to RDS file only when writeToFile is TRUE", {
-    expect_error(
-        importM.COSMIC(fNameCNV = "testCosmicCNA.tsv",
-                       outFName = "cosmicCNA.rds",
-                       writeToFile = FALSE))
-})
-
-test_that("importM.COSMIC only accepts outFNames of type .rds.", {
-    expect_error(
-        importM.COSMIC(fNameCNV = "testCosmicCNA.tsv",
-                       outFName = "cosmicCNA.txt",
-                       writeToFile = TRUE))
-})
-
-test_that("importM.COSMIC returns error when outFNames is not string.", {
-    expect_error(
-        importM.COSMIC(fNameCNV = "testCosmicCNA.tsv",
-                       outFName = 0,
-                       writeToFile = TRUE))
-})
+# ==== BEGIN TEARDOWN AND RESTORE ==============================================
+logName <- unlist(getOption("rete.logfile"))
+if (file.exists(logName)) { file.remove(logName)}
+options("rete.logfile" = OLOG)
+# ==== END  TEARDOWN AND RESTORE ===============================================
 
 # [END]
