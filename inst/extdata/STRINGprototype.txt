@@ -1,0 +1,3 @@
+protein1 protein2 neighborhood fusion cooccurence coexpression experimental database textmining combined_score
+9606.ENSP00000000233 9606.ENSP00000003084 0 0 0 0 0 0 150 999
+9606.ENSP00000000233 9606.ENSP00000003084 0 0 0 0 0 0 150 999

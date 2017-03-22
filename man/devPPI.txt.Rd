@@ -18,7 +18,9 @@ A file containing protein-protein interactions for 16
 genes, subset from iRefIndex version 14 data.
 }
 \examples{
-system.file("extdata", "devPPI.txt", package="ekplektoR")
-fPath <- system.file("extdata", "devPPI.txt", package="ekplektoR")
+\dontrun{
+system.file("extdata", "devPPI.txt", package="rete")
+fPath <- system.file("extdata", "devPPI.txt", package="rete")
 myMITAB <- read.delim(fPath, stringsAsFactors = FALSE)
+}
 }
