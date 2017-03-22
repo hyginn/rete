@@ -110,7 +110,7 @@ importSNV.TCGA <- function(  fMAF,
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,21] == "Tumor_Sample_UUID") {
+                         na.strings = " ", nrows=1)[,33] == "Tumor_Sample_UUID") {
             headValid <- FALSE
         }
         return(headValid)
@@ -180,7 +180,7 @@ importSNV.TCGA <- function(  fMAF,
         }
 
         write("sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID",
-              rSNV, append=TRUE)
+              rSNV, append=FALSE)
 
         snvValidity <- TRUE
     } else {
@@ -192,9 +192,14 @@ importSNV.TCGA <- function(  fMAF,
 
     # ==== READ DATA ===========================================================
     filesFinished <- 0
+    numFilesInvalid <- 0
     for (i in fMAF) {
-        if (fileValidity(i) & mafHeaderCheck(i) & snvValidity) {
 
+        if (!silent) {
+            .pBar(i, length(fMAF))
+        }
+
+        if (fileValidity(i) & mafHeaderCheck(i) & snvValidity) {
             hugo_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
                                 na.strings = " ")[,1]
             chr_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
@@ -253,8 +258,6 @@ importSNV.TCGA <- function(  fMAF,
                 chrValid <- TRUE
             }
 
-            numFilesInvalid <- 0
-
             if (classValid & typeValid & chrValid == FALSE) {
                 # there was an invalid value
                 # report error in file and log
@@ -308,7 +311,7 @@ importSNV.TCGA <- function(  fMAF,
             # send info to log file
             logEvent(eventTitle = myTitle,
                       eventCall = myCall,
-                      input = character(fMAF),
+                      #input = character(),
                       notes = myNotes,
                       output = myOutput)
         }
