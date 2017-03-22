@@ -125,47 +125,47 @@ importSNV.TCGA <- function(  fMAF,
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,5] == "chr") {
+                         na.strings = " ", nrows=1)[,2] == "chr") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,6] == "start") {
+                         na.strings = " ", nrows=1)[,3] == "start") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,7] == "end") {
+                         na.strings = " ", nrows=1)[,4] == "end") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,8] == "strand") {
+                         na.strings = " ", nrows=1)[,5] == "strand") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,9] == "class") {
+                         na.strings = " ", nrows=1)[,6] == "class") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,10] == "type") {
+                         na.strings = " ", nrows=1)[,7] == "type") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,11] == "aRef") {
+                         na.strings = " ", nrows=1)[,8] == "aRef") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,12] == "a1") {
+                         na.strings = " ", nrows=1)[,9] == "a1") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,13] == "a2") {
+                         na.strings = " ", nrows=1)[,10] == "a2") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,16] == "TCGA") {
+                         na.strings = " ", nrows=1)[,11] == "TCGA") {
             headValid <- FALSE
         }
         if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,21] == "UUID") {
+                         na.strings = " ", nrows=1)[,12] == "UUID") {
             headValid <- FALSE
         }
         return(headValid)
