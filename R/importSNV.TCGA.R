@@ -308,7 +308,7 @@ importSNV.TCGA <- function(  fMAF,
             # send info to log file
             logEvent(eventTitle = myTitle,
                       eventCall = myCall,
-                      input = character(fMAF, rSNV),
+                      input = character(fMAF),
                       notes = myNotes,
                       output = myOutput)
         }
