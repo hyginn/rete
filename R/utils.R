@@ -5,9 +5,32 @@
 .PlatformLineBreak <- function() {
     # returns "\r\n" on windows, "\n" otherwise
     if (.Platform$OS.type == "windows") {
-        return("\r\n")
+        NL <- "\r\n"
     } else {
-        return("\n")
+        NL <- "\n"
+    }
+    return(NL)
+}
+
+
+.pBar <- function(i, l, nCh = 50) {
+    # Draw a progress bar in the console
+    # i: the current iteration
+    # l: the total number of iterations
+    # nCh: width of the progress bar
+    WID <- min(l-1, nCh)
+    ticks <- round(seq(1, l-1, length.out = WID))
+    if (i < l) {
+        if (any(i == ticks)) {
+            p <- which(i == ticks)
+            p1 <- paste(rep("#", p), collapse = "")
+            p2 <- paste(rep("-", WID - p), collapse = "")
+            cat(sprintf("\r|%s%s|", p1, p2))
+            utils::flush.console()
+        }
+    }
+    else { # done
+        cat("\n")
     }
 }
 
@@ -62,9 +85,9 @@
                 report <- c(report,
                             sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
-                                    "error: directory ",
+                                    "error: directory \"",
                                     el,
-                                    " does not exist.",
+                                    "\" does not exist.",
                                     NL))
             }
             if (like == "FILE_E" && ! file.exists(el)) {
@@ -72,9 +95,9 @@
                 report <- c(report,
                             sprintf(".checkArgs> \"%s\" %s%s%s%s",
                                     name,
-                                    "error: file ",
+                                    "error: file \"",
                                     el,
-                                    " does not exist.",
+                                    "\" does not exist.",
                                     NL))
             }
             if (like == "FILE_W" && file.access(el, mode = 2) != 0) {

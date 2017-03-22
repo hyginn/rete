@@ -117,10 +117,13 @@ logFileName <- function(fPath, fName, setOption = FALSE) {
 #'   file. The file name is taken from the rete.logfile global option.
 #'
 #' The function will stop() if message is not of mode, type and class character.
-#' On windows systems, \\n linebreaks are replaced with \\r\\n.
+#' On windows systems, cat() replaces \\n linebreaks with \\r\\n. Therefore
+#' logMessage() converts all linebreaks internally to \\n before handing them to
+#' cat().
 #'
 #' @param msg a character object or vector of character objects.
-#' @return N/A. message is appended to the current logfile.
+#' @return N/A. This function is invoked for its side-effect to appended text to
+#'   the current logfile.
 #'
 #' @family log file functions
 #'
@@ -134,27 +137,23 @@ logFileName <- function(fPath, fName, setOption = FALSE) {
 #' @export
 logMessage <- function(msg) {
 
-    checkReport <- .checkArgs(msg, like = character())
-    if(length(checkReport) > 0) {
-        stop(checkReport)
-    }
+    # Check that argument is of mode character
+    r <- .checkArgs(msg, like = character())
+    if(length(r) > 0) { stop(r) }
 
-    # remove "\n" or "\r\n" from line-endings
-    msg <- gsub("[\n\r]+$", "", msg)
+    # Remove all line-end linebreaks
+    msg <- gsub("[\r\n]+$", "", msg)
 
-    # replace existing line breaks with platform appropriate version
-    if (.Platform$OS.type == "windows") {
-        Sep <- "\r\n"
-        msg <- gsub("([^\r]\n)|^\n", Sep, msg)
-    } else {
-        Sep <- "\n"
-        msg <- gsub("\r\n", Sep, msg)
-    }
+    # Remove all \r characters to convert windows into unix linebreaks
+    msg <- gsub("\r", "", msg)
 
-    # append to log file, with platform appropriate separator
+    # Add \n to line-ends
+    msg <- gsub("$", "\n", msg)
+
+    # Append msg to log file
     cat(msg,
         file = unlist(getOption("rete.logfile")),
-        sep = Sep,
+        sep = "",
         append = TRUE)
 
 }
