@@ -2,29 +2,34 @@
 
 #' Combine mutation data from CNA and SNV
 #'
-#' \code{combineSNV_CNA} loads the vector of preprossed dataset from filtered CNA or SNV files,
+#' \code{combineSNV_CNA} loads the vector of preprocessed dataset from filtered CNA or SNV files,
 #'  creates hash keys corresponding to the input file type, combine and save the hashed
 #'  keys to a gX format file as output file.
 #'
 #' Details.
 #' @section gX files:
-#'  gX files contain data of SNV and CNA combined for each gene as one object, sorted per
-#'  gene. Tab-delimited text file with header.
+#'  gX data frame files contain data of SNV and CNA combined for each gene as one object, sorted per
+#'  gene.
 #'
 #'
 #' @param fName A vector of path of fully qualified file names of SNV and/or CNA files.
-#' @param fgX The fully qualified filename/path of a gX output file.
-#' @param silent Boolean option for writing combiling process information to console.
-#' @param noLog Boolean option for log results.
-#' @return number of hashed keys stored to the gX output file.
+#' @param fgX The fully qualified filename/path of a gX output file, by default is gX.rds.
+#' @param silent Boolean option for writing combiling process information to console, FALSE by default.
+#' @param writeLog Boolean option for log results, TRUE by default.
 #'
 #'
 #' @examples
-#' \dontrun{combine(fName=file_names, fgX="combined_data.RDS", silent=TRUE, noLog=FALSE)}
+#' \dontrun{combine(fName=file_names, fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
 #'
 #' @export
-combineSNV_CNA <- function(fname, fgX, silent=FALSE, noLog=FALSE) {
+combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
     #' pseudo code
+    #'
+    #' using hash package, e.g extract keys
+    #' if(!require(hash)){
+    #'  install.packages("hash")
+    #'  library(hash)
+    #' }
     #' hashTable <- new.env()
     #' read from input files and store hash
     #' for (i <- 1, i <= length(fname), i++) {
@@ -55,14 +60,14 @@ combineSNV_CNA <- function(fname, fgX, silent=FALSE, noLog=FALSE) {
     #' sort hashVector
     #' strplit them to sym, type, pos and class
     #' store retrieve 4 classes in a dataframe
+    #' create NA for not applicable columns in CNAs
     #' for key in hashVector:
     #'  retrieve value from hashTable using keys in hashVector
-    #' count <- length(hashVector)
+    #'  insert metadata
     #'
     #' save(dataframe, fgX)
     #'
-    #' ToDo add silent and log to reading from data files and writing to output files
-    #' return(count)
+    #' ToDo add silent and log to read from data files and writing to output files
 }
 
 # [END]
