@@ -10,37 +10,64 @@
 #' median of N δ values.
 #'
 #' @section Swapping Edges:
-#'     Bidirectional edges must only be swapped with each other, therefore the
-#'     swapping operation will first be applied to bidirectional edges,
-#'     Q * |E_b| times, where E_b is a bidirectional edge. Since all 4 incident
-#'     nodes in 2 bidirectional edges are receiving endpoints, one node will be
-#'     randomly selected from each edge, and a new edge is formed between the
-#'     selected as well as the remaining vertices.
-#'     Then Q * |E_u| unidirectional edge swaps take place.
+#'     Bidirectional edges must only be swapped with each other, Since all 4
+#'     incident nodes in 2 bidirectional edges are receiving endpoints, one node
+#'     will be randomly selected from each edge, and a new edge is formed
+#'     between the selected as well as the remaining vertices.
 #'     At each unidirectional edge swap, only the receiving endpoints are
 #'     swapped e.g. (A → B, C → D) to (A → D, C → B).
 #'     In both cases, a swap should NOT result in:
-#'     Multiple edges: Possibly result of a bidirectional edge swap.
-#'     Self-edges: e.g. (A ↔ B, C ↔ A) to (A ↔ A, B ↔ C)
-#'     Disconnected components: Considering (A → B, C → D), if A and B are
+#'
+#'     "Multiple edges": Possibly result of multiple bidirectional edge swaps:
+#'             A                             A
+#'          //   \\              →                 //
+#'         B   →   C                     B  ↔ →  C
+#'
+#'     OR:
+#'     Where an edge belonging to vertex (A) which already has an outgoing edge to
+#'     another vertex (B) is switched with another incoming edge to vertex B,
+#'     resulting in (A) having two outgoing edges to (B).
+#'
+#'        ( )     ( )                  ( )  ←  ( )
+#'         ↑       ↓             →
+#'        (A)  →  (B)                  (A)   ⇉  (B)
+#'
+#'     "Self-edges": e.g. (A ↔ B, C ↔ A) to (A ↔ A, B ↔ C)
+#'     Where in the case of:
+#'     'Unidirectional edges': Precedent of one edge is the antecedent of the
+#'     other edge to be swapped.
+#'     'Bidirectional edges': The edge pair to be swapped involves less than 4
+#'     distinct nodes.
+#'     "Disconnected components": Considering (A → B, C → D), since A and B are
 #'     in the same component, they should still be in the same component when
-#'     (A → D, C → B) This guarantees that the graph is still connected if
-#'     the starting graph was also connected.
-#'     ### What about (A → B, A → D) to (A → D, A → B)? Will this be
-#'     cosidered a swap? (counted towards Q * |E|) ###
+#'     (A → D, C → B). This guarantees that the component remains connected.
+#'
+#'     Note that (A → B, A → D) to (A → D, A → B) is not considered a swap, as
+#'     an edge swap has to involve 4 distinct vertices.
 #'
 #' @section Maintaining Connected Components:
-#'     In order to ensure nodes maintain their components during permutation,
-#'     the components of the graph is measured initially, and the component
-#'     each node belongs to is stored in a separate data structure (hash table?).
+#'     Note: In order to minimize computation, and since the target outcome is
+#'     to measure order of the largest connected component, only the largest
+#'     connected component of the input is then used for the computation in case
+#'     the input has more than one component.
+#'     It is sufficient to find all articulation points and identify edges that
+#'     connect to them (incoming and outgoing), and during a swap, an edge
+#'     between two adjacent articulation points is not to be swapped with an
+#'     incoming edge to another articulation point. Therefore EGG's articulation
+#'     points are initially discovered by Tarjan's algorithm and
+#'     To ensure nodes maintain their components during permutation,
+#'     the size and distribution of the components of the graph is measured
+#'     initially, and ###the component
+#'     each node belongs to is stored in a separate data structure,### and only
+#'     the largest connected component is permutated.  (hash table?).
+#'     Then the strongly connected components within the largest component are
+#'     found. TODO
 #'     After each swap, the new component of the sending endpoint (A in A → B)
 #'     is the same as the component the receiving endpoint belongs to. Thus
-#'     the component maintenance is acieved in 2 steps (one query and one
+#'     the component maintenance is achieved in 2 steps (one query and one
 #'     comparison) for each receiving node, and thus 4 * Q * |E| steps are
 #'     required.
 #'
-#'     ## Why not use a binary search style approach to find the minimum delta?
-#'     ## Can calculation of delta be parallelized?
 #' @section Incrementing δ and Lmax: ## How much should delta be incremented for efficieny as well as accuracy?##
 #'     After creating the permutated graph, the following procedure is run on
 #'     the graph for each Lmax starting from 2 to the Lmax given as an argument.
@@ -70,7 +97,6 @@
 #' @return The Equilibrated Gene Graph EGG with δ values as additional
 #' graph metadata.
 #'
-#' @author Farzan Taj farzantaj@outlook.com
 #' @references
 #' @seealso
 #' @examples
@@ -82,25 +108,59 @@ THRESH <- function(EGG,
                    Q = 100,
                    silent = FALSE,
                    writeLog = TRUE) {
-    # NOTE: Most comments, only as a confirmation/question
+
+    # ==== VALIDATIONS =========================================================
+
+    # Check if EGG is given
+    if (missing(EGG)) {
+        stop(paste0("Missing input EGG."))
+    }
+    # General parameter checks
+    cR <- character()
+    cR <- c(cR, .checkArgs(EGG,         like = getOptions("rete.EGGprototype")))
+    cR <- c(cR, .checkArgs(Lmax,        like = numeric(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(N,           like = numeric(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(Q,           like = numeric(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(silent,      like = logical(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(writeLog,    like = logical(1), checkSize = TRUE))
+
+    if(length(cR) > 0) {
+        stop(cR)
+    }
+    # Lmax cannot be more than graph size
+    # Validate the Lmax parameter
+    if (!missing(Lmax) && (Lmax > (numVertices <- igraph::vcount(EGG)))) {
+        stop(paste0("Lmax cannot be more than graph size."))
+    }
+    if (!missing(Lmax) && (Lmax < 2)) {
+        stop(paste0("Lmax cannot be less than 2."))
+    }
+    # Validate that the starting graph's largest connected component (weakly)
+    # is bigger than Lmax (or 2?)
+    if (max(igraph::components(EGG, "weak")$csize) < Lmax) {
+        stop(paste0("Largest connected component in given graph has size
+                    smaller than Lmax."))
+    }
+    # ((Report if graph already has delta attributes?))
+    # ((Is attribute check enough or are there other attributes?))
+    if (!is.null(igraph::graph.attributes(EGG)$delta)) {
+        stop(paste0("Graph already has attributes, remove and retry."))
+    }
+    # ((Should extremely large N and Q be tested for?))
 
 
-    # Check arguments for validity, generate error if necessary and stop
-    # Read EGG
-    # Use the helper function ".permute" to create permutations,
-    # which takes a copy of EGG, and N, and returns N random
-    # graphs as a list (?) of objects
+    # Use the helper function ".permuteGraph" to create permutations,
+    # which takes a copy of EGG, and returns a random
+    # graph as an igraph object
 
 
     # If variables are assigned in the local environmet, the helper functions
     # can use them.
     # Generate the list of edges, vertices and vertex count available in EGG
-    allEdges <- igraph::get.edgelist(EGG)
-    allVertices <- igraph::V(EGG)
-    numVertices <- igraph::vcount(EGG)
+
 
     # Call permute on EGG, store returned list of graphs as an object
-    graphList <- .permute(EGG, N)
+    graphList <- .permuteGraph(EGG, N)
     masterDeltaList <- vector("list", length = N)
 
     # For each graph:
@@ -171,15 +231,18 @@ THRESH <- function(EGG,
 
 
 
-#' Helper function to create N permutations of the EGG graph.
+#' Helper function to create a valid permutation of the EGG graph.
 #'
 #' @param EGG The given EGG graph from parent function.
-#' @param N The number of permuted graphs that must be generated.
-#' @param Q The number of edge-swapping permutations to produce one of the
-#' permuted networks is Q * |E|.
+#' @param Q The number of edge-swapping permutations to produce the
+#' permuted network is Q * |E|.
 #'
-#' @return List of N igraph objects, permutations of the given EGG graph
-.permute <- function(EGG, N, Q) {
+#' @return Permuted igraph object
+.permuteGraph <- function(EGG, Q) {
+    allEdges <- igraph::get.edgelist(EGG)
+    allVertices <- igraph::V(EGG)
+    numVertices <- igraph::vcount(EGG)
+
     # Calculate the component each vertex belongs to
     ### By subsetting components (somehow)
     initialComponents <- igraph::components(EGG)
@@ -204,7 +267,7 @@ THRESH <- function(EGG,
     # Since they are all ordered, we can pick only the first half, and group
     # each pair
 
-    # Better to use a list of tuples to keep track of 'bidirectional' edge pairs
+    # TODO: No need for a pair list, simply retain only on of the edges
     # as they are simply a pair of unidirectional edges
     bidirPairList <- vector("list", length = (numBidirectional / 2))
     for (i in seq(1, numBidirectional, 2)) {
@@ -282,3 +345,16 @@ THRESH <- function(EGG,
 
     # return list of permuted graphs to caller
 }
+
+
+
+EGG <- random.graph.game(n = 50, p.or.m = 30, type = "gnm", directed = TRUE)
+EGGxy <- layout_with_fr(graph = EGG, minx = )
+artPoints <- articulation.points(graph = EGG)
+V(EGG)[artPoints]$color = "red"
+V(EGG)[-artPoints]$color = "black"
+plot(EGG, layout = EGGxy, vertex.size = 5,
+     vertex.label = NA, edge.arrow.width = NA)
+
+
+
