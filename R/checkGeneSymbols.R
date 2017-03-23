@@ -29,7 +29,10 @@
 
 isGeneSymbol <- function(input) {
     # Check the validity of the input.
-    if (is.null(input) || length(input) == 0 || is.na(input)) { stop("Invalid input!") }
+    if (is.null(input) || length(input) == 0 || typeof(input) != "character" ||
+        mode(input) != "character" || class(input) != "character") {
+            stop("Invalid input!")
+    }
 
     output = c()
 
