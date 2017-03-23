@@ -5,7 +5,15 @@
 #' \code{importSNV.TCGA} Imports data from one or more files of MAF format, creates rSNV or adds to
 #' existing rSNV file, returns rSNV file.
 #'
-#' @section MAF file:...
+#' @section Validations: validations sections has 3 functions - function that checks MAF file extension,
+#' function that checks MAF file header, function that checks rSNV file header.
+#'
+#' @section Read MAF file: maf file is read by extracting require columns from maf file followed
+#' by checking if every item in the class, type and chr columns are from a known and required list of values.
+#' These columns as a data table are then added to an rSNV file.
+#'
+#' @section Wrtie Log: log section writes file processing progress along with other errors
+#' that may occur.
 #'
 #' @param fMAF vector of MAF file names.
 #' @param rSNV rSNV file to merged new MAF data with.
@@ -17,9 +25,10 @@
 #'
 #' @family
 #'
-#'   ## @seealso \code{\link{importX}} importX() is used to import ...
+#'   ## @seealso \code{\link{importM}} importM() is used to import ...
 #'
-#'   ## @examples ## \dontrun{ ## importSNV.TCGA(IN, OUT) ## }
+#'   ## @examples ## \dontrun {
+#'   ## importSNV.TCGA(c("aMAFfile.maf","bMAFfile"), "sampleSNV", na.rm = FALSE) ## }
 #' @export
 
 importSNV.TCGA <- function(  fMAF,
