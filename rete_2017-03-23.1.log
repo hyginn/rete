@@ -1,0 +1,390 @@
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 10:04:04
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 10:04:33
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:09:37
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:10:38
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:11:13
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:19:13
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:20:03
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:20:37
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:21:01
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:22:13
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:22:27
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:22:55
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:24:46
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:26:12
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:28:32
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 
+event | note   | Total number of files in input fMAF - 
+event | note   | Files dropped due to incomptibility - 
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:34:00
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Total number of files in input fMAF -
+event | note   | Files dropped due to incomptibility -
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:34:31
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed -
+event | note   | Total number of files in input fMAF -
+event | note   | Files dropped due to incomptibility -
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:41:51
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed -
+event | note   | Total number of files in input fMAF -
+event | note   | Files dropped due to incomptibility -
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:42:23
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed -
+event | note   | Total number of files in input fMAF -
+event | note   | Files dropped due to incomptibility -
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:43:55
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed -
+event | note   | 1
+event | note   | Total number of files in input fMAF -
+event | note   | 1
+event | note   | Files dropped due to incomptibility -
+event | note   | 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:45:10
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:45:35
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Files processed - 1
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files dropped due to incomptibility - 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:50:07
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE)na.rm = FALSE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | output | "rSNV"
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:52:37
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:55:27
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Number of rows originally in rSNV - 
+event | note   | 15710
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 11:59:39
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Number of rows originally in rSNV -  31420
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 0
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:00:17
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Number of rows originally in rSNV -  0
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 0
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:06:44
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Number of rows originally in rSNV -  0
+event | note   | Header of input rSNV file did not match that requirements.
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 0
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:08:02
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Number of rows originally in rSNV -  0
+event | note   | Header of input rSNV file did not match the requirements.
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 0
+event | note   | Files dropped due to incomptibility - 1
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:08:35
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Number of rows originally in rSNV -  0
+event | note   | Header of input rSNV file did not match the requirements.
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 0
+event | note   | Files dropped due to incomptibility - 1
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:11:23
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Number of rows originally in rSNV -  0
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:22:06
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:23:47
+event | call   | importSNV.TCGA(fMAF = "BRCA.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:24:12
+event | call   | importSNV.TCGA(fMAF = "THYM.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:24:29
+event | call   | importSNV.TCGA(fMAF = "THYM.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:25:27
+event | call   | importSNV.TCGA(fMAF = "THYM.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Number of rows originally in rSNV -  0
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:26:41
+event | call   | importSNV.TCGA(fMAF = "THYM.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:27:26
+event | call   | importSNV.TCGA(fMAF = "THYM.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:32:39
+event | call   | importSNV.TCGA(fMAF = "THYM.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:33:54
+event | call   | importSNV.TCGA(fMAF = "THYM.maf", silent = FALSE, writeLog = TRUE, na.rm = TRUE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:38:44
+event | call   | importSNV.TCGA(fMAF = "THCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+
+event | title  | importSNV.TCGA
+event | time   | 2017-03-23 12:39:44
+event | call   | importSNV.TCGA(fMAF = "THCA.maf", silent = FALSE, writeLog = TRUE, na.rm = FALSE)
+event | note   | Number of rows originally in rSNV -  3373
+event | note   | Total number of files in input fMAF - 1
+event | note   | Files successfully processed - 1
+event | note   | Files dropped due to incomptibility - 0
+event | end
+

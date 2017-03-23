@@ -2,19 +2,18 @@
 
 #' Import MAF files from source and converts them to rSNV files.
 #'
-#' \code{importSNV.TCGA} imports list of maf file names, creates rSNV or adds to
-#' existing rSNV file, return rSNV file
+#' \code{importSNV.TCGA} Imports data from one or more files of MAF format, creates rSNV or adds to
+#' existing rSNV file, returns rSNV file.
 #'
 #' @section MAF file:...
 #'
-#' @param fMAF vector of MAF file names
-#' @param rSNV rSNV file to merged new MAF data with
-#' @param na.rm remove all rows with NA values as attributes and drop from DF
+#' @param fMAF vector of MAF file names.
+#' @param rSNV rSNV file to merged new MAF data with.
+#' @param na.rm Remove all rows with missing or "NA" values and drop them from data frame.
 #' @param silent Controls whether output to console should be suppressed. FALSE
 #'   by default.
 #' @param writeLog Controls whether writing the result to the global logfile is
 #'   enabled. TRUE by default.
-#' @return rSNV file name containg data from all MAF files
 #'
 #' @family
 #'
@@ -24,12 +23,13 @@
 #' @export
 
 importSNV.TCGA <- function(  fMAF,
-                             rSNV = NULL,
+                             rSNV,
                              na.rm = FALSE,
                              silent = FALSE,
                              writeLog = TRUE) {
 
     myNotes <- character()
+    myCall <- character()
 
     # ==== PARAMETERS ==========================================================
 
@@ -51,233 +51,90 @@ importSNV.TCGA <- function(  fMAF,
         stop(cR)
     }
 
-    meta <- list(type = "rSNV",
-                 version = "1.0")
-
-    # ==== Validata fMAF: Extensions  =======================================
-    fileValidity <- function(file) {
-        if (strsplit(file, "\\.")[[1]][-1] %in% c("maf", "txt", "tsv")) {
-            return(TRUE)
-        } else {
-            return(FALSE)
-        }
-    }
-
-    mafHeaderCheck <- function(file) {
-        headValid <- TRUE
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,1] == "Hugo_Symbol") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,5] == "Chromosome") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,6] == "Start_Position") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,7] == "End_Position") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,8] == "Strand") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,9] == "Variant_Classification") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,10] == "Variant_Type") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,11] == "Reference_Allele") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,12] == "Tumor_Seq_Allele1") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,13] == "Tumor_Seq_Allele2") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,16] == "Tumor_Sample_Barcode") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,33] == "Tumor_Sample_UUID") {
-            headValid <- FALSE
-        }
-        return(headValid)
-    }
-
     # ==== Validata rSNV  =======================================
-
-    rSNVheadercheck <- function(file) {
-        headValid <- TRUE
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,1] == "sym") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,2] == "chr") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,3] == "start") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,4] == "end") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,5] == "strand") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,6] == "class") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,7] == "type") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,8] == "aRef") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,9] == "a1") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,10] == "a2") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,11] == "TCGA") {
-            headValid <- FALSE
-        }
-        if (! read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                         na.strings = " ", nrows=1)[,12] == "UUID") {
-            headValid <- FALSE
-        }
-        return(headValid)
-    }
-
     if (missing(rSNV)) {
-        rSNV <- "MAFtoSNV"
-
-        # add metdata
-        for (name in names(meta)) {
-            attr(rSNV, name) <- meta[[name]]
-        }
+        rSNVu <- "MAFtoSNV"
 
         write("sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID",
-              rSNV, append=FALSE)
+              rSNVu, append=FALSE)
 
-        snvValidity <- TRUE
+        snvValidity <- character()
     } else {
+        rSNVu <- rSNV
         rSNVf <- read.table(rSNV, header = TRUE)[,1]
         rowsBefore <- length(rSNVf)
-        myNotes <- c("Number of rows originally in rSNV - ", rowsBefore)
-        snvValidity <- rSNVheadercheck(rSNV)
+        myNotes <- c(myNotes, paste("Number of rows originally in rSNV - ", rowsBefore))
+        snvValidity <- .rSNVheadercheck(rSNV)
     }
 
     # ==== READ DATA ===========================================================
     filesFinished <- 0
     numFilesInvalid <- 0
-    for (i in fMAF) {
 
-        if (!silent) {
-            .pBar(i, length(fMAF))
-        }
+    for (mafFile in fMAF) {
+        if (length(.fileValidity(mafFile)) + length(.mafHeaderCheck(mafFile)) + length(snvValidity) == 0) {
 
-        if (fileValidity(i) & mafHeaderCheck(i) & snvValidity) {
-            hugo_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                                na.strings = " ")[,1]
-            chr_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                               na.strings = " ")[,5]
-            start_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                                 na.strings = " ")[,6]
-            end_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                               na.strings = " ")[,7]
-            strand_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                                  na.strings = " ")[,8]
-            var_class_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                                     na.strings = " ")[,9]
-            var_type_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                                    na.strings = " ")[,10]
-            ref_allele_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                                      na.strings = " ")[,11]
-            tum_all1_ <- read.table(i, header = TRUE, fill = NA, stringsAsFactors = FALSE,
-                                    na.strings = " ")[,12]
-            tum_all2_ <- read.table(i, header = TRUE, fill = NA,  stringsAsFactors = FALSE,
-                                    na.strings = " ")[,13]
-            tum_samp_barcode_ <- read.table(i, header = TRUE, fill = NA,  stringsAsFactors = FALSE,
-                                            na.strings = " ")[,16]
-            tum_sam_uuid_ <- read.table(i, header = TRUE, fill = NA,  stringsAsFactors = FALSE,
-                                        na.strings = " ")[,33]
+            fileasDT <- read.table(mafFile, header = TRUE, fill = NA,  stringsAsFactors = FALSE,
+                                        na.strings = " ")[,c(1,5,6,7,8,9,10,11,12,13,16,33)]
 
             # check if variant_class contains valid values from known list
+
+            cat(sprintf("Processing file - \"%s\" - (%i/%i)", mafFile, filesFinished, length(fMAF)))
+
+            classValid <- TRUE
+            typeValid <- TRUE
+            chrValid <- TRUE
+
             classVknown <- c("Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation",
                         "Nonsense_Mutation", "Silent", "Splice_Site", "Translation_Start_Site", "Nonstop_Mutation",
                         "3'UTR", "3'Flank", "5'UTR", "5'Flank", "IGR1" , "Intron", "RNA", "Targeted_Region")
-            myVclasses <- unique(var_class_)
+            myVclasses <- unique(fileasDT[,6])
+
             if (! all(myVclasses %in% classVknown)) {
                 # drop file
                 classValid <- FALSE
-            } else {
-                classValid <- TRUE
+                myNotes <- c(myNotes,paste(mafFile, " - was skipped because of unrecognized string in variant class column."))
             }
 
             # check if vairant_type contains valid values from known list
             typeVknown <- c("SNP", "DNP", "TNP", "ONP", "INS", "DEL", "Consolidated2")
-            myVtypes <- unique(var_type_)
+            myVtypes <- unique(fileasDT[,7])
             if (! all(myVtypes %in% typeVknown)) {
                 # drop file
                 typeValid <- FALSE
-            } else {
-                typeValid <- TRUE
+                myNotes <- c(myNotes, paste(mafFile, " - was skipped because of unrecognized string in variant type column."))
             }
 
             # check chromosome value is valid
             typeChr <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10","chr11","chr12","chr13",
                          "chr14","chr15","chr16","chr17","chr18","chr19","chr20","chr21","chr22","chrX","chrY","chrM")
-            myVchr <- unique(chr_)
+            myVchr <- unique(fileasDT[,2])
             if (! all(myVchr %in% typeChr)) {
                 # drop file
                 chrValid <- FALSE
-            } else {
-                chrValid <- TRUE
+                myNotes <- c(myNotes, paste(mafFile, " - was skipped because of unrecognized string in variant chromosome column."))
             }
 
-            if (classValid & typeValid & chrValid == FALSE) {
+            if (! classValid && typeValid && chrValid) {
                 # there was an invalid value
-                # report error in file and log
-                # drop file
-                # go to next
-                myNotes <- c(paste(i, " - File was dropped due to invalid attributes in column chr/class/type"))
+                # drop file, go to next
                 numFilesInvalid <- numFilesInvalid + 1
             } else {
                 # all tests passed
                 # add data to rSNV
-                fileasDT <- cbind(hugo_ , chr_ , start_, end_, strand_, var_class_,
-                                  var_type_, ref_allele_, tum_all1_, tum_all2_,
-                                  tum_samp_barcode_, tum_sam_uuid_)
                 if (na.rm) {
-                    na.omit(fileasDT)
+                    fileasDT <- na.omit(fileasDT[,6])
                 }
-                write.table(fileasDT,  file=rSNV, sep="\t", append=TRUE, row.names =
+
+                write.table(fileasDT,  file=rSNVu, sep="\t", append=TRUE, row.names =
                                 FALSE, col.names = FALSE, quote = FALSE)
             }
             filesFinished <- filesFinished + 1
+        } else {
+            numFilesInvalid <- numFilesInvalid + 1
+            myNotes <- c(myNotes, .fileValidity(mafFile))
+            myNotes <- c(myNotes, .mafHeaderCheck(mafFile))
+            myNotes <- c(myNotes, snvValidity)
         }
 
 
@@ -288,36 +145,71 @@ importSNV.TCGA <- function(  fMAF,
             myTitle <- "importSNV.TCGA"
 
             # Compile function call record
-            myCall <- character()
-            myCall[1] <- "importSNV.TCGA("
-            myCall[2] <- sprintf("fMAF = \"%s\", ", paste(fMAF, collapse=" "))
-            myCall[3] <- sprintf("rSNV = \"%s\", ", rSNV)
-            myCall[3] <- sprintf("silent = %s, ", as.character(silent))
-            myCall[4] <- sprintf("writeLog = %s)", as.character(writeLog))
-            myCall[5] <- sprintf("na.rm = %s)", as.character(na.rm))
-            myCall <- paste0(myCall, collapse = "")
+            if (missing(rSNV)) {
+                myCall[1] <- "importSNV.TCGA("
+                myCall[2] <- sprintf("fMAF = \"%s\", ", fMAF)
+                myCall[3] <- sprintf("silent = %s, ", as.character(silent))
+                myCall[4] <- sprintf("writeLog = %s, ", as.character(writeLog))
+                myCall[5] <- sprintf("na.rm = %s)", as.character(na.rm))
+                myCall <- paste0(myCall, collapse = "")
+            } else {
+                myCall[1] <- "importSNV.TCGA("
+                myCall[2] <- sprintf("fMAF = \"%s\", ", fMAF)
+                myCall[3] <- sprintf("rSNV = \"%s\", ", rSNVu)
+                myCall[4] <- sprintf("silent = %s, ", as.character(silent))
+                myCall[5] <- sprintf("writeLog = %s, ", as.character(writeLog))
+                myCall[6] <- sprintf("na.rm = %s)", as.character(na.rm))
+                myCall <- paste0(myCall, collapse = "")
+            }
 
             # indicate input object name(s)
             #   (NA for this importSNV.TCGA())
 
             # Record progress information
-            myNotes <- c(myNotes, sprintf("Files processed - ", filesFinished))
-            myNotes <- c(myNotes, sprintf("Total number of files in input fMAF - ", length(fMAF)))
-            myNotes <- c(myNotes, sprintf("Files dropped due to incomptibility - "), numFilesInvalid)
-
-            # indicate output object name(s)
-            myOutput = c("rSNV")
+            myNotes <- c(myNotes, paste("Total number of files in input fMAF -", length(fMAF)))
+            myNotes <- c(myNotes, paste("Files successfully processed -", filesFinished))
+            myNotes <- c(myNotes, paste("Files dropped due to incomptibility -", numFilesInvalid))
 
             # send info to log file
             logEvent(eventTitle = myTitle,
                       eventCall = myCall,
-                      #input = character(),
-                      notes = myNotes,
-                      output = myOutput)
+                      notes = myNotes)
         }
-        return(rSNV)
     }
 }
 
+.mafHeaderCheck <- function(file) {
+    headValid <- character()
+    validMAFheader <- c("Hugo_Symbol", "Chromosome", "Start_Position", "End_Position",
+                        "Strand", "Variant_Classification", "Variant_Type", "Reference_Allele",
+                        "Tumor_Seq_Allele1", "Tumor_Seq_Allele2", "Tumor_Sample_Barcode",
+                        "Tumor_Sample_UUID")
+    if (! all(read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
+                     na.strings = " ", nrows=1)[,c(1,5,6,7,8,9,10,11,12,13,16,33)]
+        == validMAFheader)) {
+        headValid <- c(headValid, "Header of input MAF file did not match the requirements.")
+    }
+    return(headValid)
+}
+
+.rSNVheadercheck <- function(file) {
+    headValid <- character()
+    validSNVheader <- c("sym", "chr", "start", "end","strand", "class", "type", "aRef",
+                        "a1", "a2", "TCGA","UUID")
+    if (! all(read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
+                     na.strings = " ", nrows=1)[,c(1,2,3,4,5,6,7,8,9,10,11,12)]
+        == validSNVheader)) {
+        headValid <- c(headValid, "Header of input rSNV file did not match the requirements.")
+    }
+    return(headValid)
+}
+
+.fileValidity <- function(file) {
+    validExt <- character()
+    if (! (strsplit(file, "\\.")[[1]][-1] %in% c("maf", "txt", "tsv"))) {
+        validExt <- c(validExt, "Invalid input MAF file extension.")
+    }
+    return(validExt)
+}
 
 # [END]
