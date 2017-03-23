@@ -27,22 +27,22 @@
 #' isGeneSymbol(c("A1BG", "a1bg", "a1Bg", "A1bG))
 #' isGeneSymbol(c("123", "A1CF", "234", "a1bg"))
 
+library(microbenchmark)
+a <- c("a1bg", "A1BG")
+for (i in 1:1000){
+    a <- append(a, as.character(i))
+}
+
 isGeneSymbol <- function(input) {
+
     # Check the validity of the input.
     if (is.null(input) || length(input) == 0 || typeof(input) != "character" ||
         mode(input) != "character" || class(input) != "character") {
             stop("Invalid input!")
     }
 
-    output = c()
-
-    # Check each component of the input vector.
-    for (symbol in input){
-        # Check whether it is a valid gene symbol.
-        output <- append(output, !is.na(fmatch(toupper(symbol), geneNames$Gene_Symbol)))
-    }
-
-    return(output)
+    # Check the input vector against the geneNames data frame.
+    return(!is.na(fmatch(toupper(input), geneNames$Gene_Symbol)))
 }
 
 # [END]

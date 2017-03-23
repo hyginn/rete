@@ -14,7 +14,7 @@ library(fastmatch)
 # Open the connection/file.
 ## Change fURL to be the URL of the file containing HGNC gene symbols.
 ## The file is assumed to contain the symbol, status and locus group of the gene.
-fURL <- "http://tinyurl.com/kk3r9ck"
+fURL <- "http://www.genenames.org/cgi-bin/download?col=gd_app_sym&col=gd_status&col=gd_locus_type&col=gd_locus_group&status=Approved&status=Entry+Withdrawn&status_opt=2&where=&order_by=gd_app_sym_sort&format=text&limit=&hgnc_dbtag=on&submit=submit"
 HGNCFile <- url(fURL, open = "r")
 
 # Read the header and vertorize.
