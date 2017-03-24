@@ -49,13 +49,6 @@ test_that("importM.COSMIC saves to RDS file only when writeToFile is TRUE", {
                        writeToFile = FALSE))
 })
 
-test_that("importM.COSMIC only accepts outFNames of type .rds.", {
-    expect_error(
-        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
-                       outFName = "cosmicCNA.txt",
-                       writeToFile = TRUE))
-})
-
 test_that("importM.COSMIC returns error when outFNames is not string.", {
     expect_error(
         importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
@@ -95,10 +88,20 @@ test_that("importM.COSMIC correctly returns rCNA from Cosmic CNA data", {
     expected["RBMY1E", "TCGA-683665-611825"] <- -2
     expected["DAZ2", "TCGA-683665-611825"] <- 5
 
-    expect_equal(importM.COSMIC(fName,
-                                writeToFile = FALSE,
-                                silent = TRUE,
-                                writeLog = FALSE),
+    result <- importM.COSMIC(fName,
+                             writeToFile = FALSE,
+                             silent = TRUE,
+                             writeLog = FALSE)
+
+    meta <- list(type = attributes(result)$type,
+                 version = attributes(result)$version,
+                 UUID = attributes(result)$UUID)
+
+    for (name in names(meta)) {
+        attr(expected, name) <- meta[[name]]
+    }
+
+    expect_equal(result,
                  expected)
 })
 

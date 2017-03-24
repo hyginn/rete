@@ -67,6 +67,7 @@ importM.COSMIC <- function(fNameCNA,
                            silent = FALSE,
                            writeLog = TRUE) {
 
+
     # ==== PARAMETER TYPE VALIDATION ==========================================
 
     # General parameter checks
@@ -87,14 +88,15 @@ importM.COSMIC <- function(fNameCNA,
         }
 
         # Check that outFName is a string.
-        if (!is.character(outFName)) {
-            stop("outFName is not a valid string.")
+        cR <- character()
+        cR <- c(cR, .checkArgs(outFName,
+                               like = "a",
+                               checkSize = TRUE))
+
+        if(length(cR) > 0) {
+            stop(cR)
         }
 
-        # Check that outFName is of type .rds
-        if (substr(outFName, nchar(outFName) - 3, nchar(outFName)) != ".rds") {
-            stop("outFName is not of type .rds.")
-        }
     } else {
         if (!missing(outFName)) {
             stop("outFName provided, but writeToFile is FALSE.")
@@ -149,11 +151,21 @@ importM.COSMIC <- function(fNameCNA,
         stop("Input error: No CNAs found in file.")
     }
 
+    # Convert all TOTAL_CN to numeric
+    dataCNA$TOTAL_CN <- as.numeric(dataCNA$TOTAL_CN)
+
     # Subtract 2 from each CNA count
     if (!any(dataCNA$TOTAL_CN < 0)) {
         dataCNA$TOTAL_CN <-
-            as.numeric(dataCNA$TOTAL_CN[dataCNA$TOTAL_CN >= 0]) - 2
+            dataCNA$TOTAL_CN[dataCNA$TOTAL_CN >= 0] - 2
     }
+
+    # ==== SETUP METADATA ======================================================
+
+    meta <- list(type = "rCNA",
+                 version = "1.0",
+                 UUID = uuid::UUIDgenerate())
+
 
     # ==== CONSTRUCT rCNA OBJECT ==============================================
 
@@ -184,20 +196,19 @@ importM.COSMIC <- function(fNameCNA,
     # Populate rCNA matrix with CNA counts
     for (i in 1:nrow(dataCNA)) {
         rCNA[dataCNA$gene_name[i], dataCNA$barcode[i]] <-
-            as.numeric(dataCNA$TOTAL_CN[i])
+            dataCNA$TOTAL_CN[i]
 
         # Present a progress bar.
         if (!silent) {
             .pBar(i, nrow(dataCNA))
-            Sys.sleep(0.003)
         }
     }
 
-    if (!silent) {
-        cat("rCNA object successfully generated.\n")
-        cat(sprintf("  Number of unqie samples: %d\n", ncol(rCNA)))
-        cat(sprintf("  Number of unique genes: %d\n", nrow(rCNA)))
-        cat(sprintf("  Total number of CNAs: %d\n", sum(as.numeric(dataCNA$TOTAL_CN))))
+
+    # ==== ATTACH METADATA =====================================================
+
+    for (name in names(meta)) {
+        attr(rCNA, name) <- meta[[name]]
     }
 
 
@@ -211,11 +222,7 @@ importM.COSMIC <- function(fNameCNA,
         myCall <- character()
         myCall[1] <- "importM.COSMIC("
         myCall[2] <- sprintf("fnameCNA = \"%s\", ", fNameCNA)
-        if (writeToFile) {
-            myCall[3] <- sprintf("outFName = \"%s\", ", outFName)
-        } else {
-            myCall[3] <- ""
-        }
+        myCall[3] <- sprintf("outFName = \"%s\", ", outFName)
         myCall[4] <- sprintf("writeToFile = %s, ", as.character(writeToFile))
         myCall[5] <- sprintf("silent = %s, ", as.character(silent))
         myCall[6] <- sprintf("writeLog = %s)", as.character(writeLog))
@@ -224,8 +231,9 @@ importM.COSMIC <- function(fNameCNA,
         # Record progress information
         myNotes <- character()
         myNotes <- c(myNotes, sprintf("Read %s CNAs from file.", nrow(dataCNA)))
-        if (writeToFile)
+        if (writeToFile) {
             myNotes <- c(myNotes, sprintf("Wrote rCNA object to %s.", outFName))
+        }
 
         # indicate output object name(s)
         myOutput = c("rCNA")
