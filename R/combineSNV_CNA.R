@@ -23,15 +23,27 @@
 #'
 #' @export
 combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
+    # parameter validation
+    if (length(fname) == 0) {
+        stop("Input vector is empty!")
+    }
+    cR <- character()
+    cR <- c(cR, .checkArgs(fname,        like = c("FILE_E")))
+    cR <- c(cR, .checkArgs(fgX,          like = "FILE_W",   checkSize = TRUE))
+    cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
 
+    if(length(cR) > 0) {
+        stop(cR)
+    }
     #' pseudo code
     #'
     #' using hash package, e.g extract keys
-    #' hashTable <- hash()
+    hashTable <- hash()
     #' read from input files and store hash
-    #' for (i <- 1, i <= length(fname), i++) {
-    #'  fcurrent <- fname[i]
-    #'  if fcurrent is CNA {
+    for (i in 1:length(fname)) {
+        fcurrent <- fname[i]
+    #   if (fcurrent is CNA) {
     #'      CNAcurrent <- readRDS(fcurrent)
     #'      for each variation in CNAcurrent:
     #'          key = hash(<gene symbol>:CNA:<as.character(round(<copy number>))>)
@@ -39,7 +51,7 @@ combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
     #'              hashTable[[key]] <- hashTable[[key]] + 1
     #'          else:
     #'              hashTable[[key]] <- 1
-    #'  }
+    }
     #'  else if fcurrent is SNV {
     #'      SNVcurrent <- readRDS(fcurrent)
     #'      for each row in SNVcurrent:
@@ -48,7 +60,7 @@ combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
     #'              hashTable[[key]] <- hashTable[[key]] + 1
     #'          else:
     #'              hashTable[[key]] <- 1
-    #' }
+    }
     #'
     #'
     #'
@@ -64,7 +76,30 @@ combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
     #'
     #' saveRDS(dataframe, file=fgX)
     #'
-    #' ToDo add silent and log to read from data files and writing to output files
+    ## write log ###############
+
+    if(writeLog) {
+
+        logTitle <- "combineSNV_CNA"
+
+        # Compile function call record
+        logCall <- character()
+        logCall[1] <- "importFilterHypermutators("
+        logCall[2] <- sprintf("fNames = \"%s\", ", fNames)
+        logCall[3] <- sprintf("fgX = \"%s\", ", fgX)
+        logCall[4] <- sprintf("silent = %s, ", as.character(silent))
+        logCall[5] <- sprintf("writeLog = %s)", as.character(writeLog))
+        logCall <- paste0(logCall, collapse = "")
+
+        # Record progress information
+        logNotes <- character()
+        logNotes <- c(logNotes, sprintf("Combined %s samples in total.", length(hash_table)))
+
+        # # send info to log file
+        logEvent(eventTitle = logTitle,
+                 eventCall = logCall,
+                 notes = logNotes)
+    }
 }
 
 # [END]

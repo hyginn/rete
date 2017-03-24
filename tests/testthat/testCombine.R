@@ -13,12 +13,12 @@ if (file.exists(logName)) { file.remove(logName)}
 test_that("parameter errors are correctly handled", {
     # try no parameter input
     expect_error(combineSNV_CNA(writeLog=FALSE),
-                 '.checkArgs> "fName" mode error')
+                 'argument "fname" is missing errro')
 
     # try length-zero or NuLL input vector
     input_vector <- character()
     expect_error(combineSNV_CNA(input_vector, writeLog=FALSE),
-                 '.checkArgs> "fName" length error')
+                 'empty input vector error')
 
     # try wrong file format (e.g. text file instead of rds dataframe) in input vector
     input_vector[1] <- "CNA.txt"
@@ -78,8 +78,10 @@ test_that("a sane input gives an expected output", {
     expect_true(grepl("writeLog = TRUE",                           thisLog[3]))
     expect_true(grepl(")$",                                        thisLog[3]))
 
-    expect_true(grepl("event | end",                               thisLog[4]))
-    expect_true(grepl("^$",                                        thisLog[5]))
+    expect_true(grepl("event | note   | Combine 10 samples in total.",  thisLog[4]))
+    expect_true(grepl("event | end",                               thisLog[5]))
+    expect_true(grepl("^$",                                        thisLog[6]))
+
 
     # test if output file fgX is saved under the path
     expect_true(files.exists(testF))
