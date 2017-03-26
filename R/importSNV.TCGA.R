@@ -12,7 +12,7 @@
 #' by checking if every item in the class, type and chr columns are from a known and required list of values.
 #' These columns as a data table are then added to an rSNV file.
 #'
-#' @section Wrtie Log: log section writes file processing progress along with other errors
+#' @section Write Log: log section writes file processing progress along with other errors
 #' that may occur.
 #'
 #' @param fMAF vector of MAF file names.
@@ -60,14 +60,52 @@ importSNV.TCGA <- function(  fMAF,
         stop(cR)
     }
 
-    # ==== Validata rSNV  =======================================
+    # === Validate silent, writeLog, na.rm =================================
+    if (is.numeric(silent)) {
+        stop("silent cannot be numeric : should be logical TRUE/FALSE")
+    } else if (is.null(silent)) {
+        stop("silent cannot be NULL : should be logical TRUE/FALSE")
+    } else if (length(silent) > 1) {
+        stop("silent cannot have more than 1 values : should be logical TRUE/FALSE")
+    }
+
+    if (is.numeric(writeLog)) {
+        stop("writeLog cannot be numeric : should be logical TRUE/FALSE")
+    } else if (is.null(writeLog)) {
+        stop("writeLog cannot be NULL : should be logical TRUE/FALSE")
+    } else if (length(writeLog) > 1) {
+        stop("writeLog cannot have more than 1 values : should be logical TRUE/FALSE")
+    }
+
+    if (is.numeric(na.rm)) {
+        stop("na.rm cannot be numeric : should be logical TRUE/FALSE")
+    } else if (is.null(na.rm)) {
+        stop("na.rm cannot be NULL : should be logical TRUE/FALSE")
+    } else if (length(na.rm) > 1) {
+        stop("na.rm cannot have more than 1 values : should be logical TRUE/FALSE")
+    }
+    # ==== Validata fMAF and rSNV  =======================================
+    if (missing(fMAF)) {
+        stop("missing parameter fMAF with no default: list of MAF file names")
+    } else if (is.null(fMAF)) {
+        stop("parameter fMAF cannot take value \"NULL\": should be a vector/string of MAF file name(s)")
+    } else if (is.numeric(fMAF)) {
+        stop("parameter fMAF cannot be numeric: should be a vector/string of MAF file name(s)")
+    }
+
     if (missing(rSNV)) {
-        rSNVu <- "MAFtoSNV"
+        rSNVu <- .makeRandomString()
 
         write("sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID",
               rSNVu, append=FALSE)
 
         snvValidity <- character()
+    } else if (is.null(rSNV)) {
+        stop("parameter rSNV cannot take value \"NULL\": should be absent or existing rSNV file name")
+    } else if (is.numeric(rSNV)) {
+        stop("parameter rSNV cannot be numeric: should be absent or existing rSNV file name")
+    } else if (length(rSNV) > 1) {
+        stop("parameter rSNV cannot take more than one file as input")
     } else {
         rSNVu <- rSNV
         rSNVf <- read.table(rSNV, header = TRUE)[,1]
@@ -219,6 +257,12 @@ importSNV.TCGA <- function(  fMAF,
         validExt <- c(validExt, "Invalid input MAF file extension.")
     }
     return(validExt)
+}
+
+.makeRandomString <- function(prefix="MAFtoSNV", length=5) {
+    randomString <- paste(prefix, "_", paste(sample(c(0:9, letters, LETTERS), length, replace=TRUE),
+                                             sep="", collapse = ""), sep = "", collapse = "")
+    return(randomString)
 }
 
 # [END]
