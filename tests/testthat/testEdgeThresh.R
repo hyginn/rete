@@ -22,6 +22,7 @@ nLargest <- max(igraph::components(EGG)$csize)
 permutedGraph <- .permuteGraph(EGG)
 nVertices <- igraph::vcount(EGG)
 nEdges <- igraph::ecount(EGG)
+myDegrees <- igraph::degree(EGG)
 # ==== END SETUP AND PREPARE ===================================================
 
 
@@ -42,8 +43,7 @@ test_that("edgeThresh parameter errors are correctly handled", {
     expect_error(edgeThresh(myEGG, Lmax = 20, Q = -1))
 
 
-    # Try NULL and length-zero parameters: be sure none lead to an erroneous
-    #    one-time execution of any loop: NULL, logical, character
+    # Try NULL and length-zero parameters
     expect_error(edgeThresh(EGG = NULL,  Lmax = 20))
     expect_error(edgeThresh(EGG = myEGG, Lmax = 20, N = NULL))
     expect_error(edgeThresh(EGG = myEGG, Lmax = 20, Q = NULL))
@@ -63,7 +63,7 @@ test_that("edgeThresh parameter errors are correctly handled", {
 
 # ((Does .permuteGraph need parameter testing? or is it assumed that
 # they are valid since the calling function has already checked them?))
-test_that(".permuteGraph parameter errors are correctly handled") {
+test_that(".permuteGraph parameter errors are correctly handled", {
 
     expect_error(.permuteGraph())
     expect_error(.permuteGraph(graph = myEGG))
@@ -83,12 +83,12 @@ test_that(".permuteGraph parameter errors are correctly handled") {
 
     expect_error(.permuteGraph(graph = 10,    Q = 100))
 
-}
+})
 # ((Should valid inputs different from rete.EGGprototype be used?))
 # ((The testing below can get quite computationally expensive...))
 test_that("a sane input to .permuteGraph gives an expected output", {
 
-    ### Test for Q = 1, 10, 20, 50, 100, 200
+    ### Test for Q = 1, 10 as samples
     myPermutation <- .permuteGraph(myEGG, Q = 1)
 
     # Check for self-loops and multiple edges
@@ -97,42 +97,16 @@ test_that("a sane input to .permuteGraph gives an expected output", {
     # Check that the size of the largest connected component has not changed
     expect_equal(max(igraph::components(myPermutation)$csize), nLargest)
 
-    # Check that overall size has not changed
+    # Check that overall size, number of edges, node degrees has not changed
     expect_equal(igraph::vcount(myPermutation), nVertices)
+    expect_equal(igraph::ecount(myPermutation), nEdges)
+    expect_equal(igraph::degree(myPermutation), myDegrees)
 
+    # Check that weights are the same
+    expect_true(all((E(myEGG)$weight %in% E(myPermutation)$weight)))
 
     ###
     myPermutation <- .permuteGraph(myEGG, Q = 10)
-
-    expect_true(igraph::is.simple(myPermutation))
-    expect_equal(max(igraph::components(myPermutation)$csize), nLargest)
-    expect_equal(igraph::vcount(myPermutation), nVertices)
-
-
-    ###
-    myPermutation <- .permuteGraph(myEGG, Q = 20)
-
-    expect_true(igraph::is.simple(myPermutation))
-    expect_equal(max(igraph::components(myPermutation)$csize), nLargest)
-    expect_equal(igraph::vcount(myPermutation), nVertices)
-
-    ###
-    myPermutation <- .permuteGraph(myEGG, Q = 50)
-
-    expect_true(igraph::is.simple(myPermutation))
-    expect_equal(max(igraph::components(myPermutation)$csize), nLargest)
-    expect_equal(igraph::vcount(myPermutation), nVertices)
-
-    ###
-    myPermutation <- .permuteGraph(myEGG, Q = 100)
-
-    expect_true(igraph::is.simple(myPermutation))
-    expect_equal(max(igraph::components(myPermutation)$csize), nLargest)
-    expect_equal(igraph::vcount(myPermutation), nVertices)
-
-
-    ###
-    myPermutation <- .permuteGraph(myEGG, Q = 200)
 
     expect_true(igraph::is.simple(myPermutation))
     expect_equal(max(igraph::components(myPermutation)$csize), nLargest)
@@ -153,19 +127,13 @@ test_that("a sane input to edgeThresh gives an expected output", {
     # ((Is graph.attributes(gWithThresh)$delta the correct way of retrieving
     # delta values from graph attributes?)))
     ### Check edgeThresh with different valid input values
-    ### For each check, length deltaVector should be Lmax - 1, numeric, and
-    ### between 0 and 1.
-    ### Check that the input graph is not changed
-    ### Test with N & Q = 1, 5, 10, Lmax 10 & 20
-    ### ((Test with N = 10, Q = 1 -> is there a limit to how many permutations
-    # there can be if only |E| edge swaps take place?))
 
     gWithThresh <- edgeThresh(myEGG, Lmax = 20, N = 1, Q = 1)
     deltaVector <- igraph::graph.attributes(gWithThresh)$delta
 
     # Check that the input graph is not changed
     # ((what is the fastest way to check this?))
-    expect_true(isomorphic(gWithThresh, myEGG))
+    expect_true(igraph::get.edgelist(myEGG) %in% get.edgelist(gWithThresh))
 
     # Check delta length, mode and range
     expect_equal(length(deltaVector), 19)
@@ -173,43 +141,40 @@ test_that("a sane input to edgeThresh gives an expected output", {
     expect_true(all(deltaVector[] >  0))
     expect_true(all(deltaVector[] <= 1))
 
-    ###
-    gWithThresh <- edgeThresh(myEGG, Lmax = 20, N = 5, Q = 5)
-    deltaVector <- igraph::graph.attributes(gWithThresh)$delta
-
-    expect_true(isomorphic(gWithThresh, myEGG))
-
-    expect_equal(length(deltaVector), 19)
-    expect_equal(mode(deltaVector), "numeric")
-    expect_true(all(deltaVector[] >  0))
-    expect_true(all(deltaVector[] <= 1))
-
+    # Check that weights are the same
+    expect_true(all((E(myEGG)$weight %in% E(gWithThresh)$weight)))
 
     ###
-    gWithThresh <- edgeThresh(myEGG, Lmax = 20, N = 10, Q = 10)
+    gWithThresh <- edgeThresh(myEGG, Lmax = 10, N = 1, Q = 1)
     deltaVector <- igraph::graph.attributes(gWithThresh)$delta
 
-    expect_true(isomorphic(gWithThresh, myEGG))
+    # Check that the input graph is not changed
+    # ((what is the fastest way to check this?))
+    expect_true(igraph::get.edgelist(myEGG) %in% get.edgelist(gWithThresh))
 
-    expect_equal(length(deltaVector), 19)
-    expect_equal(mode(deltaVector), "numeric")
-    expect_true(all(deltaVector[] >  0))
-    expect_true(all(deltaVector[] <= 1))
-
-
-    ###
-    gWithThresh <- edgeThresh(myEGG, Lmax = 10, N = 10, Q = 1)
-    deltaVector <- igraph::graph.attributes(gWithThresh)$delta
-
-    expect_true(isomorphic(gWithThresh, myEGG))
-
+    # Check delta length, mode and range
     expect_equal(length(deltaVector), 9)
     expect_equal(mode(deltaVector), "numeric")
     expect_true(all(deltaVector[] >  0))
     expect_true(all(deltaVector[] <= 1))
 
+    # Check that weights are the same
+    expect_true(all((E(myEGG)$weight %in% E(gWithThresh)$weight)))
+
 })
 
+test_that("a corrupt input to .permuteGraph does not lead to corrupted output", {
+    # Expectations from .permuteGraph and edgeThresh functions are the same
+    # in terms of handling corrupt inputs
+    invalidEGG1 <- igraph::rewire(myEGG, keeping_degseq(loops = TRUE))
+    invalidEGG2 <- igraph::rewire(myEGG, each_edge(
+        loops = TRUE,
+        multiple = TRUE,
+        prob = 0.5
+    ))
+    expect_error(edgeThresh(EGG = invalidEGG1, Lmax = 20))
+    expect_error(edgeThresh(EGG = invalidEGG2, Lmax = 20))
+})
 
 test_that("a corrupt input to edgeThresh does not lead to corrupted output", {
     # Try: - spurious characters in numeric columns ("N/A", ...).
