@@ -25,7 +25,7 @@
 #' @export
 combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALSE, writeLog=TRUE) {
     # parameter validation
-    if (length(fnameSNV) == 0 && length(fnameSNV) == 0) {
+    if (length(fnameSNV) == 0 && length(fnameCNA) == 0) {
         stop("Input vectors are is empty!")
     }
     cR <- character()
