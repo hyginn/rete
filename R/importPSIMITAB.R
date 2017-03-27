@@ -1,12 +1,10 @@
-library(stringr)
-
 importNet.STRING <- function(fName,
                              cutoffType = "xN",
                              val,
                              experimentType = getOptions("rete.defaultPPI"),
                              taxID = "9606",
                              silent = FALSE,
-                             noLog = FALSE) {
+                             writeLog = FALSE) {
   
   # ==== PARAMETERS =========================================================
   cutoffTytpes <- c("xS", "xQ", "xN")
