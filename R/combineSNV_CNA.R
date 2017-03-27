@@ -12,7 +12,7 @@
 #'  gene.
 #'
 #'
-#' @param fNameCNA A vector of path of fully qualified file names of SNV rds files.
+#' @param fnameCNA A vector of path of fully qualified file names of SNV rds files.
 #' @param fnameSNV A vector of path of fully qualifed filenames of CNA rds files.
 #' @param fgX The fully qualified filename/path of a gX output file, by default is gX.rds.
 #' @param silent Boolean option for writing combining process information to console, FALSE by default.
@@ -20,7 +20,7 @@
 #'
 #'
 #' @examples
-#' \dontrun{combine(fNameSNV="SNV.rds", fnameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
+#' \dontrun{combine(fnameSNV="SNV.rds", fnameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
 #'
 #' @export
 combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALSE, writeLog=TRUE) {

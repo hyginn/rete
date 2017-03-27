@@ -18,23 +18,23 @@ test_that("parameter errors are correctly handled", {
     # try wrong file format (e.g. text file instead of rds dataframe) in SNV input vector
     input_vector = c("SNV.txt", "CNA.rds")
     expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=FALSE),
-                 '.checkArgs> "fNameSNV" mode error')
+                 '.checkArgs> "fnameSNV" mode error')
 
     # try wrong file format (e.g. text file instead of rds dataframe) in CNA input vector
     input_vector = c("SNV.rds", "CNA.txt")
     expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=FALSE),
-                 '.checkArgs> "fNameCNA" mode error')
+                 '.checkArgs> "fnameCNA" mode error')
 
     # sane input vector
     input_vector = c("SNV.rds", "CNA.rds")
     # try non existing input file for SNV input vector
     expect_error(combineSNV_CNA(c("nonExistent.rds"), input_vector[2], writeLog=FALSE),
-                 '.checkArgs> "fNameSNV" error: file "NonExistent.rds" does not exist')
+                 '.checkArgs> "fnameSNV" error: file "NonExistent.rds" does not exist')
 
     # try non existing input file for CNA input vector
     input_vector[] <- "nonExistent.rds"
     expect_error(combineSNV_CNA(input_vector[1], c("nonExistent.rds"), writeLog=FALSE),
-                 '.checkArgs> "fNameCNA" error: file "NonExistent.rds" does not exist')
+                 '.checkArgs> "fnameCNA" error: file "NonExistent.rds" does not exist')
 
     # try invalid output fgX file name (e.g. wrong extension)
     expect_error(combineSNV_CNA(input_vector[1], input_vector[2], "out.txt", writeLog=FALSE),
