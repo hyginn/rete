@@ -52,15 +52,11 @@
 #'     to measure order of the largest connected component, only the largest
 #'     connected component of the input is then used for the computation in case
 #'     the input has more than one component.
-#'     It is sufficient to find all articulation points and identify edges that
-#'     connect to them (incoming and outgoing), and during a swap, an edge
-#'     between two adjacent articulation points is not to be swapped with an
-#'     incoming edge to another articulation point. Therefore EGG's articulation
-#'     points are initially discovered by Tarjan's algorithm and
+#'
 #'     To ensure nodes maintain their components during permutation,
 #'     the size and distribution of the components of the graph is measured
-#'     initially, and and only
-#'     the largest connected component is permutated.
+#'     initially, and and only the largest connected component is permutated.
+#'
 #'     Then the strongly connected components within the largest component are
 #'     found.
 #'     After each swap, the new component of the sending endpoint (A in A → B)
@@ -71,22 +67,17 @@
 #'
 #' @section Incrementing δ and Lmax:
 #'     After creating the permutated graph, the following procedure is run on
-#'     the graph for each Lmax starting from 2 to the Lmax given as an argument.
-#'     On each such run, and a small value for δ is chosen (0.01) , and
-#'     the strongly connected component discovery is done. If the size of the
-#'     biggest component after such run is smaller than Lmax, increment δ by
-#'     (0.01), and redo component disovery. As soon as the largest component has
-#'     size Lmax (for current run), δ is recorded, and Lmax is incremented by 1.
-#'     Once current Lmax is the same as the given Lmax, run the procedure on the
-#'     next graph.
-#'     The above procedure is done on each of the N graphs, Lmax - 1 times.
-#'
-#'
-#'
+#'     the graph for each Lmax starting from Lmin to the Lmax arguments.
+#'     Initially, δ values are chosen by finding min(|E|, 100) quantiles of
+#'     edge weight distribution, and used to delete edges from the permutation.
+#'     As soon as the largest component has size (ord) between Lmin and Lmax,
+#'     If the current permutation's ord values is less than Lmin (without
+#'     finding δ), the delta is skipped, and interpolated later on.
 #'
 #' @param EGG An EGG object - the input heat-equilibrated gene score graph.
-#' @param Lmax	Maximum order for largest connected component in a random
+#' @param Lmax	Maximum order for the largest connected component in a random
 #' network. See details.
+#' @param Lmin Minimum order for the largest connected component. Defaults to 2.
 #' @param N	The number of permuted networks to produce for choosing a δ
 #' cutoff.
 #' @param Q	The number of edge-swapping permutations to produce one of the
@@ -105,6 +96,7 @@
 #' @export
 THRESH <- function(EGG,
                    Lmax = max(getOptions("rete.minSubnetOrder")),
+                   Lmin = 2,
                    N = 100,
                    Q = 100,
                    silent = FALSE,
@@ -115,7 +107,7 @@ THRESH <- function(EGG,
     if (missing(EGG)) {
         stop(paste0("Missing input EGG, with no defaults."))
     }
-    # General parameter checks
+    # General parameter checks (TODO)
     # cR <- character()
     # cR <-
     #     c(cR, .checkArgs(EGG,         like = getOptions("rete.EGGprototype")))
@@ -163,70 +155,66 @@ THRESH <- function(EGG,
     # which takes a copy of EGG, and returns a random
     # graph as an igraph object
 
-    # Create a list of deltas for each permuted graph
-    masterDeltaList <- vector("list", length = N)
+    # Create a data frame to hold each permuted graph's deltas
+    masterDataFrame <-
+        data.frame(matrix(
+            vector(),
+            nrow = N,
+            ncol = (Lmax - Lmin + 1),
+            dimnames = list(N = 1:N, ords = (sapply(Lmin:Lmax, function(x)
+                paste0("ORD", x))))
+        ))
 
+    # Number of steps/increments, and their values
+    nQuant <- min(igraph::ecount(EGG), 100)
+    edgeWeights <- igraph::E(EGG)$weight
+    stepDeltas <- stats::quantile(edgeWeights, seq(0, 1, (1 / nQuant)))
+
+    # Permute and calculate deltas
     for (i in 1:N) {
         # Permute graph with given Q
-        cat(sprintf("Creating permutation %d of %d\n", i, N))
+        cat(sprintf("\nCreating permutation %d of %d\n", i, N))
         currentGraph <- .permuteGraph(EGG, Q)
+
         cat(sprintf("\nCalculating deltas for graph %d of %d\n", i, N))
 
-        # Set vector to hold deltas, initial delta, maxComponentSize (ord)
-        graphDeltas <- vector("numeric", Lmax - 1)
-        currentDelta <-  0.0005
-        maxComponentSize <-  2
-        j <- 1
-        k <- 0
-        testGraph <- currentGraph
-
-        # For each value of maxComponentSize (ord):
-        while (maxComponentSize <= Lmax) {
-
+        for (j in 1:nQuant) {
+            .pBar(j, nQuant, 80)
             # Find edges that have weights lower than current delta and delete
-            edgesToRemove = igraph::E(testGraph)[E(testGraph)$weight < currentDelta]
-            testGraph = igraph::delete.edges(testGraph, edgesToRemove)
+            edgesToRemove = igraph::E(currentGraph)[igraph::E(currentGraph)$weight < stepDeltas[j]]
+            currentGraph = igraph::delete.edges(currentGraph, edgesToRemove)
 
-            # Find the size of the largest strongly connected component
-            currentLargest <-
-                max(igraph::components(testGraph, "strong")$csize)
+            # Find the size of the largest strongly connected component, ord
+            ord <- max(igraph::components(currentGraph, "strong")$csize)
 
             # If largest component has size less than Lmax, continue incrementing δ
-            # else, stop and record δ in the vector, and increase maxComponentSize
+            # else, stop and record δ in the vector, and increase ord
             # by 1
-            if (currentLargest >= maxComponentSize) {
-                currentDelta <- currentDelta + 0.0005
-            } else {
-                .pBar(k, Lmax - 1, 80)
-                # Reset and increase ord
-                graphDeltas[j] <- currentDelta
-                maxComponentSize = maxComponentSize + 1
-                currentDelta <- 0.0005
-                j <- j + 1
-                k <- k + 1
-                testGraph <- currentGraph
+            if (ord < Lmin) {
+                break
+            } else if (ord < Lmax) {
+                # Record ord at correct position
+                masterDataFrame[i, ord] <- stepDeltas[j]
             }
         }
-
-        # Append this graph's deltas to the master list of deltas
-        masterDeltaList[[i]] <- graphDeltas
     }
 
-    # By how much should δ be incremented at each step?)
+    # Interpolate NAs, row wise
+    deltaList = lapply(1:(Lmax - Lmin + 1), function(i)
+        .interpolateNA(unlist(masterDataFrame[i,]), 0, 1))
 
-    # After generating N vectors of size (Lmax - 1), find the median δ for each
-    # δ ord (maxComponentSize). i.e. Lmax - 1 median values.
-    deltaOrd <- vector("numeric", Lmax - 1)
-    print("Calculating median deltas")
-    for (i in 1:(Lmax - 1)) {
-        .pBar(i, Lmax - 1, Lmax - 1)
-        deltaOrd[i] <- median(sapply(masterDeltaList, FUN = "[", i))
-    }
+    # Get means, "column" wise
+    deltaOrds = sapply(1:(Lmax - Lmin + 1), function(i) {
+        # Get the i'th element from each sublist of deltaList
+        temp = sapply(deltaList, "[[", i)
+        # Return means
+        return(mean(temp))
+    })
 
     # Attach the vector as graph metadata to the original EGG and return.
-
-    igraph::graph_attr(EGG, "delta") <- deltaOrd
-    }
+    igraph::graph_attr(EGG, "delta") <- deltaOrds
+    return(EGG)
+}
 
 # TODO Write to log:
 # Log of passed arguments (function call record), processed information
@@ -246,15 +234,19 @@ THRESH <- function(EGG,
 #'
 #' @return Permuted largest component of EGG
 .permuteGraph <- function(EGG, Q) {
+
+    # Parameter check
+    cR <- character()
+    cR <- c(cR, .checkArgs(EGG, like = getOptions("rete.EGGprototype")))
+    cR <- c(cR, .checkArgs(Q ,like = numeric(1), checkSize = TRUE))
+    if (length(cR) > 0) {
+        stop(cR)
+    }
+
     # ==== Prepare largest component for permutation ===========================
 
-    # Get all components in the EGG
-    # allComponents <- igraph::components(EGG)
-
     # Select the subgraph containing the largest component
-    mainComponent <- decompose(EGG, "weak", 1)[[1]]
-
-    # tempTest <- mainComponent
+    mainComponent <- igraph::decompose(EGG, "weak", 1)[[1]]
 
     # Gather component information
     allEdges <-  igraph::get.edgelist(mainComponent)
@@ -278,11 +270,10 @@ THRESH <- function(EGG,
     # ((Should we use fastmatch instead? Or named lists?))
     biDirs <- new.env(size = nBi)
     for (i in 1:(nBi / 2)) {
-        assign(x = as.character(bidirectionalEdges[i]), value = bidirectionalEdges[i + (nBi / 2)], envir = biDirs)
-        assign(x = as.character(bidirectionalEdges[i + (nBi / 2)]), value = bidirectionalEdges[i], envir = biDirs)
-
-        # biDirs[[as.character(bidirectionalEdges[i])]] <- bidirectionalEdges[i + (nBi / 2)]
-        # biDirs[[as.character(bidirectionalEdges[i + (nBi / 2)])]] <- bidirectionalEdges[i]
+        assign(x = as.character(bidirectionalEdges[i]),
+               value = bidirectionalEdges[i + (nBi / 2)], envir = biDirs)
+        assign(x = as.character(bidirectionalEdges[i + (nBi / 2)]),
+               value = bidirectionalEdges[i], envir = biDirs)
     }
 
     # ==== Swap edges ==========================================================
@@ -290,9 +281,10 @@ THRESH <- function(EGG,
     # after each swap and cannot be tracked.
     tempEdgeVs =  unlist(lapply(1:nEdges, function(i)
         allEdges[i, ]))
-    tempEdgeIDs = igraph::get.edge.ids(mainComponent, vp = tempEdgeVs, directed = TRUE)
-    mainComponent <-
-        igraph::set.edge.attribute(mainComponent, name = "ID", value = tempEdgeIDs)
+    tempEdgeIDs = igraph::get.edge.ids(mainComponent, vp = tempEdgeVs,
+                                       directed = TRUE)
+    mainComponent <- igraph::set.edge.attribute(mainComponent, name = "ID",
+                                   value = tempEdgeIDs)
 
     # Swap Q * |E| times
     i <- 0
@@ -308,6 +300,17 @@ THRESH <- function(EGG,
         # Randomly select two edges
         pair <- allEdges[sample(1:nEdges, size = 2, replace = FALSE), ]
 
+        # Check if the swap will result in a multiple edge
+        # e.g. where for (A,B),(C,D), (A,D) OR (C,B) already exist
+        if (any(utils::tail(duplicated(rbind(
+            allEdges, c(pair[1, 1], pair[2, 2])
+        )))) ||
+        any(utils::tail(duplicated(rbind(
+            allEdges, c(pair[2, 1], pair[1, 2])
+        ))))) {
+            next
+        }
+
         # Check if the vertices are all distinct
         if (length(unique(as.vector(pair))) == 4) {
             # Check if any of these edges are bidirectional
@@ -321,8 +324,8 @@ THRESH <- function(EGG,
                 } else {
                     # Check if any of the vertices in the first pair has an edge
                     # to the second pair
-                    curVP1 = as.character(pair[1, ])
-                    curVP2 = as.character(pair[2, ])
+                    curVP1 = as.character(pair[1,])
+                    curVP2 = as.character(pair[2,])
                     N1 = unlist(lapply(curVP1, function(x)
                         igraph::neighbors(mainComponent, v = x, mode = "all")))
                     N2 = unlist(lapply(curVP2, function(x)
@@ -332,18 +335,19 @@ THRESH <- function(EGG,
                         # Skip iteration, as this would result in a multi-edge
                         next
                     }
-                    # ==== Bidirectional edge swap =================================================
+                    # ==== Bidirectional edge swap =============================
 
                     # Get edge weights from subgraph, prepare as attributes
                     # TODO: There may be a bug here...
                     eIDs = igraph::E(graph = mainComponent,
-                                     P = c(pair[1, ], pair[2, ], rev(pair[1, ]), rev(pair[2, ])))$ID
-                    eWeights = igraph::E(mainComponent)$weight[E(mainComponent)$ID %in% eIDs]
+                                     P = c(pair[1,], pair[2,], rev(pair[1,]),
+                                           rev(pair[2,])))$ID
+                    eWeights = igraph::E(mainComponent)$weight[igraph::E(mainComponent)$ID %in% eIDs]
                     attribs = list(weight = eWeights, ID = eIDs)
 
                     # Sample a vertex from incident vertices, pick remainders
-                    v1 = sapply(lapply(list(pair[1, ], pair[2, ]), sample), function(x)
-                        x[1])
+                    v1 = sapply(lapply(list(pair[1, ], pair[2, ]), sample),
+                                function(x) x[1])
                     vVector = as.vector(pair)
                     v2 = vVector[!(vVector %in% v1)]
                     revV1 = rev(v1)
@@ -355,28 +359,29 @@ THRESH <- function(EGG,
                     del3 = paste0(rev(pair[1, ]), collapse = "|")
                     del4 = paste0(rev(pair[2, ]), collapse = "|")
                     mainComponent <-
-                        igraph::delete.edges(mainComponent, c(del1, del2, del3, del4))
+                        igraph::delete.edges(mainComponent, c(del1, del2, del3,
+                                                              del4))
                     mainComponent <-
                         igraph::add.edges(mainComponent,
                                           c(v1, v2, revV1, revV2),
                                           attr = attribs)
 
                     # Update biDirs
-                    biDirs[[as.character(v1[1])]] <- v1[2]
-                    biDirs[[as.character(v1[2])]] <- v1[1]
+                    assign(x = as.character(v1[1]), value = v1[2], biDirs)
+                    assign(x = as.character(v1[2]), value = v1[1], biDirs)
 
-                    biDirs[[as.character(v2[1])]] <- v2[2]
-                    biDirs[[as.character(v2[2])]] <- v2[1]
+                    assign(x = as.character(v2[1]), value = v2[2], biDirs)
+                    assign(x = as.character(v2[2]), value = v2[1], biDirs)
 
                     # Update i
                     i <- i + 1
                 }
             } else {
-                # ==== Unidirectional edge swap ================================================
+                # ==== Unidirectional edge swap ================================
 
                 # Get edge weights from subgraph, prepare as attributes
                 eIDs = igraph::E(mainComponent, c(pair[1, ], pair[2, ]))$ID
-                eWeights = igraph::E(mainComponent)$weight[E(mainComponent)$ID %in% eIDs]
+                eWeights = igraph::E(mainComponent)$weight[igraph::E(mainComponent)$ID %in% eIDs]
 
                 attribs = list(weight = eWeights, ID = eIDs)
 
@@ -387,10 +392,10 @@ THRESH <- function(EGG,
                 # Form new edges, delete old edges
                 del1 = paste0(pair[1, ], collapse = "|")
                 del2 = paste0(pair[2, ], collapse = "|")
-                mainComponent <-
-                    igraph::delete.edges(mainComponent, c(del1, del2))
-                mainComponent <-
-                    igraph::add.edges(mainComponent, c(v1, v2), attr = attribs)
+                mainComponent <- igraph::delete.edges(mainComponent,
+                                                      c(del1, del2))
+                mainComponent <- igraph::add.edges(mainComponent,
+                                                   c(v1, v2), attr = attribs)
 
                 # Update i
                 i <- i + 1
@@ -404,5 +409,53 @@ THRESH <- function(EGG,
     return(mainComponent)
 
 }
+
+#' interpolates NA values in a vector by interpolateing from two
+#' bracketing non-missing values. If is.na(v[1]), the left-bracket is
+#' vMin, if is.na(v[length(v)]), vMax is the right bracket.
+#' @param v a numeric vector
+#' @param vMin numeric
+#' @param vMax numeric
+#'
+#' @return a numeric vector without NAs
+.interpolateNA <- function(v, vMin, vMax) {
+
+    if (length(v) == 0) { return(numeric()) }
+
+    # ensure left and rightmost value of v is not NA
+    iMin <- 1                                 # index of first element to return
+    iMax <- length(v)                         # index of last element to return
+    if (is.na(v[1])) {
+        v <- c(vMin, v)
+        iMin <- iMin + 1
+        iMax <- iMax + 1
+    }
+    if (is.na(v[length(v)])) {
+        v <- c(v, vMax)
+    }
+
+    # analyze the vector with rle()
+    rleV <- rle(is.na(v))                       # run length encoding of is.na()
+    rleV$last <- cumsum(rleV$lengths)           # last index of every run
+    rleV$first <- rleV$last - rleV$lengths + 1  # first index of every run
+
+    naRun <- which(rleV$values)                 # indices of NA-value runs
+    for (i in naRun) {
+        iLowerBracket <- rleV$first[i] - 1
+        iUpperBracket <- rleV$last[i] + 1
+        newV <- seq(v[iLowerBracket],           # value in lower-bracket element
+                    v[iUpperBracket],           # value in upper-bracket element
+                    length.out = iUpperBracket - iLowerBracket + 1)
+        v[iLowerBracket:iUpperBracket] <- newV  # replace values with
+                                                # interpolated sequence
+    }
+
+    return(v[iMin:iMax])
+}
+
+# TEST
+# EGG <- igraph::random.graph.game(1000, p.or.m = 3000, type = "gnm", directed = TRUE)
+# E(EGG)$weight <- runif(n = igraph::ecount(EGG), min = 0, max = 1)
+# (DONE <- THRESH(EGG = EGG, Lmax = 20, N = 1, Q = 1))
 
 # [END]
