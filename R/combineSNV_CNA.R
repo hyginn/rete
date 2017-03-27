@@ -57,7 +57,7 @@ combineSNV_CNA <- function(fNameSNV=c(), fNameCNA=c(), fgX="gX.rds", silent=FALS
     for (i in 1:length(fSNV)) {
         SNVcurrent <- readRDS(fNameSNV[i])
         # get HGNC gene symbol row by row
-        for (gene in row.Names(SNVcurrent)) {
+        for (gene in rownames(SNVcurrent)) {
             position <- SNVcurrent[gene, "start"]
             vclass <- SNVcurrent[gene, "class"]
             # create key using <gene symbol>:SNV:<position>:<variant class>
@@ -74,9 +74,9 @@ combineSNV_CNA <- function(fNameSNV=c(), fNameCNA=c(), fgX="gX.rds", silent=FALS
     for (i in 1:length(fNameCNA)) {
         CNAcurrent <- readRDS(fNameCNA[i])
         # get HGNC gene symbols row by row
-        for (gene in row.Names(CNAcurrent)) {
+        for (gene in rownames(CNAcurrent)) {
             # get CNA of one gene for each sample
-            for (sample in Names(CNAcurrent)) {
+            for (sample in colames(CNAcurrent)) {
                 tmpCNA <- CNAcurrent[gene, sample]
                 # create key using <gene symbol:CNA:<as.character(round(<copy number>))>
                 key <- sprintf("%s:CNA:%d)", gene, as.character(round(tmpCNA)))
@@ -95,8 +95,8 @@ combineSNV_CNA <- function(fNameSNV=c(), fNameCNA=c(), fgX="gX.rds", silent=FALS
     keys <- sort(keys(hashTable))
     # initialize the output dataframe
     out <- as.data.frame(matrix(ncol=4, nrow=length(keys)))
-    colNames(r) <- c("sym", "type", "pos", "count")
-    rowNames(r) <- keys
+    colnames(r) <- c("sym", "type", "pos", "count")
+    rownames(r) <- keys
 
     for (k in keys) {
         # strplit each key to sym, type, pos and class and add to dataframe
