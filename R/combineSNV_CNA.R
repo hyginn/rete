@@ -12,30 +12,38 @@
 #'  gene.
 #'
 #'
-#' @param fnameCNA A vector of path of fully qualified file names of SNV rds files.
-#' @param fnameSNV A vector of path of fully qualifed filenames of CNA rds files.
+#' @param fNameCNA A vector of path of fully qualified file Names of SNV rds files.
+#' @param fNameSNV A vector of path of fully qualifed filenames of CNA rds files.
 #' @param fgX The fully qualified filename/path of a gX output file, by default is gX.rds.
 #' @param silent Boolean option for writing combining process information to console, FALSE by default.
 #' @param writeLog Boolean option for log results, TRUE by default.
 #'
 #'
 #' @examples
-#' \dontrun{combine(fnameSNV="SNV.rds", fnameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
+#' \dontrun{combine(fNameSNV="SNV.rds", fNameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
 #'
 #' @export
-combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALSE, writeLog=TRUE) {
+combineSNV_CNA <- function(fNameSNV=c(), fNameCNA=c(), fgX="gX.rds", silent=FALSE, writeLog=TRUE) {
     # parameter validation
-    if (length(fnameSNV) == 0 && length(fnameCNA) == 0) {
-        stop("Input vectors are is empty!")
+    if (length(fNameSNV) == 0 && length(fNameCNA) == 0) {
+        stop("Input vectors are empty!")
     }
     cR <- character()
-    for (fSNV in fnameSNV) {
+    for (fSNV in fNameSNV) {
+        if (grepl("\\.rds$", fSNV) == FALSE) {
+            stop("SNV file has to be .rds format.")
+        }
         cR <- c(cR, .checkArgs(fSNV,        like = c("FILE_E")), chechSize = TRUE)
     }
-    for (fCNA in fnameCNA) {
+    for (fCNA in fNameCNA) {
+        if (grepl("\\.rds$", fCNA) == FALSE) {
+            stop("CNA file has to be .rds format.")
+        }
         cR <- c(cR, .checkArgs(fCNA,        like = c("FILE_E")))
     }
-    cR <- c(cR, .checkArgs(fgX,          like = "FILE_W",   checkSize = TRUE))
+    if (grepl("\\.rds$", fgX) == FALSE) {
+        stop("Output file has to be .rds extension!")
+    }
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
 
@@ -46,10 +54,10 @@ combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALS
     # using hash package, e.g. extract keys later on
     hashTable <- hash()
     # read from input vector of SNV files
-    for (i in 1:length(fnameSNV)) {
-        SNVcurrent <- readRDS(fcurrent)
+    for (i in 1:length(fSNV)) {
+        SNVcurrent <- readRDS(fNameSNV[i])
         # get HGNC gene symbol row by row
-        for (gene in row.names(SNVcurrent)) {
+        for (gene in row.Names(SNVcurrent)) {
             position <- SNVcurrent[gene, "start"]
             vclass <- SNVcurrent[gene, "class"]
             # create key using <gene symbol>:SNV:<position>:<variant class>
@@ -63,13 +71,12 @@ combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALS
         }
     }
     # read from input vector of CNA files
-    for (i in 1:length(fnameCNA)) {
-        fcurrent <- fname[i]
-        CNAcurrent <- readRDS(fcurrent)
+    for (i in 1:length(fNameCNA)) {
+        CNAcurrent <- readRDS(fNameCNA[i])
         # get HGNC gene symbols row by row
-        for (gene in row.names(CNAcurrent)) {
+        for (gene in row.Names(CNAcurrent)) {
             # get CNA of one gene for each sample
-            for (sample in names(CNAcurrent)) {
+            for (sample in Names(CNAcurrent)) {
                 tmpCNA <- CNAcurrent[gene, sample]
                 # create key using <gene symbol:CNA:<as.character(round(<copy number>))>
                 key <- sprintf("%s:CNA:%d)", gene, as.character(round(tmpCNA)))
@@ -88,8 +95,8 @@ combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALS
     keys <- sort(keys(hashTable))
     # initialize the output dataframe
     out <- as.data.frame(matrix(ncol=4, nrow=length(keys)))
-    colnames(r) <- c("sym", "type", "pos", "count")
-    rownames(r) <- keys
+    colNames(r) <- c("sym", "type", "pos", "count")
+    rowNames(r) <- keys
 
     for (k in keys) {
         # strplit each key to sym, type, pos and class and add to dataframe
@@ -129,8 +136,8 @@ combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALS
         # Compile function call record
         logCall <- character()
         logCall[1] <- "combineSNV_CNA"
-        logCall[2] <- sprintf("fnameSNV = \"%s\", ", fnameSNV)
-        logCall[2] <- sprintf("fnameCNA = \"%s\", ", fnameCNA)
+        logCall[2] <- sprintf("fNameSNV = \"%s\", ", fNameSNV)
+        logCall[2] <- sprintf("fNameCNA = \"%s\", ", fNameCNA)
         logCall[3] <- sprintf("fgX = \"%s\", ", fgX)
         logCall[4] <- sprintf("silent = %s, ", as.character(silent))
         logCall[5] <- sprintf("writeLog = %s)", as.character(writeLog))

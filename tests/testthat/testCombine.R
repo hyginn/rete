@@ -13,36 +13,35 @@ if (file.exists(logName)) { file.remove(logName)}
 test_that("parameter errors are correctly handled", {
     # try no parameter input
     expect_error(combineSNV_CNA(writeLog=FALSE),
-                 'empty input vector error')
+                 'Input vectors are empty')
 
     # try wrong file format (e.g. text file instead of rds dataframe) in SNV input vector
     input_vector = c("SNV.txt", "CNA.rds")
     expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=FALSE),
-                 '.checkArgs> "fnameSNV" mode error')
+                 'SNV file has to be .rds format.')
 
     # try wrong file format (e.g. text file instead of rds dataframe) in CNA input vector
     input_vector = c("SNV.rds", "CNA.txt")
     expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=FALSE),
-                 '.checkArgs> "fnameCNA" mode error')
+                 'CNA file has to be .rds format.')
 
     # sane input vector
     input_vector = c("SNV.rds", "CNA.rds")
     # try non existing input file for SNV input vector
     expect_error(combineSNV_CNA(c("nonExistent.rds"), input_vector[2], writeLog=FALSE),
-                 '.checkArgs> "fnameSNV" error: file "NonExistent.rds" does not exist')
+                 '.checkArgs> "fSNV" error: file "nonExistent.rds" does not exist')
 
     # try non existing input file for CNA input vector
-    input_vector[] <- "nonExistent.rds"
     expect_error(combineSNV_CNA(input_vector[1], c("nonExistent.rds"), writeLog=FALSE),
-                 '.checkArgs> "fnameCNA" error: file "NonExistent.rds" does not exist')
+                 '.checkArgs> "fCNA" error: file "nonExistent.rds" does not exist')
 
     # try invalid output fgX file name (e.g. wrong extension)
     expect_error(combineSNV_CNA(input_vector[1], input_vector[2], "out.txt", writeLog=FALSE),
-                 'invalid output file extension')
+                 'Output file has to be .rds extension!')
 
     # try null output fgX file name
     expect_error(combineSNV_CNA(input_vector[1], input_vector[2], NULL, writeLog=FALSE),
-                 '.checkArgs> "fgx" mode error')
+                 'argument is of length zero')
 
     # try null silent option
     expect_error(combineSNV_CNA(input_vector[1], input_vector[2], silent=NULL, writeLog=FALSE),
@@ -74,8 +73,8 @@ test_that("a sane input gives an expected output", {
 
     # call
     expect_true(grepl("^event \\| call   \\| combineSNV_CNA\\(",   thisLog[3]))
-    expect_true(grepl(paste0("fnameSNV = \"", input_vector[1], "\""),    thisLog[3]))
-    expect_true(grepl(paste0("fnameCNA = \"", input_vector[2], "\""),    thisLog[3]))
+    expect_true(grepl(paste0("fNameSNV = \"", input_vector[1], "\""),    thisLog[3]))
+    expect_true(grepl(paste0("fNameCNA = \"", input_vector[2], "\""),    thisLog[3]))
     expect_true(grepl("fgX = gX.rds",                              thisLog[3]))
     expect_true(grepl("silent = TRUE",                             thisLog[3]))
     expect_true(grepl("writeLog = TRUE",                           thisLog[3]))
