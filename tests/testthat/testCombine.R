@@ -10,23 +10,38 @@ logName <- unlist(getOption("rete.logfile"))
 if (file.exists(logName)) { file.remove(logName)}
 # ==== END SETUP AND PREPARE ===================================================
 
+# setting up small input rds data
+# building SNV.rds with 2 genes
+testSNV = tempfile(fileext="rds")
+tmpSNV <- as.data.frame(matrix(nrow=2, ncol=12))
+rownames(tmpSNV) <- c("PTCHD2", "NR113")
+colnames(tmpSNV) <- c("sym", "chr",	"start", "end",	"strand", "class", "type", "aRef", "a1", "a2", "TCAG", "UUID")
+# only entering data useful for combine function. e.g. "sym". "start", "class"
+tmpSNV["PTCHD2", "sym"] <- "PTCHD2"
+tmpSNV["PTCHD2", "start"] <- 11534434
+tmpSNV["PTCHD2", "class"] <- "Missense_Mutation"
+tmpSNV["NR113", "sym"] <- "NR113"
+tmpSNV["NR113", "start"] <- 161230879
+tmpSNV["NR113", "class"] <- "Missense_Mutation"
+saveRDS(tmpSNV, file=testSNV)
+
+#building CNA.rds with 2 genes with 2 tumor type
+testCNA = tempfile(fileext="rds")
+tmpCNA <- as.data.frame(matrix(nrow=2, ncol=2))
+rownames(tmpCNA) <- c("ACAP3", "ACTRT2")
+colnames(tmpCNA) <- c("TCGA-OR-A5J1-01A-11D-A29H-01", "TCGA-OR-A5J2-01A-11D-A29H-01")
+tmpCNA["ACAP3", "TCGA-OR-A5J1-01A-11D-A29H-01"] <- 0.030
+tmpCNA["ACAP3", "TCGA-OR-A5J2-01A-11D-A29H-01"] <- -0.070
+tmpCNA["ACTRT2", "TCGA-OR-A5J1-01A-11D-A29H-01"] <- 0.030
+tmpCNA["ACTRT2", "TCGA-OR-A5J2-01A-11D-A29H-01"] <- 0.070
+saveRDS(tmpCNA, file=testCNA)
+
 test_that("parameter errors are correctly handled", {
     # try no parameter input
     expect_error(combineSNV_CNA(writeLog=FALSE),
                  'Input vectors are empty')
-
-    # try wrong file format (e.g. text file instead of rds dataframe) in SNV input vector
-    input_vector = c("SNV.txt", "CNA.rds")
-    expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=FALSE),
-                 'SNV file has to be .rds format.')
-
-    # try wrong file format (e.g. text file instead of rds dataframe) in CNA input vector
-    input_vector = c("SNV.rds", "CNA.txt")
-    expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=FALSE),
-                 'CNA file has to be .rds format.')
-
     # sane input vector
-    input_vector = c("SNV.rds", "CNA.rds")
+    input_vector = c(testSNV, testCNA)
     # try non existing input file for SNV input vector
     expect_error(combineSNV_CNA(c("nonExistent.rds"), input_vector[2], writeLog=FALSE),
                  '.checkArgs> "fSNV" error: file "nonExistent.rds" does not exist')
@@ -58,24 +73,23 @@ test_that("parameter errors are correctly handled", {
 
 test_that("a sane input gives an expected output", {
     # provide one valid SNV and one valid CNA file with small number of genes as input
-    # TODO where can I find the sample data for testing? inst/extdata folder has maf & txt formats
-    input_vector = c("CNA.rds", "SNV.rds")
+
+    input_vector = c(testSNV, testCNA)
     testF <- tempfile(fileext = ".rds")
 
     # test if a log file is saved if log is True
-    capture.output(combineSNV_CNA(input_vector[1], input_vector[2], fgX=testF, silent=TRUE, writeLog=TRUE), file=testF)
-    expect_true(files.exists(logName))
-
+    combineSNV_CNA(input_vector[1], input_vector[2], fgX=testF, silent=TRUE, writeLog=TRUE)
+    expect_true(file.exists(logName))
     # correct log file
     thisLog <- readLines(logName)
     expect_true(grepl("event \\| title  \\| combineSNV_CNA",       thisLog[1]))
     expect_true(grepl("event \\| time",                            thisLog[2]))
 
-    # call
+        # call
     expect_true(grepl("^event \\| call   \\| combineSNV_CNA\\(",   thisLog[3]))
     expect_true(grepl(paste0("fNameSNV = \"", input_vector[1], "\""),    thisLog[3]))
     expect_true(grepl(paste0("fNameCNA = \"", input_vector[2], "\""),    thisLog[3]))
-    expect_true(grepl("fgX = gX.rds",                              thisLog[3]))
+    expect_true(grepl(sprintf("fgX = \"%s\"", testF),                  thisLog[3]))
     expect_true(grepl("silent = TRUE",                             thisLog[3]))
     expect_true(grepl("writeLog = TRUE",                           thisLog[3]))
     expect_true(grepl(")$",                                        thisLog[3]))
@@ -86,15 +100,17 @@ test_that("a sane input gives an expected output", {
 
 
     # test if output file fgX is saved under the path
-    expect_true(files.exists(testF))
+    expect_true(file.exists(testF))
     # remove tempfile
     expect_true(file.remove(testF))
-
 })
 
 
 # ==== BEGIN TEARDOWN AND RESTORE ==============================================
 logName <- unlist(getOption("rete.logfile"))
+# remove testCNA and testSNV
+file.remove(testCNA)
+file.remove(testSNV)
 if (file.exists(logName)) { file.remove(logName)}
 options("rete.logfile" = OLOG)
 # ==== END  TEARDOWN AND RESTORE ===============================================

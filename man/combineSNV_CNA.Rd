@@ -4,19 +4,19 @@
 \alias{combineSNV_CNA}
 \title{Combine mutation data from CNA and SNV}
 \usage{
-combineSNV_CNA(fnameSNV = c(), fnameCNA = c(), fgX = "gX.rds",
-  silent = FALSE, writeLog = TRUE)
+combineSNV_CNA(fNameSNV, fNameCNA, fgX = "gX.rds", silent = FALSE,
+  writeLog = TRUE)
 }
 \arguments{
-\item{fnameSNV}{A vector of path of fully qualifed filenames of CNA rds files.}
+\item{fNameSNV}{A vector of path of fully qualifed filenames of CNA rds files.}
+
+\item{fNameCNA}{A vector of path of fully qualified file Names of SNV rds files.}
 
 \item{fgX}{The fully qualified filename/path of a gX output file, by default is gX.rds.}
 
 \item{silent}{Boolean option for writing combining process information to console, FALSE by default.}
 
 \item{writeLog}{Boolean option for log results, TRUE by default.}
-
-\item{fNameCNA}{A vector of path of fully qualified file names of SNV rds files.}
 }
 \description{
 \code{combineSNV_CNA} loads the vector of preprocessed dataset from filtered CNA or SNV files,
@@ -33,6 +33,6 @@ Details.
 }
 
 \examples{
-\dontrun{combine(fNameSNV="SNV.rds", fnameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
+\dontrun{combine(fNameSNV="SNV.rds", fNameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
 
 }
