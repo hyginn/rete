@@ -33,7 +33,7 @@ combineSNV_CNA <- function(fNameSNV=c(), fNameCNA=c(), fgX="gX.rds", silent=FALS
         if (grepl("\\.rds$", fSNV) == FALSE) {
             stop("SNV file has to be .rds format.")
         }
-        cR <- c(cR, .checkArgs(fSNV,        like = c("FILE_E")), chechSize = TRUE)
+        cR <- c(cR, .checkArgs(fSNV,        like = c("FILE_E")), checkSize = TRUE)
     }
     for (fCNA in fNameCNA) {
         if (grepl("\\.rds$", fCNA) == FALSE) {
