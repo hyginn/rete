@@ -135,6 +135,7 @@ importM.COSMIC <- function(fNameCNA,
 
     # Make sure ID_SAMPLE, ID_TUMOUR, and TOTAL_CN are not "NA" after reading
     # as integer. This means there was a non-integer in these columns.
+    # ToDo: Handle the case that there is a ligitimate missing value ...
     if (any(is.na(dataCNA$ID_SAMPLE)) ||
         any(is.na(dataCNA$ID_TUMOUR)) ||
         any(is.na(dataCNA$TOTAL_CN))) {
