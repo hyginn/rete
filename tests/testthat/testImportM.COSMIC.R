@@ -12,55 +12,65 @@ testPath <- tempdir()
 testFName <- paste("importM_COSMIC_", Sys.Date(), ".rds", sep = "")
 # ==== END SETUP AND PREPARE ===================================================
 
-
 test_that("importM.COSMIC returns error when file not found", {
 
+    # Test to make sure an error is raised when the file specified at fNameCNA
+    # is not found.
     expect_error(
-        importM.COSMIC(fName = "testCosmicCNA2.tsv"))
+        importM.COSMIC(fNameCNA = "testCosmicCNA2.tsv"))
 })
 
 test_that("importM.COSMIC returns error when fNameCNA is not a valid string", {
+
+    # Test to make sure an error is raised when the file name specified at
+    # fNameCNA is not a valid string.
     expect_error(
         importM.COSMIC(fNameCNA = 0))
 })
 
 test_that("importM.COSMIC returns error when silent is not a valid logical", {
+
+    # Test to make sure an error is raised when silent is not a valid logical.
     expect_error(
         importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
                        silent = 0))
 })
 
 test_that("importM.COSMIC returns error when writeLog is not a valid logical", {
+
+    # Test to make sure an error is raised when writeLog is not a valid logical.
     expect_error(
         importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
                        writeLog = 0))
 })
 
-test_that("importM.COSMIC returns error when writeToFile is not a valid logical", {
+test_that("importM.COSMIC returns error when outFName is not string.", {
+
+    # Test to make sure an error is raised when outFName is not a valid string.
     expect_error(
         importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
-                       writeToFile = 0))
+                       outFName = 0))
 })
 
-test_that("importM.COSMIC saves to RDS file only when writeToFile is TRUE", {
-    expect_error(
-        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
-                       outFName = "cosmicCNA.rds",
-                       writeToFile = FALSE))
+# Test to make sure that importM.COSMIC outputs to file specified at outFName.
+test_that("importM.COSMIC outputs to file specified at outFName.", {
+    fNameCNA <- "testCosmicCNA.tsv"
+    outName <- paste(testPath, testFName, sep = "")
+
+    importM.COSMIC(fNameCNA,
+                   outName,
+                   silent = TRUE,
+                   writeLog = FALSE)
+
+    expect_equal(file.exists(outName),
+                 TRUE)
 })
 
-test_that("importM.COSMIC returns error when outFNames is not string.", {
-    expect_error(
-        importM.COSMIC(fNameCNA = "testCosmicCNA.tsv",
-                       outFName = 0,
-                       writeToFile = TRUE))
-})
-
-test_that("importM.COSMIC correctly returns rCNA from Cosmic CNA data", {
-    fName <- "testCosmicCNA.tsv"
+# Test to make sure that the data frame outputted to file is valid.
+test_that("importM.COSMIC outputs correct rCNA data frame to file.", {
 
     expectedMatrix <- matrix(nrow = 10,
-                       ncol = 1)
+                             ncol = 1)
 
     expected <- data.frame(expectedMatrix)
 
@@ -88,10 +98,15 @@ test_that("importM.COSMIC correctly returns rCNA from Cosmic CNA data", {
     expected["RBMY1E", "TCGA-683665-611825"] <- -2
     expected["DAZ2", "TCGA-683665-611825"] <- 5
 
-    result <- importM.COSMIC(fName,
-                             writeToFile = FALSE,
-                             silent = TRUE,
-                             writeLog = FALSE)
+    fNameCNA <- "testCosmicCNA.tsv"
+    outName <- paste(testPath, testFName, sep = "")
+
+    importM.COSMIC(fNameCNA,
+                   outName,
+                   silent = TRUE,
+                   writeLog = FALSE)
+
+    result <- readRDS(outName)
 
     meta <- list(type = attributes(result)$type,
                  version = attributes(result)$version,
@@ -105,26 +120,82 @@ test_that("importM.COSMIC correctly returns rCNA from Cosmic CNA data", {
                  expected)
 })
 
-test_that("importM.COSMIC outputs rCNA RDS to file.", {
-    fName <- "testCosmicCNA.tsv"
+# Test that attributes of rCNA data frame are correct.
+test_that("importM.COSMIC assigns appropriate attributes to rCNA data frame.", {
+    fNameCNA <- "testCosmicCNA.tsv"
     outName <- paste(testPath, testFName, sep = "")
 
-    expected <- importM.COSMIC(fName,
-                               outName,
-                               writeToFile = TRUE,
-                               silent = TRUE,
-                               writeLog = FALSE)
+    importM.COSMIC(fNameCNA,
+                   outName,
+                   silent = TRUE,
+                   writeLog = FALSE)
 
     result <- readRDS(outName)
 
-    expect_equal(result,
-                 expected)
+    expect_equal(attributes(result)$type, "rCNA")
+    expect_equal(attributes(result)$version, "1.0")
+
+    uuid_regex <- "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    expect_match(attributes(result)$UUID, uuid_regex)
+
 })
 
+# Tests to make sure corrupted CNA input raises an error.
 test_that("importM.COSMIC returns error when CNA input data is corrupt.", {
+
+    # Test to make sure error is raised when CNA input has negative TOTAL_CN
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA_totalCN_negative.tsv")
+    )
+
+    # Test to make sure error is raised when CNA input file does not contain
+    # correct columns
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA_columns.tsv")
+    )
+
+    # Test to make sure error is raised when CNA input file has no CNA data
+    # (only headings)
     expect_error(
         importM.COSMIC(fNameCNA = "testCosmicCNAEmpty.tsv")
         )
+
+    # Test to make sure error is raised when CNA input file has gene_name
+    # equal to "NA"
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA_gene_name_has_NA.tsv")
+    )
+
+    # Test to make sure error is raised when CNA input file has gene_name
+    # equal to "N/A"
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA_gene_name_has_N_A.tsv")
+    )
+
+    # Test to make sure error is raised when CNA input file has gene_name
+    # equal to "-"
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA_gene_name_has_dash.tsv")
+    )
+
+    # Test to make sure error is raised when CNA input file has ID_SAMPLE
+    # of type string
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA_sample_string.tsv")
+    )
+
+    # Test to make sure error is raised when CNA input file has ID_TUMOUR
+    # of type string
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA_tumour_string.tsv")
+    )
+
+    # Test to make sure error is raised when CNA input file has TOTAL_CN
+    # of type string
+    expect_error(
+        importM.COSMIC(fNameCNA = "testCosmicCNA_totalCN_string.tsv")
+    )
+
 })
 
 

@@ -36,15 +36,12 @@
 #' [20] Genomic Coordinates of Variation
 #'
 #' @param fNameCNA The path to a TSV file with CNA data from COSMIC.
-#' @param outFName The path to an output file for the rCNA RDS object. Only
-#'   required if writeToFile == TRUE. Must be .rds file type.
-#' @param writeToFile Controls whether to serialize rCNA RDS object.
-#'   FALSE by default.
+#' @param outFName The path to an output file for the rCNA RDS object.
 #' @param silent Controls whether output to console should be suppressed. FALSE
 #'   by default.
 #' @param writeLog Controls whether writing the result to the global logfile is
 #'   enabled. TRUE by default.
-#' @return Return rCNA object of COSMIC CNA data as RDS.
+#' @return Return rCNA object of COSMIC CNA data as RDS compressed data frame file.
 #'
 #' @family importM.COSMIC, importM.TCGA, importM.GISTIC2, importM.ProjectGenie
 #'
@@ -54,16 +51,16 @@
 #' @examples
 #' \dontrun{
 #' fNameCNA <- "./../test/COSMIC/testCosmicCNA.tsv"
+#' outFName <- "cosmicCNA.rds"
 #'
 #' importM.COSMIC(fNameCNA,
-#'                writeToFile = FALSE,
+#'                outFName,
 #'                silent = TRUE,
 #'                writeLog = FALSE)
 #' }
 #' @export
 importM.COSMIC <- function(fNameCNA,
                            outFName,
-                           writeToFile = FALSE,
                            silent = FALSE,
                            writeLog = TRUE) {
 
@@ -73,39 +70,12 @@ importM.COSMIC <- function(fNameCNA,
     # General parameter checks
     cR <- character()
     cR <- c(cR, .checkArgs(fNameCNA,     like = "FILE_E",   checkSize = TRUE))
-    cR <- c(cR, .checkArgs(writeToFile,  like = logical(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(outFName,     like = "a",        checkSize = TRUE))
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
 
     if(length(cR) > 0) {
         stop(cR)
-    }
-
-    if (writeToFile) {
-        # Make sure output file name is provided if writeToFile is TRUE.
-        if (missing(outFName)) {
-            stop("No output file specified in outFName.")
-        }
-
-        # Check that outFName is a string.
-        cR <- character()
-        cR <- c(cR, .checkArgs(outFName,
-                               like = "a",
-                               checkSize = TRUE))
-
-        if(length(cR) > 0) {
-            stop(cR)
-        }
-
-    } else {
-        if (!missing(outFName)) {
-            stop("outFName provided, but writeToFile is FALSE.")
-        }
-    }
-
-    # Check that file provided at path fNameCNA exists
-    if (!file.exists(fNameCNA)) {
-        stop("Parameter error:\n   File specified at fNameCNA not found.")
     }
 
 
@@ -132,9 +102,13 @@ importM.COSMIC <- function(fNameCNA,
                             collapse = ""),
                       sep = "")
 
-    # Set target columns to characters
+    # Set target columns to characters, except TOTAL_CN (read as integers)
     for (col in iCol) {
-        substr(readMask, col, col) <- "c"
+        if (header[col] == "gene_name") {
+            substr(readMask, col, col) <- "c"
+        } else {
+            substr(readMask, col, col) <- "i"
+        }
     }
 
     # Read only the selected columns from Cosmic CNA file
@@ -147,18 +121,51 @@ importM.COSMIC <- function(fNameCNA,
         cat("Done reading from ", fNameCNA, ".\n")
     }
 
+
+    # ==== VALIDATE INPUT DATA ================================================
+
+    # No gene_name should be any of these values
+    illegalGeneNames <- c("NA", "N/A", "-")
+
+    # Make sure the required columns are present in the input file.
+    # Validated by checking the number of columns in dataCNA
+    if (ncol(dataCNA) != 4) {
+        stop("Input error: CNA file doesn't contain correct columns.")
+    }
+
+    # Make sure ID_SAMPLE, ID_TUMOUR, and TOTAL_CN are not "NA" after reading
+    # as integer. This means there was a non-integer in these columns.
+    if (any(is.na(dataCNA$ID_SAMPLE)) ||
+        any(is.na(dataCNA$ID_TUMOUR)) ||
+        any(is.na(dataCNA$TOTAL_CN))) {
+        stop(paste("Non-integer values found in ID_SAMPLE, " +
+                   "ID_TUMOUR, and/or TOTAL_CN columns of input."))
+    }
+
+    # Make sure gene_name is not "N/A" or "NA" or "-" or NA.
+    if (any(dataCNA$gene_name %in% illegalGeneNames) ||
+        any(is.na(dataCNA$gene_name))) {
+        stop("Illegal gene name found in input.")
+    }
+
+    # Make sure there is at least one CNA present in file
     if (nrow(dataCNA) == 0) {
         stop("Input error: No CNAs found in file.")
     }
 
-    # Convert all TOTAL_CN to numeric
-    dataCNA$TOTAL_CN <- as.numeric(dataCNA$TOTAL_CN)
-
-    # Subtract 2 from each CNA count
-    if (!any(dataCNA$TOTAL_CN < 0)) {
-        dataCNA$TOTAL_CN <-
-            dataCNA$TOTAL_CN[dataCNA$TOTAL_CN >= 0] - 2
+    # Make sure all TOTAL_CN are non-negative. COSMIC CNA count data is not
+    # expected to be negative. Must subtract 2 from each CNA count (done below)
+    if (any(dataCNA$TOTAL_CN < 0)) {
+        stop("Input error: CNA counts cannot be negative.")
     }
+
+
+    # ==== FORMAT CNA DATA INPUT ==============================================
+
+    # Subtract 2 from each CNA count. It is expected that TOTAL_CN counts
+    # are not negative.
+    dataCNA$TOTAL_CN <- dataCNA$TOTAL_CN[dataCNA$TOTAL_CN >= 0] - 2
+
 
     # ==== SETUP METADATA ======================================================
 
@@ -223,17 +230,14 @@ importM.COSMIC <- function(fNameCNA,
         myCall[1] <- "importM.COSMIC("
         myCall[2] <- sprintf("fnameCNA = \"%s\", ", fNameCNA)
         myCall[3] <- sprintf("outFName = \"%s\", ", outFName)
-        myCall[4] <- sprintf("writeToFile = %s, ", as.character(writeToFile))
-        myCall[5] <- sprintf("silent = %s, ", as.character(silent))
-        myCall[6] <- sprintf("writeLog = %s)", as.character(writeLog))
+        myCall[4] <- sprintf("silent = %s, ", as.character(silent))
+        myCall[5] <- sprintf("writeLog = %s)", as.character(writeLog))
         myCall <- paste0(myCall, collapse = "")
 
         # Record progress information
         myNotes <- character()
         myNotes <- c(myNotes, sprintf("Read %s CNAs from file.", nrow(dataCNA)))
-        if (writeToFile) {
-            myNotes <- c(myNotes, sprintf("Wrote rCNA object to %s.", outFName))
-        }
+        myNotes <- c(myNotes, sprintf("Wrote rCNA object to %s.", outFName))
 
         # indicate output object name(s)
         myOutput = c("rCNA")
@@ -246,12 +250,8 @@ importM.COSMIC <- function(fNameCNA,
         )
     }
 
-    # Write to RDS file if specified
-    if (writeToFile) {
-        saveRDS(rCNA, outFName)
-    }
-
-    return(rCNA)
+    # Write to RDS file
+    saveRDS(rCNA, outFName)
 
 }
 
