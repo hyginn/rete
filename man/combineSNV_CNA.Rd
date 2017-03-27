@@ -33,6 +33,6 @@ Details.
 }
 
 \examples{
-\dontrun{combine(fNameSNV="SNV.rds", fNameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
+\dontrun{combineSNV_CNA(fNameSNV="SNV.rds", fNameCNA="CNA.rds", fgX="data.rds")}
 
 }

@@ -9,7 +9,6 @@ logFileName(fPath = tempdir(), setOption = TRUE)  # make tempdir() the log dir
 logName <- unlist(getOption("rete.logfile"))
 if (file.exists(logName)) { file.remove(logName)}
 # ==== END SETUP AND PREPARE ===================================================
-
 # setting up small input rds data
 # building SNV.rds with 2 genes
 testSNV = tempfile(fileext="rds")
@@ -76,7 +75,6 @@ test_that("a sane input gives an expected output", {
 
     input_vector = c(testSNV, testCNA)
     testF <- tempfile(fileext = ".rds")
-
     # test if a log file is saved if log is True
     combineSNV_CNA(input_vector[1], input_vector[2], fgX=testF, silent=TRUE, writeLog=TRUE)
     expect_true(file.exists(logName))

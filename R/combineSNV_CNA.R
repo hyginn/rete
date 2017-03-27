@@ -20,7 +20,7 @@
 #'
 #'
 #' @examples
-#' \dontrun{combine(fNameSNV="SNV.rds", fNameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
+#' \dontrun{combineSNV_CNA(fNameSNV="SNV.rds", fNameCNA="CNA.rds", fgX="data.rds")}
 #'
 #' @export
 combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, writeLog=TRUE) {
@@ -44,7 +44,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
         stop(cR)
     }
     #
-    # using hash package, e.g. extract keys later on
+    # using hash, e.g. extract keys later on
     hashTable <- hash()
     # read from input vector of SNV files
     for (i in 1:length(fNameSNV)) {
