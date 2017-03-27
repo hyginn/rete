@@ -29,8 +29,12 @@ combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALS
         stop("Input vectors are is empty!")
     }
     cR <- character()
-    cR <- c(cR, .checkArgs(fnameSNV,        like = c("FILE_E")))
-    cR <- c(cR, .checkArgs(fnameCNA,        like = c("FILE_E")))
+    for (fSNV in fnameSNV) {
+        cR <- c(cR, .checkArgs(fSNV,        like = c("FILE_E")), chechSize = TRUE)
+    }
+    for (fCNA in fnameCNA) {
+        cR <- c(cR, .checkArgs(fCNA,        like = c("FILE_E")))
+    }
     cR <- c(cR, .checkArgs(fgX,          like = "FILE_W",   checkSize = TRUE))
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
@@ -126,7 +130,7 @@ combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALS
         logCall <- character()
         logCall[1] <- "combineSNV_CNA"
         logCall[2] <- sprintf("fnameSNV = \"%s\", ", fnameSNV)
-        logCall[2] <- sprintf("fnameSNV = \"%s\", ", fnameCNA)
+        logCall[2] <- sprintf("fnameCNA = \"%s\", ", fnameCNA)
         logCall[3] <- sprintf("fgX = \"%s\", ", fgX)
         logCall[4] <- sprintf("silent = %s, ", as.character(silent))
         logCall[5] <- sprintf("writeLog = %s)", as.character(writeLog))
