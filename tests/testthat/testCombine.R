@@ -13,38 +13,43 @@ if (file.exists(logName)) { file.remove(logName)}
 test_that("parameter errors are correctly handled", {
     # try no parameter input
     expect_error(combineSNV_CNA(writeLog=FALSE),
-                 'argument "fname" is missing errro')
-
-    # try length-zero or NuLL input vector
-    input_vector <- character()
-    expect_error(combineSNV_CNA(input_vector, writeLog=FALSE),
                  'empty input vector error')
 
-    # try wrong file format (e.g. text file instead of rds dataframe) in input vector
-    input_vector[1] <- "CNA.txt"
-    expect_error(combineSNV_CNA(input_vector, writeLog=FALSE),
-                 '.checkArgs> "fName" mode error')
+    # try wrong file format (e.g. text file instead of rds dataframe) in SNV input vector
+    input_vector = c("SNV.txt", "CNA.rds")
+    expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=FALSE),
+                 '.checkArgs> "fNameSNV" mode error')
 
-    # try non existing input file
-    input_vector[1] <- "nonExistent.rds"
-    expect_error(combineSNV_CNA(input_vector, writeLog=FALSE),
-                 '.checkArgs> "fName" error: file "NonExistent.rds" does not exist')
+    # try wrong file format (e.g. text file instead of rds dataframe) in CNA input vector
+    input_vector = c("SNV.rds", "CNA.txt")
+    expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=FALSE),
+                 '.checkArgs> "fNameCNA" mode error')
+
+    # sane input vector
+    input_vector = c("SNV.rds", "CNA.rds")
+    # try non existing input file for SNV input vector
+    expect_error(combineSNV_CNA(c("nonExistent.rds"), input_vector[2], writeLog=FALSE),
+                 '.checkArgs> "fNameSNV" error: file "NonExistent.rds" does not exist')
+
+    # try non existing input file for CNA input vector
+    input_vector[] <- "nonExistent.rds"
+    expect_error(combineSNV_CNA(input_vector[1], c("nonExistent.rds"), writeLog=FALSE),
+                 '.checkArgs> "fNameCNA" error: file "NonExistent.rds" does not exist')
 
     # try invalid output fgX file name (e.g. wrong extension)
-    input_vector[1] <- "CNA.rds"
-    expect_error(combineSNV_CNA(input_vector, "out.txt", writeLog=FALSE),
+    expect_error(combineSNV_CNA(input_vector[1], input_vector[2], "out.txt", writeLog=FALSE),
                  'invalid output file extension')
 
     # try null output fgX file name
-    expect_error(combineSNV_CNA(input_vector, NULL, writeLog=FALSE),
+    expect_error(combineSNV_CNA(input_vector[1], input_vector[2], NULL, writeLog=FALSE),
                  '.checkArgs> "fgx" mode error')
 
     # try null silent option
-    expect_error(combineSNV_CNA(input_vector, silent=NULL, writeLog=FALSE),
+    expect_error(combineSNV_CNA(input_vector[1], input_vector[2], silent=NULL, writeLog=FALSE),
                  '.checkArgs> "silent" mode error')
 
     # try null writeLog option
-    expect_error(combineSNV_CNA(input_vector, writeLog=NULL),
+    expect_error(combineSNV_CNA(input_vector[1], input_vector[2], writeLog=NULL),
                  '.checkArgs> "writeLog" mode error')
 
     # check if log file has been written
@@ -56,13 +61,10 @@ test_that("a sane input gives an expected output", {
     # provide one valid SNV and one valid CNA file with small number of genes as input
     # TODO where can I find the sample data for testing? inst/extdata folder has maf & txt formats
     input_vector = c("CNA.rds", "SNV.rds")
-    # testdir <- tempdir()
     testF <- tempfile(fileext = ".rds")
-    # test_path = file.path(testdir, testF)
-    print(test_path)
 
     # test if a log file is saved if log is True
-    capture.output(combineSNV_CNA(input_vector, fgX=testF, silent=TRUE, writeLog=TRUE), file=testF)
+    capture.output(combineSNV_CNA(input_vector[1], input_vector[2], fgX=testF, silent=TRUE, writeLog=TRUE), file=testF)
     expect_true(files.exists(logName))
 
     # correct log file
@@ -72,7 +74,8 @@ test_that("a sane input gives an expected output", {
 
     # call
     expect_true(grepl("^event \\| call   \\| combineSNV_CNA\\(",   thisLog[3]))
-    expect_true(grepl(paste0("fname = \"", input_vector, "\""),    thisLog[3]))
+    expect_true(grepl(paste0("fnameSNV = \"", input_vector[1], "\""),    thisLog[3]))
+    expect_true(grepl(paste0("fnameCNA = \"", input_vector[2], "\""),    thisLog[3]))
     expect_true(grepl("fgX = gX.rds",                              thisLog[3]))
     expect_true(grepl("silent = TRUE",                             thisLog[3]))
     expect_true(grepl("writeLog = TRUE",                           thisLog[3]))

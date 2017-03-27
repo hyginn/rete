@@ -12,23 +12,25 @@
 #'  gene.
 #'
 #'
-#' @param fName A vector of path of fully qualified file names of SNV and/or CNA files.
+#' @param fNameCNA A vector of path of fully qualified file names of SNV rds files.
+#' @param fnameSNV A vector of path of fully qualifed filenames of CNA rds files.
 #' @param fgX The fully qualified filename/path of a gX output file, by default is gX.rds.
 #' @param silent Boolean option for writing combining process information to console, FALSE by default.
 #' @param writeLog Boolean option for log results, TRUE by default.
 #'
 #'
 #' @examples
-#' \dontrun{combine(fName=file_names, fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
+#' \dontrun{combine(fNameSNV="SNV.rds", fnameCNA="CNA.rds", fgX="combined_data.rds", silent=TRUE, writeLog=FALSE)}
 #'
 #' @export
-combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
+combineSNV_CNA <- function(fnameSNV=c(), fnameCNA=c(), fgX="gX.rds", silent=FALSE, writeLog=TRUE) {
     # parameter validation
-    if (length(fname) == 0) {
-        stop("Input vector is empty!")
+    if (length(fnameSNV) == 0 && length(fnameSNV) == 0) {
+        stop("Input vectors are is empty!")
     }
     cR <- character()
-    cR <- c(cR, .checkArgs(fname,        like = c("FILE_E")))
+    cR <- c(cR, .checkArgs(fnameSNV,        like = c("FILE_E")))
+    cR <- c(cR, .checkArgs(fnameCNA,        like = c("FILE_E")))
     cR <- c(cR, .checkArgs(fgX,          like = "FILE_W",   checkSize = TRUE))
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
@@ -36,46 +38,84 @@ combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
     if(length(cR) > 0) {
         stop(cR)
     }
-    #' pseudo code
-    #'
-    #' using hash package, e.g extract keys
+    #
+    # using hash package, e.g. extract keys later on
     hashTable <- hash()
-    #' read from input files and store hash
-    for (i in 1:length(fname)) {
+    # read from input vector of SNV files
+    for (i in 1:length(fnameSNV)) {
+        SNVcurrent <- readRDS(fcurrent)
+        # get HGNC gene symbol row by row
+        for (gene in row.names(SNVcurrent)) {
+            position <- SNVcurrent[gene, "start"]
+            vclass <- SNVcurrent[gene, "class"]
+            # create key using <gene symbol>:SNV:<position>:<variant class>
+            key = sprintf("%s:SNV:%d:%s", gene, position, vclass)
+            if (has.key(key, hashTable)) {
+                hashTable[[key]] <- hashTable[[key]] + 1
+            }
+            else {
+                hashTable[[key]] <- 1
+            }
+        }
+    }
+    # read from input vector of CNA files
+    for (i in 1:length(fnameCNA)) {
         fcurrent <- fname[i]
-    #   if (fcurrent is CNA) {
-    #'      CNAcurrent <- readRDS(fcurrent)
-    #'      for each variation in CNAcurrent:
-    #'          key = hash(<gene symbol>:CNA:<as.character(round(<copy number>))>)
-    #'          if key is in hashTable:
-    #'              hashTable[[key]] <- hashTable[[key]] + 1
-    #'          else:
-    #'              hashTable[[key]] <- 1
+        CNAcurrent <- readRDS(fcurrent)
+        # get HGNC gene symbols row by row
+        for (gene in row.names(CNAcurrent)) {
+            # get CNA of one gene for each sample
+            for (sample in names(CNAcurrent)) {
+                tmpCNA <- CNAcurrent[gene, sample]
+                # create key using <gene symbol:CNA:<as.character(round(<copy number>))>
+                key <- sprintf("%s:CNA:%d)", gene, as.character(round(tmpCNA)))
+                if (has.key(key, hashTable)) {
+                    hashTable[[key]] <- hashTable[[key]] + 1
+                }
+                else {
+                    hashTable[[key]] <- 1
+                }
+            }
+        }
     }
-    #'  else if fcurrent is SNV {
-    #'      SNVcurrent <- readRDS(fcurrent)
-    #'      for each row in SNVcurrent:
-    #'          key = hash(<gene symbol>:SNV:<position>:<variant class>)
-    #'          if key is in hashTable:
-    #'              hashTable[[key]] <- hashTable[[key]] + 1
-    #'          else:
-    #'              hashTable[[key]] <- 1
+
+    #
+    # retrieve and sort all keys from hashTable
+    keys <- sort(keys(hashTable))
+    # initialize the output dataframe
+    out <- as.data.frame(matrix(ncol=4, nrow=length(keys)))
+    colnames(r) <- c("sym", "type", "pos", "count")
+    rownames(r) <- keys
+
+    for (k in keys) {
+        # strplit each key to sym, type, pos and class and add to dataframe
+        dataVector <- strsplit(k, ":")[[1]]
+
+        sym <- dataVector[1]
+        type <- dataVector[2]
+        if (length(k) == 3) {
+            # create NA for $pos columns in CNAs
+            pos <- NA
+        }
+        else {
+            pos <- dataVector[3]
+        }
+        # retrieve value from hashTable using keys
+        count <- hashTable[[k]]
+        # add to dataframe
+        out[k, "sym"] <- sym
+        out[k, "type"] <- type
+        out[k, "pos"] <- pos
+        out[k, "count"] <- count
     }
-    #'
-    #'
-    #'
-    #' retrieve all keys from hashTable
-    #' hashVector = hashTable[!is.na(hashTable)] or hashVector <- keys(hashTable)
-    #' sort hashVector
-    #' strplit them to sym, type, pos and class
-    #' store retrieve 4 classes in a dataframe
-    #' create NA for not applicable columns in CNAs
-    #' for key in hashVector:
-    #'  retrieve value from hashTable using keys in hashVector
-    #'  insert metadata
-    #'
-    #' saveRDS(dataframe, file=fgX)
-    #'
+
+    # update metadata
+    attr(out, "type") <- "combinedDataframe"
+    attr(out, "UUID") <- getUUID(out)
+    # save output file to local path
+    saveRDS(out, file=fgX)
+
+    #
     ## write log ###############
 
     if(writeLog) {
@@ -84,8 +124,9 @@ combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
 
         # Compile function call record
         logCall <- character()
-        logCall[1] <- "importFilterHypermutators("
-        logCall[2] <- sprintf("fNames = \"%s\", ", fNames)
+        logCall[1] <- "combineSNV_CNA"
+        logCall[2] <- sprintf("fnameSNV = \"%s\", ", fnameSNV)
+        logCall[2] <- sprintf("fnameSNV = \"%s\", ", fnameCNA)
         logCall[3] <- sprintf("fgX = \"%s\", ", fgX)
         logCall[4] <- sprintf("silent = %s, ", as.character(silent))
         logCall[5] <- sprintf("writeLog = %s)", as.character(writeLog))
@@ -93,7 +134,7 @@ combineSNV_CNA <- function(fname, fgX = "gX.rds", silent=FALSE, writeLog=TRUE) {
 
         # Record progress information
         logNotes <- character()
-        logNotes <- c(logNotes, sprintf("Combined %s samples in total.", length(hash_table)))
+        logNotes <- c(logNotes, sprintf("Combined %s samples in total.", length(hashTable)))
 
         # # send info to log file
         logEvent(eventTitle = logTitle,
