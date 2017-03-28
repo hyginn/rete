@@ -80,15 +80,15 @@ importNet.STRING <- function(fName,
   }
   readfile <- readfile[sel, ] # Keep only selected genes
   
-  fastMapENSP <- readRDS(system.file("extdata", "fastMapENSP.rds", package = "rete"))
+  fastMapUniProt <- readRDS(system.file("extdata", "fastMapUniProt.rds", package = "rete"))
   
   #Remove prefix from PSIMITAB format IDs
   netStr$a <- gsub(".*:", "", netStr$a)
   netStr$b <- gsub(".*:", "", netStr$b)
   
   # map ID to gene names
-  mapA <- fastMap(netStr$a, fastMapENSP, type = "ENSP", dev = TRUE)
-  mapB <- fastMap(netStr$b, fastMapENSP, type = "ENSP", dev = TRUE)
+  mapA <- fastMap(netStr$a, fastMapUniProt, type = "UniProt", dev = TRUE)
+  mapB <- fastMap(netStr$b, fastMapUniProt, type = "UniProt", dev = TRUE)
   
   if (dropUnmapped) {
     netStr$a <- mapA
