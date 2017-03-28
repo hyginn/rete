@@ -18,6 +18,8 @@
 #' @param silent Boolean option for writing combining process information to console, FALSE by default.
 #' @param writeLog Boolean option for log results, TRUE by default.
 #'
+#' @return N/A. This function is normally invoked for its side effect of saving a gX file.
+#'
 #'
 #' @examples
 #' \dontrun{combineSNV_CNA(fNameSNV="SNV.rds", fNameCNA="CNA.rds", fgX="data.rds")}

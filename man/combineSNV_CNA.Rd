@@ -18,6 +18,9 @@ combineSNV_CNA(fNameSNV, fNameCNA, fgX = "gX.rds", silent = FALSE,
 
 \item{writeLog}{Boolean option for log results, TRUE by default.}
 }
+\value{
+N/A. This function is normally invoked for its side effect of saving a gX file.
+}
 \description{
 \code{combineSNV_CNA} loads the vector of preprocessed dataset from filtered CNA or SNV files,
  creates hash keys corresponding to the input file type, combine the corresponding mutation count
