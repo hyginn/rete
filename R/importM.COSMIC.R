@@ -144,6 +144,7 @@ importM.COSMIC <- function(fNameCNA,
     }
 
     # Make sure gene_name is not "N/A" or "NA" or "-" or NA.
+    # ToDo: should probably use isHGNCsymbol() here...
     if (any(dataCNA$gene_name %in% illegalGeneNames) ||
         any(is.na(dataCNA$gene_name))) {
         stop("Illegal gene name found in input.")
@@ -165,6 +166,8 @@ importM.COSMIC <- function(fNameCNA,
 
     # Subtract 2 from each CNA count. It is expected that TOTAL_CN counts
     # are not negative.
+    # ToDo: Check back with author: conditional expression seems redundant with
+    #       the check that was just made.
     dataCNA$TOTAL_CN <- dataCNA$TOTAL_CN[dataCNA$TOTAL_CN >= 0] - 2
 
 
