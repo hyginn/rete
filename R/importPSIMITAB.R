@@ -101,9 +101,11 @@ importNet.STRING <- function(fName,
 
   # ==== READ DATA ========================================================================
 
-  readfile <- read.delim(fName, sep = "\t", header = FALSE)
-  colnames(readfile) <- c("a", "b", "c", "d","e","f","g","h","i","j","k","l","m","n","weight","o" )
-  scores <- readfile$weight
+  readfile <- read.delim("core.psimitab", sep = "\t", header = FALSE)
+  names(readfile)[1] <- "a"
+  names(readfile)[2] <- "b"
+  names(readfile)[15] <- "weight"
+  scores <- readfile$V15
 
   # Create single score without | operator
   i = 1
