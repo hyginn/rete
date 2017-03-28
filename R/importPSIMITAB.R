@@ -1,3 +1,6 @@
+library(devtools)
+devtools::check()
+
 importNet.STRING <- function(fName,
                              cutoffType = "xN",
                              val,
@@ -14,6 +17,7 @@ importNet.STRING <- function(fName,
     val <- defaultValues[cutoffType]
   }
   
+  
   # ==== VALIDATIONS =======================================================
   
   cR <- character()
@@ -22,7 +26,7 @@ importNet.STRING <- function(fName,
   cR <- c(cR, .checkArgs(val,          like = numeric(1), checkSize = TRUE))
   cR <- c(cR, .checkArgs(taxID,        like = "a",        checkSize = TRUE))
   cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
-  cR <- c(cR, .checkArgs(noLog,        like = logical(1), checkSize = TRUE))
+  cR <- c(cR, .checkArgs(writeLog,        like = logical(1), checkSize = TRUE))
   
   if(length(cR) > 0) {
     stop(cR)
@@ -38,8 +42,8 @@ importNet.STRING <- function(fName,
   
   # Read data and create header
   
-  readfile <- read.delim("core.psimitab", sep = "\t", header = FALSE)
-  colnames(readfile) <- c("a", "b", "c", "d","e","r","t","y","u","i","o","p","[","s","weight","f" )
+  readfile <- read.delim(fName, sep = "\t", header = FALSE)
+  colnames(readfile) <- c("a", "b", "c", "d","e","f","g","h","i","j","k","l","m","n","weight","o" )
   scores <- readfile$weight
   
   # Create single score without | operator
@@ -100,6 +104,54 @@ importNet.STRING <- function(fName,
   }
   
   gG <- .df2gG(netStr)
+  
+  # ==== WRITE LOG ===========================================================
+  
+  if(writeLog) {
+    
+    myTitle <- "importNet.STRING"
+    
+    # Compile function call record
+    myCall <- character()
+    myCall[1] <- "importNet.STRING("
+    myCall[2] <- sprintf("fname = \"%s\", ", fName)
+    myCall[3] <- sprintf("cutoffType = \"%s\", ", cutoffType)
+    myCall[4] <- sprintf("val = %s, ", as.character(val))
+    myCall[5] <- sprintf("taxID = \"%s\", ", taxID)
+    myCall[6] <- sprintf("silent = %s, ", as.character(silent))
+    myCall[7] <- sprintf("writeLog = %s)", as.character(writeLog))
+    myCall <- paste0(myCall, collapse = "")
+    
+    
+    # indicate input object name(s)
+    #   (NA for this importNet.STRING())
+    
+    # Record progress information
+    myNotes <- character()
+    myNotes <- c(myNotes, sprintf("Read %s edges from file.", nIn))
+    myNotes <- c(myNotes, sprintf("Selected %s edges via cutoff.", nSel))
+    myNotes <- c(myNotes, sprintf("gG object has %s vertices and %s edges.",
+                                  igraph::gorder(gG), igraph::gsize(gG)))
+    
+    # indicate output object name(s)
+    myOutput = c("gG")
+    
+    # send info to log file
+    logEvent(eventTitle = myTitle,
+             eventCall = myCall,
+             #                input = character(),
+             notes = myNotes,
+             output = myOutput)
+  }
+  
+  return(gG)
+  
+}
+
+isMitabformat <- function(tmp){
+  data   <- unlist(strsplit(tmp[2], "\t"))
+  
+  
   
 }
 
