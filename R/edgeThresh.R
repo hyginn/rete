@@ -167,7 +167,9 @@ THRESH <- function(EGG,
         cat(sprintf("\nCalculating deltas for graph %d of %d\n", i, N))
 
         for (j in 1:nQuant) {
-            .pBar(j, nQuant, 80)
+            if (silent == FALSE) {
+                .pBar(j, nQuant, 80)
+            }
             # Find edges that have weights lower than current delta and delete
             edgesToRemove = igraph::E(currentGraph)[igraph::E(currentGraph)$weight < stepDeltas[j]]
             currentGraph = igraph::delete.edges(currentGraph, edgesToRemove)
