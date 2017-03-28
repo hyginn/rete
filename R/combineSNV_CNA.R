@@ -45,7 +45,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
     }
     #
     # using hash, e.g. extract keys later on
-    hashTable <- hash()
+    hashTable <- hash::hash()
     # read from input vector of SNV files
     for (i in 1:length(fNameSNV)) {
         SNVcurrent <- readRDS(fNameSNV[i])
@@ -55,7 +55,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
             vclass <- SNVcurrent[gene, "class"]
             # create key using <gene symbol>:SNV:<position>:<variant class>
             key <- sprintf("%s:SNV:%d:%s", gene, position, vclass)
-            if (has.key(key, hashTable)) {
+            if (hash::has.key(key, hashTable)) {
                 hashTable[[key]] <- hashTable[[key]] + 1
             }
             else {
@@ -73,7 +73,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
                 tmpCNA <- CNAcurrent[gene, sample]
                 # create key using <gene symbol:CNA:<as.character(round(<copy number>))>
                 key <- sprintf("%s:CNA:%s", gene, as.character(round(tmpCNA)))
-                if (has.key(key, hashTable)) {
+                if (hash::has.key(key, hashTable)) {
                     hashTable[[key]] <- hashTable[[key]] + 1
                 }
                 else {
@@ -85,7 +85,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
 
     #
     # retrieve and sort all keys from hashTable
-    keys <- sort(keys(hashTable))
+    keys <- sort(hash::keys(hashTable))
     # initialize the output dataframe
     out <- as.data.frame(matrix(ncol=4, nrow=length(keys)))
     colnames(out) <- c("sym", "type", "pos", "count")
