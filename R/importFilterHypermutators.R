@@ -68,14 +68,18 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
         rCNA <- readRDS(file)
         for (sample in colnames(rCNA)) {
             totalSamples <- totalSamples + 1
-            # if key is in hash, increment CNA and nMUT
-            if (!is.null(hashTable$sample)) {
-                prevCNACount <- hashTable$sample$CNA
-                prevTotalCount <- hashTable$sample$total
-                assign(sample, list(CNA = prevCNACount + 1, SNV = 0, total = prevTotalCount + 1), envir = hashTable)
+            # if key is in hash, increment CNA and nMUT for every gene if there is an abberation
+            for (copyNumberValue in rCNA[[sample]]) {
+                if (copyNumberValue != 0) {
+                    if (!is.null(hashTable[[sample]])) {
+                        prevCNACount <- hashTable[[sample]]$CNA
+                        prevTotalCount <- hashTable[[sample]]$total
+                        assign(sample, list(CNA = prevCNACount + 1, SNV = 0, total = prevTotalCount + 1), envir = hashTable)
+                    } else {
+                        assign(sample, list(CNA = 1, SNV = 0, total = 1), envir = hashTable)
+                    }
+                }
             }
-            # question - does each gene-CNA count as one mutation? I'm guessing yes?
-            assign(sample, list(CNA = 1, SNV = 0, total = 1), envir = hashTable)
         }
     }
 
@@ -83,18 +87,25 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
     for (file in rSNVFileIn) {
         # readRDS, increment counter for SNV and nMUT
         rSNV <- readRDS(file)
-        for (sample in rSNV$Tumor_Sample_Barcode) {
+        for (i in 1:length(rSNV$Tumor_Sample_Barcode)) {
             # need to substitute dashes with period for consistency in files
-            sample <-  gsub("-", ".", sample)
+            sample <-  gsub("-", ".", rSNV$Tumor_Sample_Barcode[i])
             totalSamples <- totalSamples + 1
-            # if key is in hash, increment SNV and nMUT
-            if (!is.null(hashTable$sample)) {
-                prevCNACount <- hashTable$sample$CNA
-                prevSNVCount <- hashTable$sample$SNV
-                prevTotalCount <- hashTable$sample$total
-                assign(sample, list(CNA = prevCNACount, SNV = prevSNVCount + 1, nMUT = prevTotalCount + 1), envir = hashTable)
+
+            # Present a progress bar.
+            if (!silent) {
+                .pBar(i, length(rSNV$Tumor_Sample_Barcode))
             }
-            assign(sample, list(CNA = 0, SNV = 1, total = 1), envir = hashTable)
+
+            # if key is in hash, increment SNV and nMUT
+            if (!is.null(hashTable[[sample]])) {
+                prevCNACount <- hashTable[[sample]]$CNA
+                prevSNVCount <- hashTable[[sample]]$SNV
+                prevTotalCount <- hashTable[[sample]]$total
+                assign(sample, list(CNA = prevCNACount, SNV = prevSNVCount + 1, nMUT = prevTotalCount + 1), envir = hashTable)
+            } else {
+                assign(sample, list(CNA = 0, SNV = 1, total = 1), envir = hashTable)
+            }
         }
     }
 
@@ -137,17 +148,29 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
 
     # for each rCNAFileIn
     for (file in rCNAFileIn) {
-        # for each sample, if hashTable$sample$total > xS, remove it
-        # update metadata (getUUID(object))
-        # save new CNAFile
-    }
+        rCNA <- readRDS(file)
+        # remove sample if sample in `removedSamples`
+        newRCNA <- rCNA[, !(names(rCNA) %in% removedSamples)]
 
+        # update metadata - having issues, getting `invalid first argument`
+        # getUUID(newRCNA)
+
+        # save new CNAFile with "filtered" prepended to filename
+        saveRDS(newRCNA, file = paste(dOut, "/filteredHypermutators_", basename(file), sep = ""))
+    }
 
     # for each rSNVFileIn
     for (file in rSNVFileIn) {
-        # for each sample (need to gsub("\.", "-", sample)), if hashTable$sample$total > xS, remove it
-        # update metadata (getUUID(object))
+        rSNV <- readRDS(file)
+
+        # for each sample (need to gsub("-", ".", sample)), if sample in `removedSamples` remove it
+        newRSNV <- rSNV[, !(gsub("-", ".", rSNV$Tumor_Sample_Barcode) %in% removedSamples)]
+
+        # update metadata - having issues, getting `invalid first argument`
+        # getUUID(newRSNV)
+
         # save new SNVFile
+        saveRDS(newRSNV, file = paste(dOut, "/filteredHypermutators_", basename(file), sep = ""))
     }
 
     ## LOGGING ###############
