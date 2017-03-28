@@ -17,7 +17,7 @@
 #'
 #' @param fMAF vector of MAF file names.
 #' @param rSNV rSNV file to merged new MAF data with.
-#' @param na.rm Remove all rows with missing or "NA" values and drop them from data frame.
+#' @param na.rm Remove all rows with missing or NA values and drop them from data frame.
 #' @param silent Controls whether output to console should be suppressed. FALSE
 #'   by default.
 #' @param writeLog Controls whether writing the result to the global logfile is
@@ -25,11 +25,12 @@
 #'
 #' @family
 #'
-#'   ## @seealso \code{\link{importM}} importM() is used to import ...
+#'   ## @seealso \code{\link{import-M}} import-M() is used to import Firehouse, GISTIC2 and other data for the project
 #'
 #'   ## @examples ## \dontrun {
 #'   ## importSNV.TCGA(c("aMAFfile.maf","bMAFfile"), "sampleSNV", na.rm = FALSE) ## }
 #' @export
+#' @return N/A. Function is invoked for its side-effect of saving an rSNV object in RDS format to the requested filename.
 
 importSNV.TCGA <- function(  fMAF,
                              rSNV,
@@ -51,7 +52,7 @@ importSNV.TCGA <- function(  fMAF,
     # General parameter checks
     cR <- character()
     cR <- c(cR, .checkArgs(fMAF,         like = rep("FILE_E", length(fMAF)),
-                                                             checkSize = TRUE))
+                           checkSize = TRUE))
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(na.rm,        like = logical(1), checkSize = TRUE))
@@ -61,56 +62,24 @@ importSNV.TCGA <- function(  fMAF,
     }
 
     # === Validate silent, writeLog, na.rm =================================
-    if (is.numeric(silent)) {
-        stop("silent cannot be numeric : should be logical TRUE/FALSE")
-    } else if (is.null(silent)) {
-        stop("silent cannot be NULL : should be logical TRUE/FALSE")
-    } else if (length(silent) > 1) {
-        stop("silent cannot have more than 1 values : should be logical TRUE/FALSE")
+
+    # check if rSNV dir prefix exists
+    if (!dir.exists(dirname(rSNV))) {
+        stop("rSNV file does not exists")
     }
 
-    if (is.numeric(writeLog)) {
-        stop("writeLog cannot be numeric : should be logical TRUE/FALSE")
-    } else if (is.null(writeLog)) {
-        stop("writeLog cannot be NULL : should be logical TRUE/FALSE")
-    } else if (length(writeLog) > 1) {
-        stop("writeLog cannot have more than 1 values : should be logical TRUE/FALSE")
-    }
-
-    if (is.numeric(na.rm)) {
-        stop("na.rm cannot be numeric : should be logical TRUE/FALSE")
-    } else if (is.null(na.rm)) {
-        stop("na.rm cannot be NULL : should be logical TRUE/FALSE")
-    } else if (length(na.rm) > 1) {
-        stop("na.rm cannot have more than 1 values : should be logical TRUE/FALSE")
-    }
     # ==== Validata fMAF and rSNV  =======================================
-    if (missing(fMAF)) {
-        stop("missing parameter fMAF with no default: list of MAF file names")
-    } else if (is.null(fMAF)) {
-        stop("parameter fMAF cannot take value \"NULL\": should be a vector/string of MAF file name(s)")
-    } else if (is.numeric(fMAF)) {
-        stop("parameter fMAF cannot be numeric: should be a vector/string of MAF file name(s)")
-    }
 
     if (missing(rSNV)) {
-        rSNVu <- .makeRandomString()
+        rSNVu <- paste("MAFtoSNV", now(), sep="")
 
         write("sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID",
               rSNVu, append=FALSE)
 
         snvValidity <- character()
-    } else if (is.null(rSNV)) {
-        stop("parameter rSNV cannot take value \"NULL\": should be absent or existing rSNV file name")
-    } else if (is.numeric(rSNV)) {
-        stop("parameter rSNV cannot be numeric: should be absent or existing rSNV file name")
-    } else if (length(rSNV) > 1) {
-        stop("parameter rSNV cannot take more than one file as input")
     } else {
         rSNVu <- rSNV
-        rSNVf <- read.table(rSNV, header = TRUE)[,1]
-        rowsBefore <- length(rSNVf)
-        myNotes <- c(myNotes, paste("Number of rows originally in rSNV - ", rowsBefore))
+        myNotes <- c(myNotes, paste("Number of rows originally in rSNV input file -", system(sprintf("wc -l %s", rSNV), intern = TRUE)))
         snvValidity <- .rSNVheadercheck(rSNV)
     }
 
@@ -122,7 +91,7 @@ importSNV.TCGA <- function(  fMAF,
         if (length(.fileValidity(mafFile)) + length(.mafHeaderCheck(mafFile)) + length(snvValidity) == 0) {
 
             fileasDT <- read.table(mafFile, header = TRUE, fill = NA,  stringsAsFactors = FALSE,
-                                        na.strings = " ")[,c(1,5,6,7,8,9,10,11,12,13,16,33)]
+                                   na.strings = " ")[,c(1,5,6,7,8,9,10,11,12,13,16,33)]
 
             # check if variant_class contains valid values from known list
 
@@ -133,8 +102,8 @@ importSNV.TCGA <- function(  fMAF,
             chrValid <- TRUE
 
             classVknown <- c("Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation",
-                        "Nonsense_Mutation", "Silent", "Splice_Site", "Translation_Start_Site", "Nonstop_Mutation",
-                        "3'UTR", "3'Flank", "5'UTR", "5'Flank", "IGR1" , "Intron", "RNA", "Targeted_Region")
+                             "Nonsense_Mutation", "Silent", "Splice_Site", "Translation_Start_Site", "Nonstop_Mutation",
+                             "3'UTR", "3'Flank", "5'UTR", "5'Flank", "IGR1" , "Intron", "RNA", "Targeted_Region")
             myVclasses <- unique(fileasDT[,6])
 
             if (! all(myVclasses %in% classVknown)) {
@@ -170,7 +139,7 @@ importSNV.TCGA <- function(  fMAF,
                 # all tests passed
                 # add data to rSNV
                 if (na.rm) {
-                    fileasDT <- na.omit(fileasDT[,6])
+                    fileasDT <- na.omit(fileasDT)
                 }
 
                 write.table(fileasDT,  file=rSNVu, sep="\t", append=TRUE, row.names =
@@ -201,7 +170,7 @@ importSNV.TCGA <- function(  fMAF,
                 myCall <- paste0(myCall, collapse = "")
             } else {
                 myCall[1] <- "importSNV.TCGA("
-                myCall[2] <- sprintf("fMAF = \"%s\", ", fMAF)
+                myCall[2] <- sprintf("fMAF = %s", paste(fMAF, collapse = ", "))
                 myCall[3] <- sprintf("rSNV = \"%s\", ", rSNVu)
                 myCall[4] <- sprintf("silent = %s, ", as.character(silent))
                 myCall[5] <- sprintf("writeLog = %s, ", as.character(writeLog))
@@ -219,50 +188,45 @@ importSNV.TCGA <- function(  fMAF,
 
             # send info to log file
             logEvent(eventTitle = myTitle,
-                      eventCall = myCall,
-                      notes = myNotes)
+                     eventCall = myCall,
+                     notes = myNotes)
         }
     }
 }
 
-.mafHeaderCheck <- function(file) {
+.mafHeaderCheck <- function(filename) {
     headValid <- character()
     validMAFheader <- c("Hugo_Symbol", "Chromosome", "Start_Position", "End_Position",
                         "Strand", "Variant_Classification", "Variant_Type", "Reference_Allele",
                         "Tumor_Seq_Allele1", "Tumor_Seq_Allele2", "Tumor_Sample_Barcode",
                         "Tumor_Sample_UUID")
-    if (! all(read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                     na.strings = " ", nrows=1)[,c(1,5,6,7,8,9,10,11,12,13,16,33)]
-        == validMAFheader)) {
+    if (! all(read.table(filename, header = FALSE, fill = NA, stringsAsFactors = FALSE,
+                         na.strings = " ", nrows=1)[,c(1,5,6,7,8,9,10,11,12,13,16,33)]
+              == validMAFheader)) {
         headValid <- c(headValid, "Header of input MAF file did not match the requirements.")
     }
     return(headValid)
 }
 
-.rSNVheadercheck <- function(file) {
+.rSNVheadercheck <- function(filename) {
     headValid <- character()
     validSNVheader <- c("sym", "chr", "start", "end","strand", "class", "type", "aRef",
                         "a1", "a2", "TCGA","UUID")
-    if (! all(read.table(file, header = FALSE, fill = NA, stringsAsFactors = FALSE,
-                     na.strings = " ", nrows=1)[,c(1,2,3,4,5,6,7,8,9,10,11,12)]
-        == validSNVheader)) {
+    if (! all(read.table(filename, header = FALSE, fill = NA, stringsAsFactors = FALSE,
+                         na.strings = " ", nrows=1)[,c(1,2,3,4,5,6,7,8,9,10,11,12)]
+              == validSNVheader)) {
         headValid <- c(headValid, "Header of input rSNV file did not match the requirements.")
     }
     return(headValid)
 }
 
-.fileValidity <- function(file) {
+.fileValidity <- function(filename) {
     validExt <- character()
-    if (! (strsplit(file, "\\.")[[1]][-1] %in% c("maf", "txt", "tsv"))) {
+    extS <- strsplit(filename, "\\.")[[1]]
+    if (! (extS[length(extS)] %in% c("maf", "txt", "tsv"))) {
         validExt <- c(validExt, "Invalid input MAF file extension.")
     }
     return(validExt)
-}
-
-.makeRandomString <- function(prefix="MAFtoSNV", length=5) {
-    randomString <- paste(prefix, "_", paste(sample(c(0:9, letters, LETTERS), length, replace=TRUE),
-                                             sep="", collapse = ""), sep = "", collapse = "")
-    return(randomString)
 }
 
 # [END]
