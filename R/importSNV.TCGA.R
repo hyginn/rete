@@ -68,12 +68,13 @@ importSNV.TCGA <- function(  fMAF,
         stop("rSNV directory does not exists")
     }
 
-    if (readLines(rSNV)[1] == "sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID") {
+    if (file.exists(rSNV)) {
         myNotes <- c(myNotes, paste("Number of rows originally in rSNV input file -",
                                     system(sprintf("wc -l %s", rSNV), intern = TRUE)))
         snvValidity <- .rSNVheadercheck(rSNV)
     } else {
         write("sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID", rSNV, append=FALSE)
+        snvValidity <- character()
     }
 
     # ==== READ DATA ===========================================================
@@ -132,9 +133,12 @@ importSNV.TCGA <- function(  fMAF,
                 # all tests passed
                 # add data to rSNV
                 if (na.rm) {
-                    fileasDT <- na.omit(fileasDT)
+                    # remove row is missing values in anyone of the first 7 necessary columns
+                    numRowswithNA <- nrow(fileasDT)
+                    fileasDT <- fileasDT[complete.cases(fileasDT[c(1,2,3,4,5,6,7)]), ]
+                    nrowsWithoutNA <- nrow(fileasDT)
+                    myNotes <- c(myNotes, paste("Rows dropped due to missing values -", nrowsWithoutNA))
                 }
-
                 write.table(fileasDT,  file=rSNV, sep="\t", append=TRUE, row.names =
                                 FALSE, col.names = FALSE, quote = FALSE)
             }

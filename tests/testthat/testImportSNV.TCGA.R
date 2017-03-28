@@ -13,31 +13,33 @@ test_that("parameter errors are correctly handled", {
     # fMAF is not provided
     expect_error(importSNV.TCGA(), "argument \"fMAF\" is missing, with no default")
     # fMAF is NULL/empty vector
-    expect_error(importSNV.TCGA(fMAF = NULL), ".checkArgs> \"fMAF\" mode error: argument has mode \"NULL\" but function expects mode \"character\".")
+    expect_error(importSNV.TCGA(fMAF = NULL, tOut), ".checkArgs> \"fMAF\" mode error: argument has mode \"NULL\" but function expects mode \"character\".")
     # fMAF input vector contains non-string values
-    expect_error(importSNV.TCGA(fMAF = 123), ".checkArgs> \"fMAF\" mode error: argument has mode \"numeric\" but function expects mode \"character\".")
+    expect_error(importSNV.TCGA(fMAF = 123, tOut), ".checkArgs> \"fMAF\" mode error: argument has mode \"numeric\" but function expects mode \"character\".")
 
+    # rSNV is missing
+    expect_error(importSNV.TCGA(fMAF = testMAF), "argument \"rSNV\" is missing, with no default")
     # if rSNV parameter is provided, but is NULL
     expect_error(importSNV.TCGA(fMAF = testMAF, rSNV = NULL), "a character vector argument expected")
     # if rSNV parameter is provided, but is non-string value
-    expect_error(importSNV.TCGA(fMAF = testMAF, rSNV = 123), "a character vector argument expected")
+    expect_error(importSNV.TCGA(fMAF = testMAF, tOut, rSNV = 123), "a character vector argument expected")
     # if rSNV is given vector input
-    expect_error(importSNV.TCGA(fMAF = testMAF, rSNV = c("abc", "xyz")), "No such file or directory")
+    expect_error(importSNV.TCGA(fMAF = testMAF, tOut, rSNV = c("abc", "xyz")), "No such file or directory")
 
     # if silent is not given logical input
-    expect_error(importSNV.TCGA(fMAF = testMAF,silent = 1), ".checkArgs> \"silent\" mode error: argument has mode \"numeric\" but function expects mode \"logical\".")
-    expert_error(importSNV.TCGA(fMAF = testMAF,silent = NULL), ".checkArgs> \"silent\" mode error: argument has mode \"NULL\" but function expects mode \"logical\".")
-    expert_error(importSNV.TCGA(fMAF = testMAF,silent = c(TRUE, TRUE)), ".checkArgs> \"silent\" length error: argument has length 2 but function expects length 1.")
+    expect_error(importSNV.TCGA(fMAF = testMAF, tOut, silent = 1), ".checkArgs> \"silent\" mode error: argument has mode \"numeric\" but function expects mode \"logical\".")
+    expert_error(importSNV.TCGA(fMAF = testMAF, tOut, silent = NULL), ".checkArgs> \"silent\" mode error: argument has mode \"NULL\" but function expects mode \"logical\".")
+    expert_error(importSNV.TCGA(fMAF = testMAF, tOut, silent = c(TRUE, TRUE)), ".checkArgs> \"silent\" length error: argument has length 2 but function expects length 1.")
 
     # writeLog is not given logical input
-    expect_error(importSNV.TCGA(fMAF = testMAF,writeLog = 1), ".checkArgs> \"writeLog\" mode error: argument has mode \"numeric\" but function expects mode \"logical\".")
-    expert_error(importSNV.TCGA(fMAF = testMAF,writeLog = NULL), ".checkArgs> \"writeLog\" mode error: argument has mode \"NULL\" but function expects mode \"logical\".")
-    expert_error(importSNV.TCGA(fMAF = testMAF,writeLog = c(TRUE, TRUE)), ".checkArgs> \"writeLog\" length error: argument has length 2 but function expects length 1.")
+    expect_error(importSNV.TCGA(fMAF = testMAF, tOut, writeLog = 1), ".checkArgs> \"writeLog\" mode error: argument has mode \"numeric\" but function expects mode \"logical\".")
+    expert_error(importSNV.TCGA(fMAF = testMAF, tOut, writeLog = NULL), ".checkArgs> \"writeLog\" mode error: argument has mode \"NULL\" but function expects mode \"logical\".")
+    expert_error(importSNV.TCGA(fMAF = testMAF, tOut, writeLog = c(TRUE, TRUE)), ".checkArgs> \"writeLog\" length error: argument has length 2 but function expects length 1.")
 
     # if na.rm is not given logical input
-    expect_error(importSNV.TCGA(fMAF = testMAF,na.rm = 1), ".checkArgs> \"na.rm\" mode error: argument has mode \"numeric\" but function expects mode \"logical\".")
-    expert_error(importSNV.TCGA(fMAF = testMAF,na.rm = NULL), ".checkArgs> \"na.rm\" mode error: argument has mode \"NULL\" but function expects mode \"logical\".")
-    expert_error(importSNV.TCGA(fMAF = testMAF,na.rm = c(TRUE, TRUE)), ".checkArgs> \"na.rm\" length error: argument has length 2 but function expects length 1.")
+    expect_error(importSNV.TCGA(fMAF = testMAF, tOut, na.rm = 1), ".checkArgs> \"na.rm\" mode error: argument has mode \"numeric\" but function expects mode \"logical\".")
+    expert_error(importSNV.TCGA(fMAF = testMAF, tOut, na.rm = NULL), ".checkArgs> \"na.rm\" mode error: argument has mode \"NULL\" but function expects mode \"logical\".")
+    expert_error(importSNV.TCGA(fMAF = testMAF, tOut, na.rm = c(TRUE, TRUE)), ".checkArgs> \"na.rm\" length error: argument has length 2 but function expects length 1.")
 
 })
 
@@ -70,7 +72,7 @@ test_that("a sane input gives an expected output with different input parameters
     trueOut[4] <- sample3
 
     # run the module on only fMAF as parameter (moduleOut)
-    moduleOut <- importSNV.TCGA(testIn)
+    moduleOut <- importSNV.TCGA(testIn, tOut)
     # check if manual output = module output
     module <- read.table(moduleOut, sep = "\t", stringsAsFactors = FALSE)
 
@@ -152,7 +154,7 @@ test_that("a sane input gives an expected output with different input parameters
 
     # TEST fMAF, rSNV, silent, writeLog parameters, na.rm ==========================
     # run the module on fMAF, rSNV, silent, writeLog and na.rm as parameters
-    moduleOutNA <- importSNV.TCGA(testInNA, silent=FALSE, writeLog=FALSE, na.rm=TRUE)
+    moduleOutNA <- importSNV.TCGA(testInNA, tOut, silent=FALSE, writeLog=FALSE, na.rm=TRUE)
     moduleNA <- read.table(moduleOutNA, sep = "\t", stringsAsFactors = FALSE)
     # add to prexisting rSNV file
     expect_equal(trueOutNA, moduleNA)
@@ -172,7 +174,7 @@ test_that("a corrupt input does not lead to corrupted output", {
 test_that("silent and writeLog works as intended", {
     # if silent=TRUE, check if output to console is supressed
     testF <- tempfile()
-    capture.output(importSNV.TCGA(testIn, silent = TRUE), file = testF)
+    capture.output(importSNV.TCGA(testIn, tOut, silent = TRUE), file = testF)
     expect_equal(length(readLines(testF)), 0)
     expect_true(file.remove(testF))
     expect_true(file.remove(testIn))
