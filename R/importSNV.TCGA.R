@@ -53,6 +53,7 @@ importSNV.TCGA <- function(  fMAF,
     cR <- character()
     cR <- c(cR, .checkArgs(fMAF,         like = rep("FILE_E", length(fMAF)),
                            checkSize = TRUE))
+    cR <- c(cR, .checkArgs(rSNV,         like = "a",        checkSize = TRUE))
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(na.rm,        like = logical(1), checkSize = TRUE))
@@ -61,26 +62,18 @@ importSNV.TCGA <- function(  fMAF,
         stop(cR)
     }
 
-    # === Validate silent, writeLog, na.rm =================================
-
-    # check if rSNV dir prefix exists
-    if (!dir.exists(dirname(rSNV))) {
-        stop("rSNV file does not exists")
-    }
-
     # ==== Validata fMAF and rSNV  =======================================
 
-    if (missing(rSNV)) {
-        rSNVu <- paste("MAFtoSNV", now(), sep="")
+    if (!dir.exists(dirname(rSNV))) {
+        stop("rSNV directory does not exists")
+    }
 
-        write("sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID",
-              rSNVu, append=FALSE)
-
-        snvValidity <- character()
-    } else {
-        rSNVu <- rSNV
-        myNotes <- c(myNotes, paste("Number of rows originally in rSNV input file -", system(sprintf("wc -l %s", rSNV), intern = TRUE)))
+    if (readLines(rSNV)[1] == "sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID") {
+        myNotes <- c(myNotes, paste("Number of rows originally in rSNV input file -",
+                                    system(sprintf("wc -l %s", rSNV), intern = TRUE)))
         snvValidity <- .rSNVheadercheck(rSNV)
+    } else {
+        write("sym\tchr\tstart\tend\tstrand\tclass\ttype\taRef\ta1\ta2\tTCGA\tUUID", rSNV, append=FALSE)
     }
 
     # ==== READ DATA ===========================================================
@@ -142,7 +135,7 @@ importSNV.TCGA <- function(  fMAF,
                     fileasDT <- na.omit(fileasDT)
                 }
 
-                write.table(fileasDT,  file=rSNVu, sep="\t", append=TRUE, row.names =
+                write.table(fileasDT,  file=rSNV, sep="\t", append=TRUE, row.names =
                                 FALSE, col.names = FALSE, quote = FALSE)
             }
             filesFinished <- filesFinished + 1
@@ -160,23 +153,14 @@ importSNV.TCGA <- function(  fMAF,
 
             myTitle <- "importSNV.TCGA"
 
-            # Compile function call record
-            if (missing(rSNV)) {
-                myCall[1] <- "importSNV.TCGA("
-                myCall[2] <- sprintf("fMAF = \"%s\", ", fMAF)
-                myCall[3] <- sprintf("silent = %s, ", as.character(silent))
-                myCall[4] <- sprintf("writeLog = %s, ", as.character(writeLog))
-                myCall[5] <- sprintf("na.rm = %s)", as.character(na.rm))
-                myCall <- paste0(myCall, collapse = "")
-            } else {
-                myCall[1] <- "importSNV.TCGA("
-                myCall[2] <- sprintf("fMAF = %s", paste(fMAF, collapse = ", "))
-                myCall[3] <- sprintf("rSNV = \"%s\", ", rSNVu)
-                myCall[4] <- sprintf("silent = %s, ", as.character(silent))
-                myCall[5] <- sprintf("writeLog = %s, ", as.character(writeLog))
-                myCall[6] <- sprintf("na.rm = %s)", as.character(na.rm))
-                myCall <- paste0(myCall, collapse = "")
-            }
+            # Compile function call record{
+            myCall[1] <- "importSNV.TCGA("
+            myCall[2] <- sprintf("fMAF = %s", paste(fMAF, collapse = ", "))
+            myCall[3] <- sprintf("rSNV = \"%s\", ", rSNV)
+            myCall[4] <- sprintf("silent = %s, ", as.character(silent))
+            myCall[5] <- sprintf("writeLog = %s, ", as.character(writeLog))
+            myCall[6] <- sprintf("na.rm = %s)", as.character(na.rm))
+            myCall <- paste0(myCall, collapse = "")
 
             # indicate input object name(s)
             #   (NA for this importSNV.TCGA())
