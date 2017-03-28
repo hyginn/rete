@@ -10,6 +10,20 @@ NL <- .PlatformLineBreak
 options(stringsAsFactors=FALSE)
 
 test_that("parameter errors are correctly handled", {
+    testMAF <- tempfile()
+    input0 <- c("Hugo_Symbol" , "Entrez_Gene_Id" , "Center" , "NCBI_Build" , "Chromosome" , "Start_Position" , "End_Position" , "Strand" , "Variant_Classification" , "Variant_Type" , "Reference_Allele" , "Tumor_Seq_Allele1" , "Tumor_Seq_Allele2" , "dbSNP_RS" , "dbSNP_Val_Status" , "Tumor_Sample_Barcode" , "Matched_Norm_Sample_Barcode" , "Match_Norm_Seq_Allele1" , "Match_Norm_Seq_Allele2" , "Tumor_Validation_Allele1" , "Tumor_Validation_Allele2" , "Match_Norm_Validation_Allele1" , "Match_Norm_Validation_Allele2" , "Verification_Status" , "Validation_Status" , "Mutation_Status" )
+    input1 <- c("TMEM201" , 199953 , "WUGSC" , "GRCh38" , "chr1" , 9607661 , 9607661 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09" , "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a", "c.1265C>T" , "p.Pro422Leu", "p.P422L" , "ENST00000340381")
+    input2 <- c("PTCHD2" , 57540 , "WUGSC" , "GRCh38" , "chr1" , 11516130 , 11516130 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09" , "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.1718C>T" , "p.Ala573Val" , "p.A573V" , "ENST00000294484")
+    input3 <- c("VWA5B1" , 127731 , "WUGSC" , "GRCh38" , "chr1" , 20319393 , 20319393 , "+" , "Missense_Mutation" , "SNP" , "C" , "C" , "T" , "novel" , "TCGA-QQ-A8VF-01A-11D-A37C-09", "TCGA-QQ-A8VF-10A-01D-A37F-09" , "Somatic" , "Illumina" , "HiSeq" , "2000" , "2109690d-e8b1-4b5c-9a39-21af273324cf" , "fe2daf93-56f1-4236-9b58-bf18f0e47d3a" , "c.853C>T" , "p.Pro285Ser" , "p.P285S" , "ENST00000375079")
+
+    trueIn[1] <- input0
+    trueIn[2] <- input1
+    trueIn[3] <- input2
+    trueIn[4] <- input3
+
+    write.table(trueIn,  file=testMAF, sep="\t", append=FALSE, row.names =
+                    FALSE, col.names = FALSE, quote = FALSE)
+
     # fMAF is not provided
     expect_error(importSNV.TCGA(), "argument \"fMAF\" is missing, with no default")
     # fMAF is NULL/empty vector
@@ -41,6 +55,7 @@ test_that("parameter errors are correctly handled", {
     expert_error(importSNV.TCGA(fMAF = testMAF, tOut, na.rm = NULL), ".checkArgs> \"na.rm\" mode error: argument has mode \"NULL\" but function expects mode \"logical\".")
     expert_error(importSNV.TCGA(fMAF = testMAF, tOut, na.rm = c(TRUE, TRUE)), ".checkArgs> \"na.rm\" length error: argument has length 2 but function expects length 1.")
 
+    expect_true(file.remove(testMAF))
 })
 
 test_that("a sane input gives an expected output with different input parameters", {
