@@ -148,10 +148,5 @@ importNet.STRING <- function(fName,
   
 }
 
-isMitabformat <- function(tmp){
-  data   <- unlist(strsplit(tmp[2], "\t"))
-  
-  
-  
-}
+
 
