@@ -28,6 +28,7 @@
 combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, writeLog=TRUE) {
     # parameter validation
     if (missing(fNameSNV) && missing(fNameCNA)) {
+        # ToDo: more descriptive error message
         stop("Input vectors are empty!")
     }
     cR <- character()
@@ -38,6 +39,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
         cR <- c(cR, .checkArgs(fCNA,        like = c("FILE_E")))
     }
     if (grepl("\\.rds$", fgX) == FALSE) {
+        # ToDo - need to discuss policy. I vote that this is not an error (bs)
         stop("Output file has to be .rds extension!")
     }
     cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
@@ -53,6 +55,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
         SNVcurrent <- readRDS(fNameSNV[i])
         # get HGNC gene symbol row by row
         for (gene in rownames(SNVcurrent)) {
+            # ToDo - convert to i iterator and use progress bar.
             position <- SNVcurrent[gene, "start"]
             vclass <- SNVcurrent[gene, "class"]
             # create key using <gene symbol>:SNV:<position>:<variant class>
@@ -70,10 +73,15 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
         CNAcurrent <- readRDS(fNameCNA[i])
         # get HGNC gene symbols row by row
         for (gene in rownames(CNAcurrent)) {
+            # ToDo - convert to i iterator and use progress bar.
             # get CNA of one gene for each sample
             for (sample in colnames(CNAcurrent)) {
                 tmpCNA <- CNAcurrent[gene, sample]
                 # create key using <gene symbol:CNA:<as.character(round(<copy number>))>
+                # ToDo: this is a bit implicit. At this point we are changing the data
+                #       format for CNAs from float to integer - and that's the value we
+                #       actually record and use downstream. We need to make sure this is
+                #       clearly expressed all over the docs.
                 key <- sprintf("%s:CNA:%s", gene, as.character(round(tmpCNA)))
                 if (hash::has.key(key, hashTable)) {
                     hashTable[[key]] <- hashTable[[key]] + 1
@@ -94,6 +102,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
     rownames(out) <- c(keys)
 
     for (k in keys) {
+        # ToDo - convert to i iterator and use progress bar.
         # strplit each key to sym, type, pos and class and add to dataframe
         dataVector <- strsplit(k, ":")[[1]]
 
@@ -116,6 +125,10 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
     }
 
     # update metadata
+    # ToDo - add version.
+    # ToDo - change type to "gX"
+    # ToDo - CRITICAL add UUID. Saving the object with its old UUID
+    #        is an intregration ERROR
     attr(out, "type") <- "combinedData"
     #attr(out, "UUID") <- getUUID(out)
     # save output file to local path
@@ -132,6 +145,7 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
         # Compile function call record
         logCall <- character()
         logCall[1] <- "combineSNV_CNA("
+        # ToDo - this will not work as expected on multiple files
         logCall[2] <- sprintf("fNameSNV = \"%s\", ", fNameSNV)
         logCall[3] <- sprintf("fNameCNA = \"%s\", ", fNameCNA)
         logCall[4] <- sprintf("fgX = \"%s\", ", fgX)
@@ -141,6 +155,11 @@ combineSNV_CNA <- function(fNameSNV, fNameCNA, fgX="gX.rds", silent=FALSE, write
 
         # Record progress information
         logNotes <- character()
+        # ToDo: I would like to see separate summary values for CNAs and SNVs
+        # ToDo: Review: if we save an object to file, and it has an UUID because
+        #       it's an RDS, do we save the UUID to the logfile, even though this
+        #       is not technically an "output" object and the UUID could change
+        #       in the object.
         logNotes <- c(logNotes, sprintf("Combined %s samples in total.", length(hashTable)))
 
         # # send info to log file
