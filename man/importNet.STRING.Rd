@@ -5,7 +5,7 @@
 \title{Import network data from a STRING database file.}
 \usage{
 importNet.STRING(fName, net = "combined_score", cutoffType = "xN", val,
-  taxID = "9606", silent = FALSE, noLog = FALSE)
+  taxID = "9606", dropUnmapped = TRUE, silent = FALSE, writeLog = TRUE)
 }
 \arguments{
 \item{fName}{Filename of a STRING protein.links.detailed.v10.txt file.}
@@ -21,11 +21,15 @@ type.}
 \item{taxID}{The NCBI tax ID prefix of the protein1 and protein2 IDs.
 Defaults to "9606" (homo sapiens)}
 
+\item{dropUnmapped}{Controls whether to drop records in which at least one
+interactor could not be mapped to HGNC gene symbol. TRUE by default.
+ by default.}
+
 \item{silent}{Controls whether output to console should be suppressed. FALSE
 by default.}
 
-\item{noLog}{Controls whether writing the result to the global logfile should
-be suppressed. FALSE by default.}
+\item{writeLog}{Controls whether writing the result to the global logfile is
+enabled. TRUE by default.}
 }
 \value{
 a weighted, directed, simple igraph graph which is a rete gG object.
@@ -67,19 +71,17 @@ returns a weighted, directed igraph graph object of a rete gG type.
 
 \section{Console and log}{
 
-  The taxID parameter is used as a sanity check on the
-  file contents. Currently only the first data
+  Progress is summarized to console and results are written to the log-file
+  unless writeLog is FALSE.
 }
 
 \section{The gG object}{
 
   The function returns a rete gG object, a weighted,
   directed, simple igraph graph in which HGNC gene symbols are vertex names,
-  and the edge attributes $weight hold the network scores. Graph attributes
-  hold metadata; use igraph::graph_attr(gG) to return: $gGversion: the gG
-  object version; $logFile: the filename to which log information was
-  written; $inFile: the input filename of STRING data; $call: the complete
-  function call with expanded arguments; and $date: when the gG object was
-  created.
+  and the edge attributes $weight hold the network scores. Metadata are
+  stored as object attributs: $type: "gG"; $version: the gG
+  object version; $UUID: the UUID which allows to retrieve detailed
+  process information from the log file with \code{\link{findUUID}}.
 }
 

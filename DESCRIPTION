@@ -11,7 +11,9 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     igraph,
-    readr
+    readr,
+    uuid,
+    hash
 Suggests:
     testthat
 RoxygenNote: 6.0.1

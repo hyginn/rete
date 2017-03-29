@@ -1,0 +1,96 @@
+{
+    "statistics": {
+        "2": {
+            "expected": 3.5, 
+            "pval": 0.5, 
+            "observed": 5
+        }, 
+        "3": {
+            "expected": 2.0, 
+            "pval": 0.7, 
+            "observed": 2
+        }, 
+        "4": {
+            "expected": 0.8, 
+            "pval": 1.0, 
+            "observed": 0
+        }, 
+        "5": {
+            "expected": 0.8, 
+            "pval": 1.0, 
+            "observed": 0
+        }, 
+        "6": {
+            "expected": 0.6, 
+            "pval": 1.0, 
+            "observed": 0
+        }, 
+        "7": {
+            "expected": 0.6, 
+            "pval": 1.0, 
+            "observed": 0
+        }, 
+        "8": {
+            "expected": 0.6, 
+            "pval": 1.0, 
+            "observed": 0
+        }, 
+        "9": {
+            "expected": 0.6, 
+            "pval": 1.0, 
+            "observed": 0
+        }, 
+        "10": {
+            "expected": 0.6, 
+            "pval": 1.0, 
+            "observed": 0
+        }
+    }, 
+    "components": [
+        [
+            "gene1", 
+            "gene12", 
+            "gene19"
+        ], 
+        [
+            "gene16", 
+            "gene17", 
+            "gene18"
+        ], 
+        [
+            "gene10", 
+            "gene11"
+        ], 
+        [
+            "gene2", 
+            "gene3"
+        ], 
+        [
+            "gene21", 
+            "gene22"
+        ]
+    ], 
+    "parameters": {
+        "display_name_file": null, 
+        "infmat_file": "example/influence_matrices2/example2_ppr_0.6.h5", 
+        "deltas": [], 
+        "permuted_networks_path": "example/influence_matrices2/permuted/##NUM##/example2_ppr_0.6.h5", 
+        "edge_file": "example/example_edgelist.txt", 
+        "num_cores": 1, 
+        "heat_file": "/home/joel/edu/phd/courses/jtb2020/hotnet2-download/hotnet2/example/output/simple2/delta_0.090225313719/heat.json", 
+        "significance_permutations": 10, 
+        "output_directory": "example/output/simple2", 
+        "display_score_file": "example/example.dscore", 
+        "delta_permutations": 10, 
+        "output_hierarchy": false, 
+        "runname": "SimpleExample2", 
+        "network_name": "Example2", 
+        "delta": 0.090225313719020511, 
+        "min_cc_size": 2, 
+        "infmat_index_file": "example/example_gene_index.txt"
+    }, 
+    "sizes": {
+        "2": 3, 
+        "3": 2
+    }
+}
