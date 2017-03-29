@@ -89,7 +89,9 @@ importSNV.TCGA <- function(  fMAF,
 
             # check if variant_class contains valid values from known list
 
-            cat(sprintf("Processing file - \"%s\" - (%i/%i)", mafFile, filesFinished, length(fMAF)))
+            if (!silent) {
+                cat(sprintf("Processing file - \"%s\" - (%i/%i)", mafFile, filesFinished, length(fMAF)))
+            }
 
             classValid <- TRUE
             typeValid <- TRUE
