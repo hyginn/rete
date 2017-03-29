@@ -84,7 +84,7 @@ importSNV.TCGA <- function(  fMAF,
     for (mafFile in fMAF) {
         if (length(.fileValidity(mafFile)) + length(.mafHeaderCheck(mafFile)) + length(snvValidity) == 0) {
 
-            fileasDT <- read.table(mafFile, header = TRUE, fill = NA,  stringsAsFactors = FALSE,
+            fileasDT <- utils::read.table(mafFile, header = TRUE, fill = NA,  stringsAsFactors = FALSE,
                                    na.strings = " ")[,c(1,5,6,7,8,9,10,11,12,13,16,33)]
 
             # check if variant_class contains valid values from known list
@@ -137,11 +137,11 @@ importSNV.TCGA <- function(  fMAF,
                 if (na.rm) {
                     # remove row is missing values in anyone of the first 7 necessary columns
                     numRowswithNA <- nrow(fileasDT)
-                    fileasDT <- fileasDT[complete.cases(fileasDT[c(1,2,3,4,5,6,7)]), ]
+                    fileasDT <- stats::na.omit(fileasDT)
                     nrowsWithoutNA <- nrow(fileasDT)
                     myNotes <- c(myNotes, paste("Rows dropped due to missing values -", nrowsWithoutNA))
                 }
-                write.table(fileasDT,  file=rSNV, sep="\t", append=TRUE, row.names =
+                utils::write.table(fileasDT,  file=rSNV, sep="\t", append=TRUE, row.names =
                                 FALSE, col.names = FALSE, quote = FALSE)
             }
             filesFinished <- filesFinished + 1
@@ -190,7 +190,7 @@ importSNV.TCGA <- function(  fMAF,
                         "Strand", "Variant_Classification", "Variant_Type", "Reference_Allele",
                         "Tumor_Seq_Allele1", "Tumor_Seq_Allele2", "Tumor_Sample_Barcode",
                         "Tumor_Sample_UUID")
-    if (! all(read.table(filename, header = FALSE, fill = NA, stringsAsFactors = FALSE,
+    if (! all(utils::read.table(filename, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,c(1,5,6,7,8,9,10,11,12,13,16,33)]
               == validMAFheader)) {
         headValid <- c(headValid, "Header of input MAF file did not match the requirements.")
@@ -202,7 +202,7 @@ importSNV.TCGA <- function(  fMAF,
     headValid <- character()
     validSNVheader <- c("sym", "chr", "start", "end","strand", "class", "type", "aRef",
                         "a1", "a2", "TCGA","UUID")
-    if (! all(read.table(filename, header = FALSE, fill = NA, stringsAsFactors = FALSE,
+    if (! all(utils::read.table(filename, header = FALSE, fill = NA, stringsAsFactors = FALSE,
                          na.strings = " ", nrows=1)[,c(1,2,3,4,5,6,7,8,9,10,11,12)]
               == validSNVheader)) {
         headValid <- c(headValid, "Header of input rSNV file did not match the requirements.")
