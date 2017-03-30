@@ -7,14 +7,6 @@
 
 .onLoad <- function(libname, pkgname) {
 
-    if (!requireNamespace("igraph", quietly = TRUE)) {
-        stop("Failed to find required package \"igraph\".")
-    }
-
-    if (!requireNamespace("readr", quietly = TRUE)) {
-        stop("Failed to find required package \"readr\".")
-    }
-
     # Make list of rete global parameters
 
     # filepath of logfile

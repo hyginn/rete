@@ -23,7 +23,7 @@
 #' @examples
 #' \dontrun{
 #' fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids",
-#'                 type = "UniProt", outName = "fastMapUniProt.rds")
+#'                 type = "UniProt", outputName = "fastMapUniProt.rds")
 #' }
 #' @export
 fastMapGenerate <- function(fName, HGNCSymbolColName, unmappedColName,

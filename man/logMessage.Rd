@@ -4,13 +4,14 @@
 \alias{logMessage}
 \title{Write a message to the current log file.}
 \usage{
-logMessage(message)
+logMessage(msg)
 }
 \arguments{
-\item{message}{a character object or vector of character objects.}
+\item{msg}{a character object or vector of character objects.}
 }
 \value{
-N/A. message is appended to the current logfile.
+N/A. This function is invoked for its side-effect to appended text to
+  the current logfile.
 }
 \description{
 \code{logMessage} uses cat() to append a message to the current log
@@ -18,11 +19,13 @@ N/A. message is appended to the current logfile.
 }
 \details{
 The function will stop() if message is not of mode, type and class character.
-If a line is not terminated with a linebreak, a linebreak is appended.
+On windows systems, cat() replaces \\n linebreaks with \\r\\n. Therefore
+logMessage() converts all linebreaks internally to \\n before handing them to
+cat().
 }
 \examples{
 \dontrun{
-  mesg <- c("note > ", Sys.Date(), "Re-run analysis.")
-  logMessage(mesg)
+  msg <- c("note > ", Sys.Date(), "Re-run analysis.")
+  logMessage(msg)
 }
 }

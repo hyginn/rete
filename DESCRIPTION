@@ -10,8 +10,11 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports:
+    fastmatch,
+    hash,
     igraph,
-    readr
+    readr,
+    uuid
 Suggests:
     testthat
 RoxygenNote: 6.0.1

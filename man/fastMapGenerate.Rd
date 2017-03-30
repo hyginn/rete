@@ -31,7 +31,7 @@ the first instance of the key or only store the first key respectively.
 \examples{
 \dontrun{
 fastMapGenerate("hgnc_complete_set.txt", "symbol", "uniprot_ids",
-                type = "UniProt", outName = "fastMapUniProt.rds")
+                type = "UniProt", outputName = "fastMapUniProt.rds")
 }
 }
 \seealso{
