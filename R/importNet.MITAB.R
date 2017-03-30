@@ -18,16 +18,18 @@ importNet.STRING <- function(fName,
         if iRefWeb calculate score method 1 and gsub method 1
         if inBioMap calculate score method 2 and gsub method 2
         if IntAct calculate score method 3 and gsub method 3
-
   6) Read file
+Note .. if you need to add symmetric edges, or do method-selection, you will need more columns
+  with the appropriate information. Importantly, you also HAVE to confirm that BOTH proteins
+  are 9606.
   7) Name column 1-"a" 2-"b" and 15-"weight"
   8) Calculate score and save score into numerical
-  9) Remove all rows that dont contain taxid 9606
+  9) Remove all rows that dont contain taxid 9606 (ya - but you didn't import that  ;-)
   10) subset dataframe by methods removeByMethods()
   11) Remove all rows that dont pass the cutoff
   12) fastMap()
   13) dropunmapped()
-  14) simplify()
+  14) simplify()  <- don't need: .df2gG() will do that for you.
   15) .df2gG()
   16) Writelog()
   17) Return(gG)
