@@ -38,6 +38,11 @@ importSNV.TCGA <- function(  fMAF,
                              silent = FALSE,
                              writeLog = TRUE) {
 
+    # ToDo ...
+    print("Temporarily disabled for refactoring. Returning without activity.")
+    return()
+
+
     myNotes <- character()
     myCall <- character()
 
