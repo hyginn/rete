@@ -107,6 +107,7 @@ test_that("a sane input gives an expected output with different input parameters
 
 
 test_that("a corrupt input does not lead to corrupted output", {
+    # checking for version is not necessary : can handle all versions (2.4.1(latest) and below)
     # ToDo: test incomplete line
     tOut <- tempfile()
     expect_warning(importSNV.TCGA(testINcorr, tOut), "incomplete final line found by readTableHeader on \"importSNV_input_corr_file.maf\"")
@@ -122,7 +123,7 @@ test_that("silent and writeLog work as intended", {
 
     # check writeLog works as intended
     importSNV.TCGA(testIN, tOut, writeLog = TRUE)
-    expect_equal(readLines(OLOG)[1], "event | title  | importSNV.TCGA")
+    expect_equal(readLines(unlist(getOption("rete.logfile")))[1], "event | title  | importSNV.TCGA")
 })
 
 
