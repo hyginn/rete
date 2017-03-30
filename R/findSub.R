@@ -219,9 +219,9 @@ if (!silent) {
     print(logVect[length(logVect)])
 }
 
-#if (!noLog) { #save log data if we choose noLog = FALSE
-  #  save(logVect, file = logName)
-#}
+if (!noLog) { #save log data if we choose noLog = FALSE
+    logWrite(logVect)
+}
 return(sN)
 
 } #end of function
