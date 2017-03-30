@@ -2,17 +2,36 @@
 
 DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete.beta")),
                     silent = FALSE, noLog = FALSE) {
-startTime <- Sys.time()
+        startTime <- Sys.time()
 
-consoleVect <- paste("Diffuse started at", Sys.time(), sep = "")
-if (!silent) {
-    print(consoleVect) #print beginning of function to console
-}
+        consoleVect <- paste("Diffuse started at", Sys.time(), sep = "")
+        if (!silent) {
+            print(consoleVect) #print beginning of function to console
+        }
+#========= Checking Arguments =============================
+        consoleVect <- "Checking Arguments"
+        if (!silent) {
+            print(consoleVect) #print beginning of function to console
+        }
 
-consoleVect <- "Checking Arguments"
-if (!silent) {
-    print(consoleVect) #print beginning of function to console
-}
+        #Check Class Mode and Type of AGG
+
+        classModeTypeAGG <- c(class(AGG), mode(AGG), typeof(AGG))
+
+        if (classModeTypeAGG != c("igraph", "list", "list")) {
+            stop("input AGG is not an igraph object")
+        }
+
+        #Check other argmuments
+        check1 <- .checkArgs(algorithm,character(length = 1),checkSize = TRUE)
+        check2 <- .checkArgs(silent, logical(length = 1), checkSize = TRUE)
+        check3 <- .checkArgs(noLog, logical(length = 1), checkSize = TRUE)
+        check4 <- .checkArgs(param, list())
+
+        if (c(check1,check2,check3,check4) != character(length = 0) ) {
+            stop("Error: incorrect argument(s) for algorithm, silent, noLog, and/or param.
+                 See documentation for DIFFUSE function")
+        }
 
            #Assign AGG vertices and edges to data frames
            AGGverts<- igraph::as_data_frame(AGG, "vertices")
