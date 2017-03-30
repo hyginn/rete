@@ -139,7 +139,8 @@ importSNV.TCGA <- function(  fMAF,
                     numRowswithNA <- nrow(fileasDT)
                     fileasDT <- stats::na.omit(fileasDT)
                     nrowsWithoutNA <- nrow(fileasDT)
-                    myNotes <- c(myNotes, paste("Rows dropped due to missing values -", nrowsWithoutNA))
+                    diffNA <- numRowswithNA-nrowsWithoutNA
+                    myNotes <- c(myNotes, paste("Rows dropped due to missing values -", diffNA))
                 }
                 utils::write.table(fileasDT,  file=rSNV, sep="\t", append=TRUE, row.names =
                                 FALSE, col.names = FALSE, quote = FALSE)
