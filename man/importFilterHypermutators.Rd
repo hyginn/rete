@@ -4,11 +4,14 @@
 \alias{importFilterHypermutators}
 \title{Filters out hypermutators}
 \usage{
-importFilterHypermutators(fNames = c(), dOut = getwd(), xS = 400,
-  silent = FALSE, writeLog = TRUE)
+importFilterHypermutators(rSNVFileIn = c(), rCNAFileIn = c(),
+  dOut = getwd(), xS = 400, silent = FALSE, writeLog = TRUE,
+  writeDetailedLog = TRUE)
 }
 \arguments{
-\item{fNames}{A vector of local file names of rMUT and/or rCNA files}
+\item{rSNVFileIn}{A vector of local file names of rSNV}
+
+\item{rCNAFileIn}{A vector of local file names of rCNA}
 
 \item{dOut}{Directory to store output, defaults to getwd().}
 
@@ -19,15 +22,17 @@ by default.}
 
 \item{writeLog}{Controls whether writing the result to the global logfile is
 enabled. TRUE by default.}
+
+\item{writeDetailedLog}{Flag for extra details about log. TRUE by default.}
 }
 \description{
 \code{importFilterHypermutators} identifies the number of SNV and CNA
-mutations for each sample and removes the samples from rMUT and rCNA
+mutations for each sample and removes the samples from rSNV and rCNA
 datasets. Default threshold for removal is 400 mutations per sample.
 }
 \examples{
 \dontrun{
-    importFilterHypermutators(fNames, dOut, xS)
+    importFilterHypermutators(rSNVFileIn, rCNAFileIn, dOut, xS)
 }
 
 }

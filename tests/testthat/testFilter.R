@@ -9,8 +9,8 @@ logFileName(fPath = tempdir(), setOption = TRUE)  # make tempdir() the log dir
 logName <- unlist(getOption("rete.logfile"))
 if (file.exists(logName)) { file.remove(logName)}
 
-SNVfileName <- '../../inst/extdata/devSNV.rds'
-CNAfileName <- '../../inst/extdata/devCNA.rds'
+SNVfileName <- 'devSNV.rds'
+CNAfileName <- 'devCNA.rds'
 
 filteredSNVfileName <- paste(getwd(), "/filteredHypermutators_", basename(SNVfileName), sep = "")
 filteredCNAfileName <- paste(getwd(), "/filteredHypermutators_", basename(CNAfileName), sep = "")
@@ -67,12 +67,28 @@ test_that("importFilterHypermutators rejects invalid xS arguments", {
 
 test_that("importFilterHypermutators correctly removes hypermutators", {
     # run importFilterHypermutators with a single hypermutator
-    testCNA <- readRDS('../../inst/extdata/devCNA.rds')
-    testSNV <- readRDS('../../inst/extdata/devSNV.rds')
+    testCNA <- readRDS(CNAfileName)
+    testSNV <- readRDS(SNVfileName)
 
+    # start off with a known number of samples in each CNA and SNV file
+    expect_equal(length(colnames(testCNA)[4:length(colnames(testCNA))]), 579)
+    expect_equal(length(testSNV$Tumor_Sample_Barcode), 15)
+
+    expect_error(importFilterHypermutators(rSNVFileIn = c(SNVfileName),
+                                           rCNAFileIn = c(CNAfileName),
+                                           xS = 15,
+                                           silent = FALSE,
+                                           writeLog = TRUE), NA)
 
     # check output file
-    readRDS('')
+    processedCNA <- readRDS(filteredCNAfileName)
+    processedSNV <- readRDS(filteredSNVfileName)
+
+    # expect that 458 samples are removed from rCNA (579 - 458 = 121)
+    expect_equal(length(colnames(processedCNA)[4:length(colnames(processedCNA))]), 121)
+
+    # expect that no samples are removed from rSNV
+    expect_equal(length(processedSNV$Tumor_Sample_Barcode), 15)
 
     # test cleanup
     if (file.exists(filteredSNVfileName)) { file.remove(filteredSNVfileName)}

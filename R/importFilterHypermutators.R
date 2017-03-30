@@ -66,10 +66,11 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
     for (file in rCNAFileIn) {
         # readRDS, count gene CNAs and add to hash for sample @ CNA and nMUT
         rCNA <- readRDS(file)
-        for (sample in colnames(rCNA)) {
+        for (sample in colnames(rCNA)[4:length(colnames(rCNA))]) {
             totalSamples <- totalSamples + 1
             # if key is in hash, increment CNA and nMUT for every gene if there is an abberation
             for (copyNumberValue in rCNA[[sample]]) {
+                copyNumberValue <- as.double(copyNumberValue)
                 if (copyNumberValue != 0) {
                     if (!is.null(hashTable[[sample]])) {
                         prevCNACount <- hashTable[[sample]]$CNA
@@ -102,7 +103,7 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
                 prevCNACount <- hashTable[[sample]]$CNA
                 prevSNVCount <- hashTable[[sample]]$SNV
                 prevTotalCount <- hashTable[[sample]]$total
-                assign(sample, list(CNA = prevCNACount, SNV = prevSNVCount + 1, nMUT = prevTotalCount + 1), envir = hashTable)
+                assign(sample, list(CNA = prevCNACount, SNV = prevSNVCount + 1, total = prevTotalCount + 1), envir = hashTable)
             } else {
                 assign(sample, list(CNA = 0, SNV = 1, total = 1), envir = hashTable)
             }
@@ -122,24 +123,24 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
 
     for (sample in ls(hashTable)) {
         # num samples with only CNA
-        if (hashTable[[sample]]$SNV == 0) {
+        if (hashTable[[sample]]$SNV == 0 && hashTable[[sample]]$CNA > 0) {
             numSamplesOnlyCNA <- numSamplesOnlyCNA + 1
         }
         # num samples with only SNV
-        else if (hashTable[[sample]]$CNA == 0) {
+        if (hashTable[[sample]]$CNA == 0 && hashTable[[sample]]$SNV > 0) {
             numSamplesOnlySNV <- numSamplesOnlySNV + 1
         }
         # num samples with both SNV and CNA
-        else if (hashTable[[sample]]$CNA > 0 && hashTable[[sample]]$SNV > 0) {
+        if (hashTable[[sample]]$CNA > 0 && hashTable[[sample]]$SNV > 0) {
             numSamplesBothSNVAndCNA <- numSamplesBothSNVAndCNA + 1
         }
-        # num samples that exceeded threshold and need removal
-        else if (hashTable[[sample]]$total > xS) {
+        # num samples that exceeded threshold and need to be removed
+        if (hashTable[[sample]]$total > xS) {
             numRemovedSamples <- numRemovedSamples + 1
             removedSamples <- c(removedSamples, sample)
         }
         # num samples with no change
-        else {
+        if (hashTable[[sample]]$total <= xS) {
             numSamplesNoChange <- numSamplesNoChange + 1
         }
     }
@@ -149,6 +150,7 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
     # for each rCNAFileIn
     for (file in rCNAFileIn) {
         rCNA <- readRDS(file)
+
         # remove sample if sample in `removedSamples`
         newRCNA <- rCNA[, !(names(rCNA) %in% removedSamples)]
 
