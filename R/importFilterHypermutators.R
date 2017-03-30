@@ -155,7 +155,7 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
         newRCNA <- rCNA[, !(names(rCNA) %in% removedSamples)]
 
         # update metadata - having issues, getting `invalid first argument`
-        # getUUID(newRCNA)
+        getUUID("newRCNA")
 
         # save new CNAFile with "filtered" prepended to filename
         saveRDS(newRCNA, file = paste(dOut, "/filteredHypermutators_", basename(file), sep = ""))
@@ -169,7 +169,7 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
         newRSNV <- rSNV[, !(gsub("-", ".", rSNV$Tumor_Sample_Barcode) %in% removedSamples)]
 
         # update metadata - having issues, getting `invalid first argument`
-        # getUUID(newRSNV)
+        getUUID("newRSNV")
 
         # save new SNVFile
         saveRDS(newRSNV, file = paste(dOut, "/filteredHypermutators_", basename(file), sep = ""))
