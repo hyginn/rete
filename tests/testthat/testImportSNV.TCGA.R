@@ -54,7 +54,7 @@ test_that("parameter errors are correctly handled", {
     expect_error(importSNV.TCGA(fMAF = testMAF, tOut, na.rm = 1), ".checkArgs> \"na.rm\" mode error: argument has mode \"numeric\" but function expects mode \"logical\".")
     expect_error(importSNV.TCGA(fMAF = testMAF, tOut, na.rm = NULL), ".checkArgs> \"na.rm\" mode error: argument has mode \"NULL\" but function expects mode \"logical\".")
     expect_error(importSNV.TCGA(fMAF = testMAF, tOut, na.rm = c(TRUE, TRUE)), ".checkArgs> \"na.rm\" length error: argument has length 2 but function expects length 1.")
-
+    # ToDo - confirm that no log file was written.
     expect_true(file.remove(testMAF))
 })
 
@@ -102,6 +102,9 @@ test_that("a sane input gives an expected output with different input parameters
     moduleNA <- read.table(tOut3, sep = "\t", stringsAsFactors = FALSE)
     # add to prexisting rSNV file
     expect_equal(trueOut, moduleNA)
+    
+    # ToDo: this should have creaetd a number of log-file entreis. This is not best-practice.
+    #        .... need to turn logging off, except when testing for it.
     #===============================================================================
 })
 
@@ -109,6 +112,8 @@ test_that("a sane input gives an expected output with different input parameters
 test_that("a corrupt input does not lead to corrupted output", {
     # if fMAF file open does not follow the 2.4 or agreed upon version either STOP or DROP file
     # expect_error(importSNV.TCGA(c("testIn2.4.1")))
+    # ToDo: hasn't been implemented.
+    # ToDo: test incomplete line
 })
 
 test_that("silent works as intended", {
