@@ -10,6 +10,7 @@ NL <- .PlatformLineBreak
 options(stringsAsFactors=FALSE)
 testIN <- "importSNV_input_test_file.maf"
 testOUT <- "importSNV_output_test_file"
+testINcorr <- "importSNV_input_corr_file.maf"
 
 test_that("parameter errors are correctly handled", {
     testMAF <- tempfile()
@@ -69,7 +70,7 @@ test_that("a sane input gives an expected output with different input parameters
     trueOut <- read.table(testOUT, sep = "\t", stringsAsFactors = FALSE)
 
     # run the module on only fMAF and rSNV as parameters (moduleOut)
-    importSNV.TCGA(testIN, tOut)
+    importSNV.TCGA(testIN, tOut, writeLog = FALSE)
     # check if manual output = module output
     module <- read.table(tOut, sep = "\t", stringsAsFactors = FALSE)
 
@@ -79,7 +80,7 @@ test_that("a sane input gives an expected output with different input parameters
 
     # TEST fMAF, rSNV, silent parameters ============================================
     # run the module on fMAF and rSNV and silent as parameters
-    importSNV.TCGA(testIN, tOut1, silent=TRUE)
+    importSNV.TCGA(testIN, tOut1, silent=TRUE, writeLog = FALSE)
     modulePre2 <- read.table(tOut1, sep = "\t", stringsAsFactors = FALSE)
     # add to prexisting rSNV file
     expect_equal(trueOut, modulePre2)
@@ -87,7 +88,7 @@ test_that("a sane input gives an expected output with different input parameters
 
     # TEST fMAF, rSNV, silent, writeLog parameters =================================
     # run the module on fMAF, rSNV, silent and writeLog as parameters
-    importSNV.TCGA(testIN, tOut2, silent=FALSE, writeLog=TRUE)
+    importSNV.TCGA(testIN, tOut2, silent=FALSE, writeLog=FALSE)
     modulePre3 <- read.table(tOut2, sep = "\t", stringsAsFactors = FALSE)
     # add to prexisting rSNV file
     expect_equal(trueOut, modulePre3)
@@ -102,27 +103,26 @@ test_that("a sane input gives an expected output with different input parameters
     moduleNA <- read.table(tOut3, sep = "\t", stringsAsFactors = FALSE)
     # add to prexisting rSNV file
     expect_equal(trueOut, moduleNA)
-    
-    # ToDo: this should have creaetd a number of log-file entreis. This is not best-practice.
-    #        .... need to turn logging off, except when testing for it.
-    #===============================================================================
 })
 
 
 test_that("a corrupt input does not lead to corrupted output", {
-    # if fMAF file open does not follow the 2.4 or agreed upon version either STOP or DROP file
-    # expect_error(importSNV.TCGA(c("testIn2.4.1")))
-    # ToDo: hasn't been implemented.
     # ToDo: test incomplete line
+    tOut <- tempfile()
+    expect_warning(importSNV.TCGA(testINcorr, tOut), "incomplete final line found by readTableHeader on \"importSNV_input_corr_file.maf\"")
 })
 
-test_that("silent works as intended", {
+test_that("silent and writeLog work as intended", {
     # if silent=TRUE, check if output to console is supressed
     tOut <- tempfile()
     testF <- tempfile()
-    capture.output(importSNV.TCGA(testIN, tOut, silent = TRUE), file = testF)
+    capture.output(importSNV.TCGA(testIN, tOut, silent = TRUE, writeLog = FALSE), file = testF)
     expect_equal(length(readLines(testF)), 0)
     expect_true(file.remove(testF))
+
+    # check writeLog works as intended
+    importSNV.TCGA(testIN, tOut, writeLog = TRUE)
+    expect_equal(readLines(OLOG)[1], "event | title  | importSNV.TCGA")
 })
 
 

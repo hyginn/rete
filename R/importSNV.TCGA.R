@@ -162,7 +162,7 @@ importSNV.TCGA <- function(  fMAF,
 
             # Compile function call record{
             myCall[1] <- "importSNV.TCGA("
-            myCall[2] <- sprintf("fMAF = %s", paste(fMAF, collapse = ", "))
+            myCall[2] <- sprintf("fMAF = (%s), ", paste(fMAF, collapse = ", "))
             myCall[3] <- sprintf("rSNV = \"%s\", ", rSNV)
             myCall[4] <- sprintf("silent = %s, ", as.character(silent))
             myCall[5] <- sprintf("writeLog = %s, ", as.character(writeLog))
