@@ -69,6 +69,13 @@ importNet.STRING <- function(fName,
 
 })
 
+test_that("importNet.MITAB() correctly calculates scores", {
+  fN <- "core.psimitab"
+  g
+})
+
+
+
 test_that("importNet.MITAB() produces gG from MITAB data", {
   fN <- "core.psimitab"
   gG <- importNet.MITAB(fName = fN,
@@ -123,6 +130,26 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
     expect_true(file.remove(testF))
   })
   
+  
+# ==== LOOK HERE ============================================================================  
+  test_that("importNet.MITAB() follows the designated cutoff", {
+    fN <- "core.psimitab"
+    gG <- importNet.MITAB(fName = fN,
+                          cutoffType = "xN",
+                          dropUnmapped = TRUE,
+                          silent = TRUE,
+                          writeLog = FALSE)
+    
+    expect_true(lenth(gG), 10000) # Check quantity of vertices vertices
+    expect_true(gG[1]$score, 0.190986) # Check scoring method works
+    expec_true(gG[1]$UUID, trasnlatedUUID) #Check that ID translation works
+    expect_true(!grepl(gG$UUID, dropped)) # Check if dropped
+    
+    
+    
+  })
+  
+# ==== HERE ================================================================================
   
 logName <- unlist(getOption("rete.logfile"))
 if (file.exists(logName)) { file.remove(logName)}
