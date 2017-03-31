@@ -155,7 +155,10 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
         newRCNA <- rCNA[, !(names(rCNA) %in% removedSamples)]
 
         # update metadata
-        getUUID("newRCNA")
+        getUUID("newRCNA", overwrite = TRUE)
+        # ToDo: record updated UUID in log-file
+        # ToDo: test that UUID is _actually_ being updated.
+
 
         # save new CNAFile with "filtered" prepended to filename
         saveRDS(newRCNA, file = paste(dOut, "/filteredHypermutators_", basename(file), sep = ""))
@@ -169,7 +172,9 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
         newRSNV <- rSNV[, !(gsub("-", ".", rSNV$Tumor_Sample_Barcode) %in% removedSamples)]
 
         # update metadata
-        getUUID("newRSNV")
+        getUUID("newRSNV", overwrite = TRUE)
+        # ToDo: record updated UUID in log-file
+        # ToDo: test that UUID is _actually_ being updated.
 
         # save new SNVFile
         saveRDS(newRSNV, file = paste(dOut, "/filteredHypermutators_", basename(file), sep = ""))
