@@ -154,7 +154,7 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
         # remove sample if sample in `removedSamples`
         newRCNA <- rCNA[, !(names(rCNA) %in% removedSamples)]
 
-        # update metadata - having issues, getting `invalid first argument`
+        # update metadata
         getUUID("newRCNA")
 
         # save new CNAFile with "filtered" prepended to filename
@@ -168,7 +168,7 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
         # for each sample (need to gsub("-", ".", sample)), if sample in `removedSamples` remove it
         newRSNV <- rSNV[, !(gsub("-", ".", rSNV$Tumor_Sample_Barcode) %in% removedSamples)]
 
-        # update metadata - having issues, getting `invalid first argument`
+        # update metadata
         getUUID("newRSNV")
 
         # save new SNVFile
@@ -184,8 +184,8 @@ importFilterHypermutators <- function(rSNVFileIn = c(),
         # Compile function call record
         logCall <- character()
         logCall[1] <- "importFilterHypermutators("
-        logCall[2] <- sprintf("rSNVFileIn = \"%s\", ", rSNVFileIn)
-        logCall[3] <- sprintf("rCNAFileIn = \"%s\", ", rCNAFileIn)
+        logCall[2] <- sprintf("rSNVFileIn = (%s)", paste(rSNVFileIn, collapse(", ")))
+        logCall[3] <- sprintf("rCNAFileIn = (%s)", paste(rCNAFileIn, collapse(", ")))
         logCall[4] <- sprintf("dOut = \"%s\", ", dOut)
         logCall[5] <- sprintf("xS = \"%s\", ", as.character(xS))
         logCall[6] <- sprintf("silent = %s, ", as.character(silent))
