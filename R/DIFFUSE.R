@@ -250,7 +250,7 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         logVect <- c(logVect,paste("returned EGG object with", sizeEdges, "edges and",
                                    sizeVerts, "vertices", sep = " "))
         logVect <- c(logVect,"UUID and attributes",as.character(meta))
-        logMessage(logVect)
+        #logMessage(logVect) need to include the method of logging this information
     }
 
           consoleVect <- "Finished, returning EGG"
