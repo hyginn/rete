@@ -1,3 +1,6 @@
+# importPDB.R
+# Non-exported function
+
 library("bio3d")
 library("Biostrings")
 install.packages("seqnir")
