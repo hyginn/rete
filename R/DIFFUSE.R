@@ -1,5 +1,45 @@
 #DIFFUSE Function
 
+#' Diffuse heat across edges and weight edges by heat
+#'
+#' @param AGG annotated gene graph (AGG), an igraph object with the following: vertices, with
+#' gene name attribute, gene score attribute; edges (directed) with gene names corresponding to
+#' 'source' and 'reciever' vertices
+#' @param algorithm Method of distributing influence. Currently only "Leis" method, describing heat
+#' diffusion process from Leisseron et al. (2015) available. Future versions of this function
+#' may have additional methods. Once influence is distributed from a gene based upon its initial
+#' 'gene score' (see score function for details), edges directed from the gene are assigned
+#' the 'influence' calculated for them. See details section for more information
+#' @param param list of parameters for algorithm, defaults to a list containing 'rete.beta',
+#' a globally set option (see documentation for options()). See details section for more information
+#' @param silent if TRUE, suppress printing of process to console
+#' @param noLog if TRUE, suppress logging of run and object metadata to rete's log
+#'
+#' @return  EGG (igraph object with content equivalent to AGG, but with an influence attribute
+#' for edges)
+#'
+#' @details The purpose of the function is to take an AGG input, and, depending on the algorithm,
+#' assign directed influences from one vertex to another based on network topology and a given
+#' vertex's gene score. For the Leis method, the following procedure is followed: 1) calculate
+#' the matrix W(i,j) as 1/deg(j) if there is a directional edge from j to i, 2) calculate matrix F
+#' as Beta * inverse(I-(1-Beta)*W), where W is the transition matrix as described before, I is
+#' the identity matrix of dimensions (number of vertices x number of vertices), and Beta is an
+#' 'insulation' parameter, 3) calculate matrix E as F*D, where D is a diagonal matrix where every
+#' element (i,i) is the 'heat' score/gene score for vertex(i), 4) from each E(i,j) that is not
+#' equal to 0, assign the value E(i,j) to the directional edge going from vertex j to vertex i.
+#' A more precise definition of the model E=Beta*inverse(I-(1-Beta)*W)*D is a random walk where,
+#' if one starts from node j, the probability of moving onto another given node will be
+#' (1-Beta)*1/deg(j), where Beta is the probability of restarting from the start node. If this
+#' process is repeated ad infinitum, an equilibrium distribution of F=Beta*inverse(I-(1-Beta)*W)
+#' is reached, where in each column j of matrix F, a vector of probabilities is given for landing
+#' on each element (i) in the column; i.e. element i of column j represents the probability of
+#' reaching node i if a random walk starts from node j. Thus, element E(i,j) represents the
+#' probability of reaching node i from node j when at equilibrium multiplied by the initial
+#' 'heat' (gene score) put on node j. For all E(i,j) where there exists a directed edge from
+#' j to i, edge j -> i is equal to the value of E(i,j).
+#'
+#' @export
+
 DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete.beta")),
                     silent = FALSE, noLog = FALSE) {
         startTime <- Sys.time()
@@ -14,13 +54,11 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
             print(consoleVect) #print beginning of function to console
         }
 
-        #Check Class Mode and Type of AGG
-
-        classModeTypeAGG <- c(class(AGG), mode(AGG), typeof(AGG))
-
-        if (classModeTypeAGG != c("igraph", "list", "list")) {
-            stop("input AGG is not an igraph object")
+        #Check if AGG is an igraph object, and check if it's directed
+        if (!(igraph::is.igraph(AGG) && igraph::is.directed(AGG))) {
+            stop("Error: AGG must be an iGraph object with directed edges")
         }
+
 
         #Check other argmuments
         check1 <- .checkArgs(algorithm,character(length = 1),checkSize = TRUE)
@@ -28,11 +66,13 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         check3 <- .checkArgs(noLog, logical(length = 1), checkSize = TRUE)
         check4 <- .checkArgs(param, list())
 
-        if (c(check1,check2,check3,check4) != character(length = 0) ) {
+        if (length(c(check1,check2,check3,check4)) > 0 ) {
             stop("Error: incorrect argument(s) for algorithm, silent, noLog, and/or param.
                  See documentation for DIFFUSE function")
         }
 
+        #Extract AGG metadata for writing to log
+        metaAGG <- attr(AGG,"meta")
            #Assign AGG vertices and edges to data frames
            AGGverts<- igraph::as_data_frame(AGG, "vertices")
            AGGedges<- igraph::as_data_frame(AGG, "edges")
@@ -45,6 +85,12 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         consoleVect<- "Method Selected: Leis"
         if (!silent) {
             print(consoleVect)
+        }
+
+        #check beta
+        if ( length(.checkArgs(param[[1]], numeric(length = 1))) > 1) {
+            stop("Leis Method selected. Beta must be class numeric of type
+                 double")
         }
 
         #creating transition matrix W
@@ -187,8 +233,8 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
         #setup metadata
            meta <- list(version = "EGG_Version_1.0",
-                        UUID = "12345",
-                        input = "AGG",
+                        UUID = uuid::UUIDgenerate(),
+                        input = paste("AGGuuID",metaAGG["UUID"][[1]], sep = ""),
                         time = finish)
           attr(EGG,"meta") <- meta
 #==================write the log=====================
@@ -217,3 +263,4 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
 
 }
+#[END]
