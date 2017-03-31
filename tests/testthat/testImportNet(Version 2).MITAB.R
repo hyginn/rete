@@ -58,7 +58,7 @@ test_that("importNet.MITAB() rejects erroneus parameters", {
 
 
 
-
+# bs>  importNet.STRING is the wrong function name.
 importNet.STRING <- function(fName,
                              cutoffType = "xN",
                              val,
@@ -90,6 +90,8 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
   expect_equal(attr(gG, "version"), "1.0")
   expect_equal(.checkArgs(attr(gG, "UUID"), "UUID"), character())
   
+  # bs>  Careful you are making an assumption that any previous testing did not
+  # bs>  create a logfile already. Beter to delete it explicitly in this block.
   thisLog <- readlines(logName)
   expect_true(grepl("event \\| title \\| importNet.MITAB",     thisLog[1]))
   expect_true(grepl("event \\| time",                          thisLog[2]))
@@ -134,16 +136,28 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
 # ==== LOOK HERE ============================================================================  
   test_that("importNet.MITAB() follows the designated cutoff", {
     fN <- "core.psimitab"
+    # bs>  Where would this file be?
+    # bs>  A more portable idiom is:
+    # bs > fN <- system.file("extdata", "core.psimitab", package="rete"))
+    # bs >   ...after putting your data files in the extdata folder. 
+    # bs>  You are NOT planning to make this test depend on a456MB intAct file, are you?
     gG <- importNet.MITAB(fName = fN,
                           cutoffType = "xN",
                           dropUnmapped = TRUE,
                           silent = TRUE,
                           writeLog = FALSE)
     
-    expect_true(lenth(gG), 10000) # Check quantity of vertices vertices
+    expect_true(lenth(gG), 10000) # Check quantity of vertices
+    # bs>  Your test-file should not contain more than ten records or so...
     expect_true(gG[1]$score, 0.190986) # Check scoring method works
+    # bs>  gG is an igraph object. Use the appropriate iGraph methods
+    # bs>  to retrieve what you are looking for: these are graph-atributes
+    # bs>  not list items.
     expec_true(gG[1]$UUID, trasnlatedUUID) #Check that ID translation works
+    # bs>  LOL - UUID has nothing to day with ID translation.
     expect_true(!grepl(gG$UUID, dropped)) # Check if dropped
+    # bs>  not sure what you are expecting here and how and why you are testing.
+    
     
     
     
@@ -155,14 +169,4 @@ logName <- unlist(getOption("rete.logfile"))
 if (file.exists(logName)) { file.remove(logName)}
 options("rete.logfile" = OLOG)
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+# [END]  
