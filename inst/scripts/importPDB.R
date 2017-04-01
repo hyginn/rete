@@ -1,125 +1,155 @@
 # importPDB.R
 # Non-exported function
 
-library("bio3d")
-library("Biostrings")
-install.packages("seqnir")
-
-readRDS(MT.RDS)
-
+#=============================STOP & SAVE======================================
 # Provide a mechanism to stop:
 # REFERENCE:
 #   http://stackoverflow.com/questions/38755283/break-loop-with-keyboard-input-r
-library(tcltk)
+# requires library(tcltk2)
 win1 <- tktoplevel()
 butStop <- tkbutton(win1, text = "Stop",
                     command = function() {
-                        assign("stoploop", TRUE, envir=.GlobalEnv)
+                        assign("stoploop", TRUE, envir = .GlobalEnv)
                         tkdestroy(win1)
                     })
 
 butSave <- tkbutton(win1, text = "Pause & Save",
                     command = function() {
-                        assign("stoploop", TRUE, envir=.GlobalEnv)
+                        assign("stoploop", TRUE, envir = .GlobalEnv)
                         print("Finishing the current gene..")
                         saveRDS(genes, file = "inst/tmp/genes.rds")
+                        saveRDS(GeneData, "inst/extdata/GeneData.rds")
                         tkdestroy(win1)
                     })
 tkgrid(butStop)
 tkgrid(butSave)
 stoploop <- FALSE
 
+readRDS(MT.rds)
+
+#=============================(LOAD & CONTINUE)/START==========================
+# Check if there was a saved progress from before.
 if (file.exists("inst/tmp/genes.rds")){
-    genes<- readRDS("inst/tmp/genes.rds")
+    genes <- readRDS("inst/tmp/genes.rds")
 
 } else {
-    genes <- list(gene symbols from MT)
+    genes <- list(gene names from MT)
 }
 
 while (length(genes > 0) && !stoploop){
+    results <- list()
+
+    #=========================GET TARGET SEQUENCE==============================
+
     # The current gene is always the first element of the list.
     # This element will be removed from the list of genes at the end of each
     # iteration of the while loop.This is necessary for pausing the process and
     # continuing it later.
+
     curr_gene <- genes[[1]]
 
-    results <- list()
-    # Translate the gene to its aa sequence
-    targetAA <- AAString(paste(a.a. sequence of the gene, collapse="")
+    # Translate the cDNA of the gene to its aa sequence
+    targetAA <- AAString(paste(a.a. sequence of the gene, collapse = "")
 
-    for (PDB-ID/chains matched to gene){
-        # vectors for the data.frame that will be created at the end of this for loop.
-        rowNames <- c()
-        resIDs <- c()
-        aaType <- c()
-        sidechainXYZ <- c()
-        calphaXYZ <- c()
+    for (pdbID_chainID matched to gene){
+        pdbID <- pdbid retrieved from the MT object
+        chainID <- chainid retrieved from the MT object
 
-        # load the PDB file.
-        subject <- read.pdb(PDB-ID)
-        # get the aa sequence of the subject
-        subjectAA <- AAString(paste(PDB$seqres, collapse=""))
-        # retrieve the start and end indices for the target and subject sequences.
+        #=====================READ SUBJECT PDB FILE============================
+
+        # download the PDB file.
+        subject <- read.pdb(pdbID)
+        # extract the desired chain and get its aa sequence.
+        chainAAIndices <- atom.select(subject,
+                                      "calpha",
+                                      chain = chainID,
+                                      value = TRUE)
+        subjectAA <- AAString(paste(aa321(chainAAIndices$atom$resid), collapse = ""))
+
+        #=====================ALIGNMENT========================================
+
+        # retrieve the start and end indices for the target & subject sequences:
         start_target <- the starting index of the alignment in targetAA from MT
         end_target <- the last index of the alignment in targetAA from MT
         start_subject <- the starting index of the alignment subjectAA from MT
         end_subject <- the last index of the alignment in target AA from MT
-        # Perform pairwisealignment..
+
+        # perform pairwise alignment with default parameters.
         ali <- pairwiseAlignment(subjectAA[start_subject, end_subject],
                                  targetAA[start_target, end_target])
-        # ^^^ Q: what should the gapExtension and gapOpening penalties be?
 
-        for (i in 1:nmatch(ali)){   #For all matched residues:
+        #======================================================================
+
+        # create a data frame with nmatch(ali) rows.
+        DF <- data.frame("ResID" = c(1:nmatch(ali)),
+                         "AA Type" = c(1:nmatch(ali)),
+                         "Sidechain Centroid" = c(1:nmatch(ali)),
+                         "C.alpha Centroid" = c(1:nmatch(ali)))
+
+        # for all matched residues:
+        for (n in 1:nmatch(ali)){
             i <- index of residue in targetAA
             j <- index of residue in subjectAA
-            #^^^ Q: How do I get the indices of residues aligned in target and subject?
-            rowNames <- append(rowNames, i)     # rowname will be the index of the residue in target gene
-            resIDs <- append(unique(subject$atom[subject$atom$resno==j,]$resid)) #resids are the 3 letter code of the aa
-            aaTypes <- append(aaTypes, type of targetAA[i])
+
+            # rowname will be the index of the residue in target gene:
+            rownames(DF)[n] <- i
+
+            #=================RESIDUE ID & AA TYPE=============================
+
+            # resids are the 3 letter code of the aa:
+            resID <- unique(subject$atom[subject$atom$resno==j,]$resid)
+            # type of AA..
+            aaType <- type of targetAA[i]
             # ^^^ Q: what does it mean by amino acid type?
-            #        (hydrophobic vs. hydrophilic? or acidic vs. basic? or something else?)
+            #        (hydrophobic vs. hydrophilic? or acidic vs. basic? or
+            #        something else?) Still need to figure out why we need
+            #        these.. They are mentioned in the design task page of
+            #        the GeneData object.
 
-            # specify which atoms in subject$atom$elety are for alpha carbon, COOH and NH2.
-            # The rest of the atoms must be in the side chain
-            nonSideChain_elety <- c("N", "C", "O", "H", "CA")
-            thisResData <- subject$atom[subject$atom$resno== j,]
+            #=================SIDECHAIN CENTROID===============================
 
-            #If there is data for this residue:
-            if (nrow(thisResData)!=0){
-                #x, y, z coordinates of the side chain atoms
-                sideChainXValues <- thisResData[!(thisResData$elety %in% nonSideChain_elety), "x"]
-                sideChainYValues <- thisResData[!(thisResData$elety %in% nonSideChain_elety), "y"]
-                sideChainZValues <- thisResData[!(thisResData$elety %in% nonSideChain_elety), "z"]
+            # subset the sidechain atoms; do not include hydrogen atoms:
+            sidechainInd <- combine.select(atom.select(subject,
+                                                       "sidechain",
+                                                       chain = chainID,
+                                                       resno = j),
+                                           atom.select(subject,
+                                                       "noh")
+            sideChain <- subject$atom[sidechainInd$atom,]
+            # calculate the sidechain centroid:
+            sidechainXYZ <- list(x = mean(sideChain$atom$x),
+                                 y = mean(sideChain$atom$y),
+                                 z = mean(sideChain$atom$z))
 
-                # calculate the average of the x, y, z coordinates
-                avgX <- sum(sideChainXValues)/length(sideChainXValues)
-                avgY <- sum(sideChainYValues)/length(sideChainYValues)
-                avgZ <- sum(sideChainZValues)/length(sideChainZValues)
-                sidechainXYZ <- append(sidechainXYZ, c(avgX, avgY, avgZ))
+            #=================ALPHA CARBON CENTROID============================
 
-                # x, y, z coordinates of the alpha carbon
-                calphaXYZ <- append(calphaXYZ, c(thisResData[thisResData$elety=="CA", "x"),
-                                                 thisResData[thisResData$elety=="CA", "y"],
-                                                 thisResData[thisResData$elety=="CA", "z"])
-            }
+            # subset the alpha carbon:
+            C.alpha <- atom.select(subject,
+                                   "calpha",
+                                   chain = chainID,
+                                   resno = j)
+            # get the x, y, z coordinates of the alpha carbon:
+            C.alphaXYZ <- list(x = C.alpha$atom$x,
+                               y = C.alpha$atom$y,
+                               z = C.alpha$atom$z)
+
+            #==================================================================
+
+            # append the data to the data frame
+            DF[n,] <- c(resID, aaType, sidechainXYZ, C.alphaXYZ)
         }
 
-        # create the data frame.
-        DF <- data.frame("ResID" <- resIDs,
-                         "AA Type" <- aaTypes,
-                         "Sidechain Centroid" <- sidechainXYZ,
-                         "C.alpha Centroid" <- calphaXYZ)
-        rownames(DF) <- rowNames
-
-        # append it to the results list
-        results <- append(results, DF)
+        # add the data frame to the list of data frames in GeneData$3D.
+        # the index in the list will be of format <pdbID_chainID>.
+        GeneData$3D[paste0(PDB_ID, "_", chain_ID)] <- DF
     }
-    #store results...
-    GeneData$3D[paste0(PDB_ID, chain_ID)] <- results
 
-    # Remove the current gene from the list of genes.
+    # remove the current gene from the list of genes.
     genes[[1]] <- NULL
 }
+
+# save the GeneData object:
+saveRDS(GeneData, "inst/extdata/GeneData.rds")
 
 # Remove the genes.rds file (if it exists) after 3D coordinates of
 # all genes have been populated.
