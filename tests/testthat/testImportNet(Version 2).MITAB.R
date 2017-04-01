@@ -77,6 +77,7 @@ test_that("importNet.MITAB() correctly calculates scores", {
 
 
 test_that("importNet.MITAB() produces gG from MITAB data", {
+  unlink(logName) # Deleting previous log file?
   fN <- "core.psimitab"
   gG <- importNet.MITAB(fName = fN,
                         cuttoffType = "xN",
@@ -133,20 +134,36 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
   
 # ==== LOOK HERE ============================================================================  
   test_that("importNet.MITAB() follows the designated cutoff", {
-    fN <- "core.psimitab"
+    fN <- system.file("extdata", "core_snippet.psimitab", package="rete")
+    
+    val <- 5 # Top 5 highest scores
     gG <- importNet.MITAB(fName = fN,
                           cutoffType = "xN",
                           dropUnmapped = TRUE,
                           silent = TRUE,
                           writeLog = FALSE)
     
-    expect_true(lenth(gG), 10000) # Check quantity of vertices vertices
-    expect_true(gG[1]$score, 0.190986) # Check scoring method works
-    expec_true(gG[1]$UUID, trasnlatedUUID) #Check that ID translation works
-    expect_true(!grepl(gG$UUID, dropped)) # Check if dropped
+    expect_true(gorder(gG), 5) # Check quantity of vertices 
+    expect_true(E(gG)$weights[1], 0.190986) # Check weight of first edge
     
     
+    val <- 0.45 # Edges fall into 0.45 quartile
+    gG <- importNet.MITAB(fName = fN,
+                          cutoffType = "xQ",
+                          val,
+                          dropUnmapped = TRUE,
+                          silent = TRUE,
+                          writeLog = FALSE)
+    expect_true(gorder(gG), 5) # Check quantity of vertices 
     
+    val <- 0.25 # Edges with weight >= 0.25
+    gG <- importNet.MITAB(fName = fN,
+                          cutoffType = "xS",
+                          val,
+                          dropUnmapped = TRUE,
+                          silent = TRUE,
+                          writeLog = FALSE)
+    expect_true(gorder(gG), 5) # Check quantity of vertices 
   })
   
 # ==== HERE ================================================================================
