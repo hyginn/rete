@@ -27,12 +27,6 @@
 #' isGeneSymbol(c("A1BG", "a1bg", "a1Bg", "A1bG))
 #' isGeneSymbol(c("123", "A1CF", "234", "a1bg"))
 
-library(microbenchmark)
-a <- c("a1bg", "A1BG")
-for (i in 1:1000){
-    a <- append(a, as.character(i))
-}
-
 isGeneSymbol <- function(input) {
 
     # Check the validity of the input.
