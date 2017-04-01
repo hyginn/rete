@@ -7,8 +7,42 @@ install.packages("seqnir")
 
 readRDS(MT.RDS)
 
+# Provide a mechanism to stop:
+# REFERENCE:
+#   http://stackoverflow.com/questions/38755283/break-loop-with-keyboard-input-r
+library(tcltk)
+win1 <- tktoplevel()
+butStop <- tkbutton(win1, text = "Stop",
+                    command = function() {
+                        assign("stoploop", TRUE, envir=.GlobalEnv)
+                        tkdestroy(win1)
+                    })
 
-for (genes in gene_list){
+butSave <- tkbutton(win1, text = "Pause & Save",
+                    command = function() {
+                        assign("stoploop", TRUE, envir=.GlobalEnv)
+                        print("Finishing the current gene..")
+                        saveRDS(genes, file = "inst/tmp/genes.rds")
+                        tkdestroy(win1)
+                    })
+tkgrid(butStop)
+tkgrid(butSave)
+stoploop <- FALSE
+
+if (file.exists("inst/tmp/genes.rds")){
+    genes<- readRDS("inst/tmp/genes.rds")
+
+} else {
+    genes <- list(gene symbols from MT)
+}
+
+while (length(genes > 0) && !stoploop){
+    # The current gene is always the first element of the list.
+    # This element will be removed from the list of genes at the end of each
+    # iteration of the while loop.This is necessary for pausing the process and
+    # continuing it later.
+    curr_gene <- genes[[1]]
+
     results <- list()
     # Translate the gene to its aa sequence
     targetAA <- AAString(paste(a.a. sequence of the gene, collapse="")
@@ -25,9 +59,16 @@ for (genes in gene_list){
         subject <- read.pdb(PDB-ID)
         # get the aa sequence of the subject
         subjectAA <- AAString(paste(PDB$seqres, collapse=""))
-        #Perform pairwisealignment..
-        ali <- pairwiseAlignment(subjectAA, targetAA)
+        # retrieve the start and end indices for the target and subject sequences.
+        start_target <- the starting index of the alignment in targetAA from MT
+        end_target <- the last index of the alignment in targetAA from MT
+        start_subject <- the starting index of the alignment subjectAA from MT
+        end_subject <- the last index of the alignment in target AA from MT
+        # Perform pairwisealignment..
+        ali <- pairwiseAlignment(subjectAA[start_subject, end_subject],
+                                 targetAA[start_target, end_target])
         # ^^^ Q: what should the gapExtension and gapOpening penalties be?
+
         for (i in 1:nmatch(ali)){   #For all matched residues:
             i <- index of residue in targetAA
             j <- index of residue in subjectAA
@@ -35,7 +76,8 @@ for (genes in gene_list){
             rowNames <- append(rowNames, i)     # rowname will be the index of the residue in target gene
             resIDs <- append(unique(subject$atom[subject$atom$resno==j,]$resid)) #resids are the 3 letter code of the aa
             aaTypes <- append(aaTypes, type of targetAA[i])
-            # ^^^ Q: what is aaType? (hydrophobic vs. hydrophilic? or acidic vs. basic? or something else?)
+            # ^^^ Q: what does it mean by amino acid type?
+            #        (hydrophobic vs. hydrophilic? or acidic vs. basic? or something else?)
 
             # specify which atoms in subject$atom$elety are for alpha carbon, COOH and NH2.
             # The rest of the atoms must be in the side chain
@@ -59,12 +101,11 @@ for (genes in gene_list){
                 calphaXYZ <- append(calphaXYZ, c(thisResData[thisResData$elety=="CA", "x"),
                                                  thisResData[thisResData$elety=="CA", "y"],
                                                  thisResData[thisResData$elety=="CA", "z"])
-
             }
         }
 
         # create the data frame.
-        DF <- data.frame("Structure ResID" <- resIDs,
+        DF <- data.frame("ResID" <- resIDs,
                          "AA Type" <- aaTypes,
                          "Sidechain Centroid" <- sidechainXYZ,
                          "C.alpha Centroid" <- calphaXYZ)
@@ -73,7 +114,15 @@ for (genes in gene_list){
         # append it to the results list
         results <- append(results, DF)
     }
-    #store...
-    store results
+    #store results...
+    GeneData$3D[paste0(PDB_ID, chain_ID)] <- results
 
+    # Remove the current gene from the list of genes.
+    genes[[1]] <- NULL
+}
+
+# Remove the genes.rds file (if it exists) after 3D coordinates of
+# all genes have been populated.
+if (file.exists("inst/tmp/genes.rds")){
+    file.remove("inst/tmp/genes.rds")
 }
