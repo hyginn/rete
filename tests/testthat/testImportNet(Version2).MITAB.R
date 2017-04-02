@@ -78,10 +78,10 @@ test_that("importNet.MITAB() correctly calculates scores", {
 
 test_that("importNet.MITAB() produces gG from MITAB data", {
   unlink(logName) # Deleting previous log file?
-  fN <- "core.psimitab"
+  fN <- system.file("extdata", "core_snippet.psimitab", package="rete")
   gG <- importNet.MITAB(fName = fN,
                         cuttoffType = "xN",
-                        dropUnmapped = FALSE,
+                        dropUnmapped = TRUE,
                         silent = TRUE,
                         weriteLog = TRUE)
   expect_equal(igraph::vcount(gG), 5)
@@ -100,7 +100,7 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
   expect_true(grepl("^event \\| call \\| importNet.MITAB \\(", thisLog[3]))
   expect_true(grepl(paste0("fName = \"", fN, "\""),            thisLog[3]))
   expect_true(grepl("cutoffType = \"xN\"",                     thisLog[3]))
-  expect_true(grepl("val = 10000",                             thisLog[3]))
+  expect_true(grepl("val = 10",                             thisLog[3]))
   expect_true(grepl("taxID = \"9606\"",                        thisLog[3]))
   expect_true(grepl("dropUnmapped = FALSE",                    thisLog[3]))
   expect_true(grepl("silent = TRUE",                           thisLog[3]))
@@ -110,14 +110,18 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
   expect_true(grepl("event | note | read 4 edges from file.",  thisLog[4]))
   expect_true(grepl("Selected 4 edges via cutooff.",           thisLog[5]))
   expect_true(grepl("gG object has 5 vertices and 4 edges.",   thisLog[6]))
-  expect_true(grepl("\"gG\"",                                  thisLog[7]))
-  expect_true(all(grepl("event \| output \\| attribute \\|", thisLog[8:11])))
-  expect_true(grepl("class | \"igraph\"",                      thisLog[8]))
-  expect_true(grepl("type | \"gG\"",                           thisLog[9]))
-  expect_true(grepl("version | \"1.0\"",                       thisLog[10]))
-  expect_true(grepl("UUID",                                    thisLog[11]))
-  expect_true(grepl("event | end",                             thisLog[12]))
-  expect_true(grepl("^$",                                      thisLog[13]))
+  # ====== CHECK DROPPED AND ID TRANSLATIONS
+  expect_true(grepl("2 geneID can not be mapped to HGNc",      thisLog[7]))
+  expect_true(grepl("20% of genes could not be mapped",        thisLog[8]))
+  # ======================================================================
+  expect_true(grepl("\"gG\"",                                  thisLog[9]))
+  expect_true(all(grepl("event \| output \\| attribute \\|", thisLog[10:13])))
+  expect_true(grepl("class | \"igraph\"",                      thisLog[10]))
+  expect_true(grepl("type | \"gG\"",                           thisLog[11]))
+  expect_true(grepl("version | \"1.0\"",                       thisLog[12]))
+  expect_true(grepl("UUID",                                    thisLog[13]))
+  expect_true(grepl("event | end",                             thisLog[14]))
+  expect_true(grepl("^$",                                      thisLog[15]))
   })
 
   test_that("importNet.MITAB() does not leak output if silent = TRUE", {
@@ -136,42 +140,19 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
   
 # ==== LOOK HERE ============================================================================  
   test_that("importNet.MITAB() follows the designated cutoff", {
-<<<<<<< HEAD
     fN <- system.file("extdata", "core_snippet.psimitab", package="rete")
     
     val <- 5 # Top 5 highest scores
-=======
-    fN <- "core.psimitab"
-    # bs>  Where would this file be?
-    # bs>  A more portable idiom is:
-    # bs > fN <- system.file("extdata", "core.psimitab", package="rete"))
-    # bs >   ...after putting your data files in the extdata folder. 
-    # bs>  You are NOT planning to make this test depend on a456MB intAct file, are you?
->>>>>>> 57acd10119430d4b2fa7530c8f0ed67be41bb203
     gG <- importNet.MITAB(fName = fN,
                           cutoffType = "xN",
                           dropUnmapped = TRUE,
                           silent = TRUE,
                           writeLog = FALSE)
     
-<<<<<<< HEAD
+
     expect_true(gorder(gG), 5) # Check quantity of vertices 
     expect_true(E(gG)$weights[1], 0.190986) # Check weight of first edge
-=======
-    expect_true(lenth(gG), 10000) # Check quantity of vertices
-    # bs>  Your test-file should not contain more than ten records or so...
-    expect_true(gG[1]$score, 0.190986) # Check scoring method works
-    # bs>  gG is an igraph object. Use the appropriate iGraph methods
-    # bs>  to retrieve what you are looking for: these are graph-atributes
-    # bs>  not list items.
-    expec_true(gG[1]$UUID, trasnlatedUUID) #Check that ID translation works
-    # bs>  LOL - UUID has nothing to day with ID translation.
-    expect_true(!grepl(gG$UUID, dropped)) # Check if dropped
-    # bs>  not sure what you are expecting here and how and why you are testing.
-    
->>>>>>> 57acd10119430d4b2fa7530c8f0ed67be41bb203
-    
-    
+
     val <- 0.45 # Edges fall into 0.45 quartile
     gG <- importNet.MITAB(fName = fN,
                           cutoffType = "xQ",
