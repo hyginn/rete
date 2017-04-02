@@ -145,10 +145,9 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = 1, convert = TRUE, sile
   
     return(finalOutput)
   }
-  #We need to store ranges of the best alignments 
-  #(as start (st) and end (ed) positions) so we can
-  #add that match to the final output without adding
-  #segments which overlap in the final format.
+  #We need to store ranges of the best alignments (as start (st) and end (ed) positions)
+  #so we can add that match to the final output without adding segments which overlap
+  #in the final format.
   intersectingPositions <- function(r, st, ed){
     for(x in 1:length(r)){
       if(length(intersect(r[[x]], c(st:ed))) > 0){
