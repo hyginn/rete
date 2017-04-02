@@ -1,12 +1,16 @@
-#Pseudocode may look like actual code...please ignore...
-getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), convert = TRUE, silent = TRUE){
+getPdbIds <- function(targetSeq, startPos = 1 , endPos = 1, convert = TRUE, silent = TRUE){
   
-  #get packages
+# Takes an input sequence of cDNA (must be of length divisible by 3) and returns an MT object
+# containing the blast matches from PDB for homologous (>40% ID) sequences.  
 
-  library(bio3d)
-  library(RCurl)
-  library(XML)
-  library(seqinr)
+  #check for valid targetSeq
+  if(convert && !nchar(targetSeq) %% 3 == 0) {
+   stop(paste0("Error: targetSeq's length needs to be divisible by 3")) 
+  }
+  if(convert) {
+    if(grepl("[^AGTC]", targetSeq)) {
+      stop(paste0("Error: targetSeq contains invalid characters"))}
+  }
   
   #convert sequence into AA 
   if(convert){
@@ -25,7 +29,8 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
   blastOutput <- blastOutput[blastOutput$identity > 40, ]
   numEntriesAfterIdentityDrop <- nrow(blastOutput)
   
-  message(sprintf("dropped %d entries because of identity <= 40", numEntriesBeforeIdentityDrop - numEntriesAfterIdentityDrop))
+  message(sprintf("dropped %d entries because of identity <= 40", 
+                  numEntriesBeforeIdentityDrop - numEntriesAfterIdentityDrop))
   
   if(nrow(blastOutput) == 0){
     return(NULL)
@@ -44,7 +49,9 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
     #from a different server which uses slightly different formatting
     #Reformat PDB ID as output by BLAST to separate ID from chain with a "."
     RCSBid <- gsub("_", ".", blastOutput$pdb.id[entry], ignore.case = TRUE)
-    entryXMLTable <- xmlParse(getURL(paste("http://www.rcsb.org/pdb/rest/describeMol?structureId=", RCSBid, sep = "")))
+    entryXMLTable <- xmlParse(getURL(paste
+                                     ("http://www.rcsb.org/pdb/rest/describeMol?structureId=",
+                                       RCSBid, sep= "")))
     
     #get taxonomy 
     
@@ -72,20 +79,27 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
     
     if(!intersectingPositions(finalOutputRange, blastOutput$q.start[entry], blastOutput$q.end[entry])){
     # Finally, we then find the best match that is either Homo sapiens or 100% ID.
-      if((!is.na(blastOutput$tax[entry]) && blastOutput$tax[entry] == "Homo sapiens") || blastOutput$identity[entry] == 100){
+      if((!is.na(blastOutput$tax[entry]) && blastOutput$tax[entry] == "Homo sapiens") 
+         || blastOutput$identity[entry] == 100){
         finalOutput <- rbind(finalOutput, blastOutput[entry,])
-        finalOutputRange[[finalOutputRangePointer]] <- c(blastOutput$q.start[entry]:blastOutput$q.end[entry])
+        finalOutputRange[[finalOutputRangePointer]] <- 
+          c(blastOutput$q.start[entry]:blastOutput$q.end[entry])
         finalOutputRangePointer <- finalOutputRangePointer + 1
       }
     }
   }
   
-  #no matches 
+  #no matches were found, print how many were dropped
   if(nrow(finalOutput) == 0){ 
     message(sprintf("all %d matches were dropped, returning NULL", nrow(blastOutput)))  
     return(NULL) 
   }
   
+  #For the recursion, we need to store the start and end positions of our new
+  #input sequence with reference to the original sequence.  However, the recursion
+  #will just think it's a new sequence starting from index 1 to its length
+  #so after we blast the subsequence, we need to adjust the qstart and 
+  #qend positions by the numbers we stored before the recursion.
   finalOutput$q.start <- finalOutput$q.start + startPos - 1
   finalOutput$q.end <- finalOutput$q.end + startPos - 1
   
@@ -96,6 +110,8 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
   minSide <- min(finalOutputRange[[1]])
   maxSide <- max(finalOutputRange[[length(finalOutputRange)]])
   
+  #Recursive step: if there are subsequences remaining after our right-most query that
+  #are >50aa in length, blast these as well
   if(endPos - maxSide > 50){
     message(sprintf("running substr from pos %d to %d", maxSide, endPos))
     maxFrame <- getPdbIds(substr(AAseq, maxSide - startPos, endPos - startPos), 
@@ -103,6 +119,8 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
     finalOutput <- rbind(finalOutput, maxFrame)
   }
   
+  #Recursive step: if there are subsequences remaining before our leftmost-most query that
+  #are >50aa in length, blast these as well
   if(minSide > 50){
     message(sprintf("running substr from pos %d to %d", startPos, minSide))
     minFrame <- getPdbIds(substr(AAseq, 1, minSide - startPos), 
@@ -110,6 +128,9 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
     finalOutput <- rbind(finalOutput, minFrame)
   }
   
+  #We've covered the recursive steps which blast squences book-ending our first and last alignments
+  #now we have to check subsequences between our alignments (if there are multiple alignments) for
+  #the current recursive step
   for(y in 1:(length(finalOutputRange) - 1)){
     leftSide <- max(finalOutputRange[[y]])
     rightSide <- min(finalOutputRange[[y+1]])
@@ -122,18 +143,18 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
     }
   }
   
-  return(finalOutput)
-}
-#We need to store ranges of the best alignments 
-#(as start (st) and end (ed) positions) so we can
-#add that match to the final output without adding
-#segments which overlap in the final format.
-intersectingPositions <- function(r, st, ed){
-  for(x in 1:length(r)){
-    if(length(intersect(r[[x]], c(st:ed))) > 0){
-      return(TRUE)
-    }
+    return(finalOutput)
   }
-  return(FALSE)
-}
+  #We need to store ranges of the best alignments 
+  #(as start (st) and end (ed) positions) so we can
+  #add that match to the final output without adding
+  #segments which overlap in the final format.
+  intersectingPositions <- function(r, st, ed){
+    for(x in 1:length(r)){
+      if(length(intersect(r[[x]], c(st:ed))) > 0){
+        return(TRUE)
+      }
+    }
+    return(FALSE)
+  }
 # [END]
