@@ -8,7 +8,7 @@ makeMap <- function(ucscMod) {
 
     # Check if the number of exons listed in start and end match
     if(length(ucscMod$exonStart) != length(ucscMod$exonEnd)) {
-        return(NULL)
+        stop("Corrupt gene model")
     }
 
     # Prepare the environment (exon matrix, start, end, strand)
@@ -22,39 +22,38 @@ makeMap <- function(ucscMod) {
 
     # Check if the exons and start stop points are validly ordered
     if(is.unsorted(c(start, as.vector(t(exons)), end))) {
-        return(NULL)
+        stop("Corrupt gene model")
     }
 
-    # Return a function that uses the exon matrix, strand and start, stop positions
+    # Generate cumulative sums
+    cumuSums <- vector(mode="numeric", length=nrow(exons))
+    for (i in 1:nrow(exons)) {
+        cumuSums[i] <- sum((exons[ , 2] - exons [ , 1] + 1)[1:i])
+    }
+    exons <- cbind(exons, cumuSums[1:length(cumuSums)])
+
+
+    # Return a function that uses the exon matrix, strand, and start, stop positions
     return(
         function(x) {
-            if (x < start | x > end) {
-                # out-of-range coordinate
-                return(NULL)
-            }
+            # Check if out-of-range
+            if (x < start | x > end) { return(NULL) }
 
             # Determine the exon our coordinate is located in
             iEx <- which(x >= exons[ , 1] & x <= exons[ , 2])
-            if(length(iEx) != 1){
-                # intron
-                return(0)
-            }
 
-            # Determine the number of bases in previous exons
-            if (iEx == 1) {
-                lPre <- 0
-            } else {
-                lPre <- sum((exons[ , 2] - exons [ , 1] + 1)[1:(iEx-1)])
-            }
+            # Check if intron
+            if(length(iEx) != 1){ return(0) }
 
-            # Determine the number of bases from the current
-            lIn <- x - exons[iEx, 1] + 1
+            # Exon bases to the left (toward 5', + strand gene start) of x
+            total <- exons[iEx, 3] - (exons[iEx, 2] - x)
 
             if (reverse) {
-                return(sum(exons[ , 2] - exons [ , 1] + 1) - lPre - lIn + 1)
-            } else {
-                return(lPre + lIn)
+                #Exon bases to the right (toward 3', - strand gene start) of x
+                total <- exons[nrow(exons), 3] - total + 1
             }
+
+            return(total)
         }
     )
 }
@@ -154,16 +153,36 @@ sampleFxSte(250)
 
 
 
-
 #===================Overall function factory prototype==========================
 
 mapCoord <- function(geneData, dropExonBoundaries = TRUE, silent = FALSE, writeLog = TRUE){
-    for (name in names(geneData)) {
-        geneData[[name]]$map <- makeMap(geneData[[name]])
-    }
-    saveRDS(geneData, file = "genedata.rds")
 
+    # parallelized for speed
+    library(parallel)
+    no_cores <- detectCores() - 1
+    cl <- makeCluster(no_cores, type = "PSOCK")
+
+    clusterExport(cl, "makeMap")
+
+    # "function factory" manufacturing step, parallelized
+    geneData <- parLapply(cl, geneData, function(x) {
+        x$map = makeMap(x)
+        return(x)
+    })
+
+    if (dropExonBoundaries) {
+        geneData <- parLapply(cl, geneData, function(x) {
+            x$exonStart <- NULL
+            x$exonEnd <- NULL
+            return(x)
+        })
+    }
+
+    saveRDS(geneData, file = "geneData.rds")
+
+    stopCluster(cl)
 }
+
 
 
 # [END]
