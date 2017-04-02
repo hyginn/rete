@@ -52,7 +52,7 @@
 #'
 #'   ## @examples ## \dontrun{ ## importNet.STRING(IN, OUT) ## }
 #' @export
-importNet.STRING <- function(fName,
+importNet.MITAB <- function(fName,
                              cutoffType = "xN",
                              val,
                              experimentType = getOptions("rete.defaultPPI"),
@@ -105,7 +105,7 @@ importNet.STRING <- function(fName,
   names(readfile)[1] <- "a"
   names(readfile)[2] <- "b"
   names(readfile)[15] <- "weight"
-  scores <- readfile$V15
+  scores <- readfile$weight
 
   # Create single score without | operator
   i = 1
@@ -141,7 +141,7 @@ importNet.STRING <- function(fName,
   }
   readfile <- readfile[sel, ] # Keep only selected genes
 
-  fastMapUniProt <- readRDS(system.file("extdata", "fastMapUniProt.rds", package = "rete"))
+  fastMapUniProt <- readRDS("fastMapUniProt.rds")
 
   #Remove prefix from PSIMITAB format IDs
   netStr$a <- gsub(".*:", "", netStr$a)
