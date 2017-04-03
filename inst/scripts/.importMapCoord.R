@@ -157,6 +157,8 @@ sampleFxSte(250)
 
 mapCoord <- function(geneData, dropExonBoundaries = TRUE, silent = FALSE, writeLog = TRUE){
 
+    # <validate parameters>
+
     # parallelized for speed
     library(parallel)
     no_cores <- detectCores() - 1
@@ -181,6 +183,8 @@ mapCoord <- function(geneData, dropExonBoundaries = TRUE, silent = FALSE, writeL
     saveRDS(geneData, file = "geneData.rds")
 
     stopCluster(cl)
+
+    # <log file>
 }
 
 
