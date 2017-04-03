@@ -13,7 +13,8 @@ Imports:
     igraph,
     readr,
     uuid,
-    hash
+    hash,
+    parallel
 Suggests:
     testthat
 RoxygenNote: 6.0.1

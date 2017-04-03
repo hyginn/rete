@@ -72,12 +72,15 @@ test_that("parameter errors are correctly handled by mapCoord", {
     expect_error(mapCoord(list(list(), list(), list())))
 
     gd <- generateGeneData()
+    expect_error(mapCoord(gd, outFile = NULL))
+    expect_error(mapCoord(gd, outFile = 42))
     expect_error(mapCoord(gd, dropExonBoundaries = NULL))
     expect_error(mapCoord(gd, dropExonBoundaries = "abcD"))
     expect_error(mapCoord(gd, silent = NULL))
     expect_error(mapCoord(gd, silent = list()))
     expect_error(mapCoord(gd, writeLog = NULL))
-    expect_error(mapCoord(gd, writeLog = 42))
+    expect_error(mapCoord(gd, writeLog = "42"))
+
 
 })
 
@@ -93,7 +96,7 @@ test_that("a corrupt input does not lead to corrupted output for mapCoord", {
     expect_error(mapCoord(wrongType))
 
     mismatchedExonsSingle <- generateGeneData()
-    mismatchedExonsSingle$efgH$exonStart <- mismatchedExons$efgH$exonStart[1]
+    mismatchedExonsSingle$efgH$exonStart <- mismatchedExonsSingle$efgH$exonStart[1]
     expect_error(mapCoord(mismatchedExonsSingle))
 
     mismatchedExonsMulti <- generateGeneData()

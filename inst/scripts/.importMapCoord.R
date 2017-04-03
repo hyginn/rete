@@ -26,12 +26,7 @@ makeMap <- function(ucscMod) {
     }
 
     # Generate cumulative sums
-    cumuSums <- vector(mode="numeric", length=nrow(exons))
-    for (i in 1:nrow(exons)) {
-        cumuSums[i] <- sum((exons[ , 2] - exons [ , 1] + 1)[1:i])
-    }
-    exons <- cbind(exons, cumuSums[1:length(cumuSums)])
-
+    exons <- cbind(exons, cumsum(exons[,2] - exons[,1] + 1))
 
     # Return a function that uses the exon matrix, strand, and start, stop positions
     return(
@@ -127,7 +122,7 @@ sampleFx(preMod[1] - 1)
 
 # Another misc. test
 geneData <- list()
-geneData$Bob <- list(strand='+', start=200, end=300, exonStart=c(201,221,241), exonEnd=c(210,230,250))
+geneData$Bob <- list(strand='+', start=200L, end=300L, exonStart=c(201L,221L,241L), exonEnd=c(210L,230L,250L))
 
 sampleFxBob <- makeMap(geneData$Bob)
 
@@ -139,7 +134,7 @@ sampleFxBob(221)
 sampleFxBob(249)
 sampleFxBob(250)
 
-geneData$Steve <- list(strand='-', start=200, end=300, exonStart=c(201,221,241), exonEnd=c(210,230,250))
+geneData$Steve <- list(strand='-', start=200L, end=300L, exonStart=c(201L,221L,241L), exonEnd=c(210L,230L,250L))
 
 sampleFxSte <- makeMap(geneData$Steve)
 
