@@ -15,9 +15,9 @@ Imports:
     igraph,
     readr,
     uuid,
-    bio3d
-    XML
-    RCurl
+    bio3d,
+    XML,
+    RCurl,
     seqinr
 Suggests:
     testthat

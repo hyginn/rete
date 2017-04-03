@@ -14,14 +14,15 @@ NL <- .PlatformLineBreak()
 # ==== END SETUP AND PREPARE ===================================================
 
 
-
-
+someResults <- "MLLLARCLLLVLVSSLLVCSGLACGPGRGFGKRRHPKKLTPLAYKQFIPNVAEKTLGASGRYEGKISRNSERFKELTPNYNPDIIFKDEENTGADRLMTQRCKDKLNALAISVMNQWPGVKLRVTEGWDEDGHHSEESLHYEGRAVDITTSDRDRSKYGMLARLAVEAGFDWVYYESKAHIHCSVKAENSVAAKSGGCFPGSATVHLEQGGTKLVKDLSPGDRVLAADDQGRLLYSDFLTFLDRDDGAKKVFYVIETREPRERLLLTAAHLLFVAPHNDSATGEPEASSGSGPPSGGALGPRALFASRVRPGQRVYVVAERDGDRRLLPAAVHSVTLSEEAAGAYAPLTAQGTILINRVLASCYAVIEEHSWAHRAFAPFRLAHALLAALAPARTDRGGDSGGGDRGGGGGRVALTAPGAADAPGAGATAGIHWYSQLLYQIGTWLLDSEALHPLGMAVKSS"
+manyResults <- "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD"
 test_that("parameter errors are correctly handled", {
   # Try missing input sequence
   # Try extraneous parameters
   expect_error(SEL3D())
   expect_error(SEL3D(""))
   expect_error(SEL3D("AGT", 3))
+  expect_error(SEL3D("AGT", silent=1), "Mode error: argument requires logical input")
 })
 
 
@@ -31,13 +32,12 @@ test_that("a sane input gives an expected output", {
   # Try an input which has no results (verify with BLAST to PDB)
   # Try small input with a small result
   # Try a large input with many resulting matches (verify with BLAST to PDB)
-  
+
   expect_error(SEL3D("AGT"))
-  expect_error(SEL3D("AGTCTTATTGTTTTT")) 
+  expect_error(SEL3D("AGTCTTATTGTTTTT"))
   #although the above returns a result on BLAST, the module specification dictates
   #that we shouldn't return results for amino acid sequences who's length is <50
-  
-  someResults <- "MLLLARCLLLVLVSSLLVCSGLACGPGRGFGKRRHPKKLTPLAYKQFIPNVAEKTLGASGRYEGKISRNSERFKELTPNYNPDIIFKDEENTGADRLMTQRCKDKLNALAISVMNQWPGVKLRVTEGWDEDGHHSEESLHYEGRAVDITTSDRDRSKYGMLARLAVEAGFDWVYYESKAHIHCSVKAENSVAAKSGGCFPGSATVHLEQGGTKLVKDLSPGDRVLAADDQGRLLYSDFLTFLDRDDGAKKVFYVIETREPRERLLLTAAHLLFVAPHNDSATGEPEASSGSGPPSGGALGPRALFASRVRPGQRVYVVAERDGDRRLLPAAVHSVTLSEEAAGAYAPLTAQGTILINRVLASCYAVIEEHSWAHRAFAPFRLAHALLAALAPARTDRGGDSGGGDRGGGGGRVALTAPGAADAPGAGATAGIHWYSQLLYQIGTWLLDSEALHPLGMAVKSS"
+
   #Manually check if top matches on BLAST are present in the output for the right positions
   result <- SEL3D(someResults, convert=FALSE)
   expect_equal(length(result$pdb.id), 1)
@@ -50,8 +50,11 @@ test_that("a sane input gives an expected output", {
   expect_equal(result[result$pdb.id == "3M1N_A", 10], 3)
   #check s.end
   expect_equal(result[result$pdb.id == "3M1N_A", 11], 175)
-  
-  manyResults <- "MEEPQSDPSVEPPLSQETFSDLWKLLPENNVLSPLPSQAMDDLMLSPDDIEQWFTEDPGPDEAPRMPEAAPPVAPAPAAPTPAAPAPAPSWPLSSSVPSQKTYQGSYGFRLGFLHSGTAKSVTCTYSPALNKMFCQLAKTCPVQLWVDSTPPPGTRVRAMAIYKQSQHMTEVVRRCPHHERCSDSDGLAPPQHLIRVEGNLRVEYLDDRNTFRHSVVVPYEPPEVGSDCTTIHYNYMCNSSCMGGMNRRPILTIITLEDSSGNLLGRNSFEVRVCACPGRDRRTEEENLRKKGEPHHELPPGSTKRALPNNTSSSPQPKKKPLDGEYFTLQIRGRERFEMFRELNEALELKDAQAGKEPGGSRAHSSHLKSKKGQSTSRHKKLMFKTEGPDSD"
+
+  #check that the silent param works
+  expect_message(SEL3D(someResults, convert=FALSE, silent=FALSE))
+
+
   #Manually check if top matches on BLAST are present in the output for the right positions
   result <- SEL3D(manyResults, convert=FALSE)
   expect_equal(length(result$pdb.id), 4)
@@ -61,28 +64,28 @@ test_that("a sane input gives an expected output", {
   expect_equal(result[result$pdb.id == "4QO1_B", 10], 1)
   expect_equal(result[result$pdb.id == "4QO1_B", 11], 221)
   expect_equal(result[result$pdb.id == "4QO1_B", 17], "Homo sapiens")
-  
+
   expect_true("5HPD_A" %in% result$pdb.id)
   expect_equal(result[result$pdb.id == "5HPD_A", 8], 2)
   expect_equal(result[result$pdb.id == "5HPD_A", 9], 61)
   expect_equal(result[result$pdb.id == "5HPD_A", 10], 99)
   expect_equal(result[result$pdb.id == "5HPD_A", 11], 158)
   expect_equal(result[result$pdb.id == "5HPD_A", 17], "Homo sapiens")
-  
+
   expect_true("1OLG_A" %in% result$pdb.id)
   expect_equal(result[result$pdb.id == "1OLG_A", 8], 319)
   expect_equal(result[result$pdb.id == "1OLG_A", 9], 360)
   expect_equal(result[result$pdb.id == "1OLG_A", 10], 1)
   expect_equal(result[result$pdb.id == "1OLG_A", 11], 42)
   expect_equal(result[result$pdb.id == "1OLG_A", 17], "Homo sapiens")
-  
+
   expect_true("1DT7_X" %in% result$pdb.id)
-  expect_equal(result[result$pdb.id == "1DT7_X", 8], 369)
+  expect_equal(result[result$pdb.id == "1DT7_X", 8], 367)
   expect_equal(result[result$pdb.id == "1DT7_X", 9], 388)
   expect_equal(result[result$pdb.id == "1DT7_X", 10], 1)
   expect_equal(result[result$pdb.id == "1DT7_X", 11], 22)
   expect_equal(result[result$pdb.id == "1DT7_X", 17], "Homo sapiens")
-  
+
 })
 
 
