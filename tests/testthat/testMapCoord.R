@@ -1,4 +1,4 @@
-# testImportMapCoord.R
+# testMapCoord.R
 #
 #
 context("GeneData mapping function generator")
@@ -6,13 +6,13 @@ context("GeneData mapping function generator")
 
 # ==== BEGIN SETUP AND PREPARE =================================================
 OLOG <- as.character(getOption("rete.logfile"))   # save original logfile name
-logFileName(fPath = tempdir(), setOption = TRUE)  # make tempdir() the log dir
+logFileName(setOption = TRUE)  # make tempdir() the log dir
 NL <- .PlatformLineBreak()
 
 # Randomly generate a valid geneData structure of valid gene models
 generateGeneData <- function() {
     geneData <- list()
-    geneSymbols <- list("abcD", "efgH", "ijkL", "mnoP", "qrsT", "uvwX")
+    geneSymbols <- list("abcD", "efgH", "uvwX")
 
     # Convert a sorted even-sized list with a random number of random numbers
     # within an interval into a "gene model"
@@ -64,11 +64,10 @@ rebuildGeneModel <- function(mapFunction) {
 
 test_that("parameter errors are correctly handled by mapCoord", {
     # Try setting each of the parameters to be NULL
-    # Try setting "geneData" to a zero length list & a list with zero length lists
+    # Try setting "geneData" to a list with zero length lists
 
     expect_error(mapCoord())
     expect_error(mapCoord(NULL))
-    expect_error(mapCoord(list()))
     expect_error(mapCoord(list(list(), list(), list())))
 
     gd <- generateGeneData()
@@ -96,7 +95,7 @@ test_that("a corrupt input does not lead to corrupted output for mapCoord", {
     expect_error(mapCoord(wrongType))
 
     mismatchedExonsSingle <- generateGeneData()
-    mismatchedExonsSingle$efgH$exonStart <- mismatchedExonsSingle$efgH$exonStart[1]
+    mismatchedExonsSingle$efgH$exonStart <- 1L
     expect_error(mapCoord(mismatchedExonsSingle))
 
     mismatchedExonsMulti <- generateGeneData()
@@ -104,11 +103,11 @@ test_that("a corrupt input does not lead to corrupted output for mapCoord", {
     expect_error(mapCoord(mismatchedExonsmismatchedExonsMulti))
 
     mismatchedStart <- generateGeneData()
-    mismatchedStart$start <- 10001
+    mismatchedStart$start <- 10001L
     expect_error(mapCoord(mismatchedStart))
 
     mismatchedEnd <- generateGeneData()
-    mismatchedEnd$end <- 1
+    mismatchedEnd$end <- 1L
     expect_error(mapCoord(mismatchedEnd))
 })
 

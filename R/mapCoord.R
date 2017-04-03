@@ -36,8 +36,9 @@ mapCoord <- function(geneData,
                      silent = FALSE,
                      writeLog = TRUE){
 
-    # Parameter validation for all parameters except geneData
+    #========================== Parameter validation ===========================
     cR <- character()
+    cR <- c(cR, .checkArgs(geneData,           like = list()))
     cR <- c(cR, .checkArgs(outFile,            like = character()))
     cR <- c(cR, .checkArgs(dropExonBoundaries, like = logical(1), checkSize = TRUE))
     cR <- c(cR, .checkArgs(silent,             like = logical(1), checkSize = TRUE))
@@ -51,6 +52,7 @@ mapCoord <- function(geneData,
     library(parallel)
     no_cores <- detectCores() - 1
     cl <- makeCluster(no_cores, type = "PSOCK")
+    on.exit(stopCluster(cl))
 
     # Parameter validation for geneData
     clusterExport(cl, c(".checkArgs", ".PlatformLineBreak"))
@@ -67,7 +69,7 @@ mapCoord <- function(geneData,
         }
     })
 
-    # Generates the closure for a single gene model
+    #=============== Mapping function for a single gene model ==================
     makeMap <- function(ucscMod) {
 
         # Check if the number of exons listed in start and end match
@@ -123,9 +125,9 @@ mapCoord <- function(geneData,
         )
     }
 
-    clusterExport(cl, "makeMap")
+    clusterExport(cl, "makeMap", envir = environment())
 
-    # "Function factory" manufacturing step
+    #====================== "Function manufacturing" ===========================
     geneData <- parLapply(cl, geneData, function(x) {
         x$map = makeMap(x)
         return(x)
@@ -141,9 +143,7 @@ mapCoord <- function(geneData,
 
     saveRDS(geneData, file = outFile)
 
-    stopCluster(cl)
-
-    # Write log
+    #============================== Write log ==================================
     if(writeLog) {
 
         myTitle <- "mapCoord"
@@ -163,7 +163,6 @@ mapCoord <- function(geneData,
 
         # Record progress information
         myNotes <- sprintf("Generated %s mapping function closures", length(geneData))
-        myNotes <- sprintf("for genes: %s", toString(names(geneData)))
 
         # indicate output object name(s)
         myOutput <- "geneData"

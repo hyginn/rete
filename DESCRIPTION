@@ -15,6 +15,7 @@ Imports:
     igraph,
     readr,
     hash,
-    parallelSuggests:
+    parallel
+Suggests:
     testthat
 RoxygenNote: 6.0.1
