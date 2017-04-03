@@ -5,14 +5,11 @@ context("GeneData mapping function generator")
 
 
 # ==== BEGIN SETUP AND PREPARE =================================================
-OLOG <- as.character(getOption("rete.logfile"))   # save original logfile name
-logFileName(setOption = TRUE)  # make tempdir() the log dir
-NL <- .PlatformLineBreak()
 
 # Randomly generate a valid geneData structure of valid gene models
 generateGeneData <- function() {
     geneData <- list()
-    geneSymbols <- list("abcD", "efgH", "uvwX")
+    geneSymbols <- list("abcD", "efgH", "ijkL", "mnoP", "qrsT", "uvwX")
 
     # Convert a sorted even-sized list with a random number of random numbers
     # within an interval into a "gene model"
@@ -169,10 +166,6 @@ test_that("mapCoord drops exon boundaries iff dropExonBoundaries is TRUE", {
 
 
 # ==== BEGIN TEARDOWN AND RESTORE ==============================================
-logName <- unlist(getOption("rete.logfile"))
-if (file.exists(logName)) { file.remove(logName)}
-options("rete.logfile" = OLOG)
-
 if (file.exists("geneData.rds")) { file.remove("geneData.rds") }
 # ==== END  TEARDOWN AND RESTORE ===============================================
 

@@ -14,8 +14,7 @@ Imports:
     hash,
     igraph,
     readr,
-    hash,
-    parallel
+    uuid
 Suggests:
     testthat
 RoxygenNote: 6.0.1

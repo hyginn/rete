@@ -40,6 +40,3 @@ If the input is out-of-bounds of the gene or invalid, the function
 returns \code{NULL}.
 }
 
-\seealso{
-\code{\link{importPDB}} Populates a GeneData list with 3D coordinates
-}

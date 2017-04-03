@@ -27,8 +27,6 @@
 #' @param writeLog logical. Log file is written iff \code{TRUE}.
 #' (default: \code{TRUE})
 #'
-#' @seealso \code{\link{importPDB}} Populates a GeneData list with 3D coordinates
-#'
 #' @export
 mapCoord <- function(geneData,
                      outFile = "geneData.rds",
@@ -48,16 +46,9 @@ mapCoord <- function(geneData,
         stop(cR)
     }
 
-    # Parallelization for speed
-    library(parallel)
-    no_cores <- detectCores() - 1
-    cl <- makeCluster(no_cores, type = "PSOCK")
-    on.exit(stopCluster(cl))
-
     # Parameter validation for geneData
-    clusterExport(cl, c(".checkArgs", ".PlatformLineBreak"))
 
-    parLapply(cl, geneData, function(x) {
+    lapply(geneData, function(x) {
         cRGeneData <- character()
         cRGeneData <- c(cRGeneData, .checkArgs(x$start,     like = integer(1),   checkSize = TRUE))
         cRGeneData <- c(cRGeneData, .checkArgs(x$end,       like = integer(1),   checkSize = TRUE))
@@ -125,16 +116,15 @@ mapCoord <- function(geneData,
         )
     }
 
-    clusterExport(cl, "makeMap", envir = environment())
 
     #====================== "Function manufacturing" ===========================
-    geneData <- parLapply(cl, geneData, function(x) {
+    geneData <- lapply(geneData, function(x) {
         x$map = makeMap(x)
         return(x)
     })
 
     if (dropExonBoundaries) {
-        geneData <- parLapply(cl, geneData, function(x) {
+        geneData <- lapply(geneData, function(x) {
             x$exonStart <- NULL
             x$exonEnd <- NULL
             return(x)
