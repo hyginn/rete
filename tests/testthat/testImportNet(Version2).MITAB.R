@@ -111,7 +111,7 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
   expect_true(grepl("Selected 4 edges via cutooff.",           thisLog[5]))
   expect_true(grepl("gG object has 5 vertices and 4 edges.",   thisLog[6]))
   # ====== CHECK DROPPED AND ID TRANSLATIONS
-  expect_true(grepl("2 geneID can not be mapped to HGNc",      thisLog[7]))
+  expect_true(grepl("2 geneID can not be mapped to HGNC",      thisLog[7]))
   expect_true(grepl("20% of genes could not be mapped",        thisLog[8]))
   # ======================================================================
   expect_true(grepl("\"gG\"",                                  thisLog[9]))
@@ -152,6 +152,8 @@ test_that("importNet.MITAB() produces gG from MITAB data", {
 
     expect_true(gorder(gG), 5) # Check quantity of vertices 
     expect_true(E(gG)$weights[1], 0.190986) # Check weight of first edge
+    expect_true(is.simple(gG) && is_connected(gG) && is.weighted(gG)) #Check is graph is simple, 
+                                                                      # connected and weighted
 
     val <- 0.45 # Edges fall into 0.45 quartile
     gG <- importNet.MITAB(fName = fN,
