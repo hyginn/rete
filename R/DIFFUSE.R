@@ -4,7 +4,7 @@
 #'
 #' @param AGG annotated gene graph (AGG), an igraph object with the following: vertices, with
 #' gene name attribute, gene score attribute; edges (directed) with gene names corresponding to
-#' 'source' and 'reciever' vertices
+#' 'source' and 'receiver' vertices
 #' @param algorithm Method of distributing influence. Currently only "Leis" method, describing heat
 #' diffusion process from Leisseron et al. (2015) available. Future versions of this function
 #' may have additional methods. Once influence is distributed from a gene based upon its initial
@@ -30,7 +30,7 @@
 #' A more precise definition of the model E=Beta*inverse(I-(1-Beta)*W)*D is a random walk where,
 #' if one starts from node j, the probability of moving onto another given node will be
 #' (1-Beta)*1/deg(j), where Beta is the probability of restarting from the start node. If this
-#' process is repeated ad infinitum, an equilibrium distribution of F=Beta*inverse(I-(1-Beta)*W)
+#' process is repeated ad infinitum, a stationary distribution of F=Beta*inverse(I-(1-Beta)*W)
 #' is reached, where in each column j of matrix F, a vector of probabilities is given for landing
 #' on each element (i) in the column; i.e. element i of column j represents the probability of
 #' reaching node i if a random walk starts from node j. Thus, element E(i,j) represents the
@@ -44,13 +44,15 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
                     silent = FALSE, noLog = FALSE) {
         startTime <- Sys.time()
 
-        consoleVect <- paste("Diffuse started at", Sys.time(), sep = "")
+
         if (!silent) {
+            consoleVect <- paste("Diffuse started at", Sys.time(), sep = "")
             print(consoleVect) #print beginning of function to console
         }
 #========= Checking Arguments =============================
-        consoleVect <- "Checking Arguments"
+
         if (!silent) {
+            consoleVect <- "Checking Arguments"
             print(consoleVect) #print beginning of function to console
         }
 
@@ -82,27 +84,29 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
     if (algorithm == "Leis") {
 
-        consoleVect<- "Method Selected: Leis"
+
         if (!silent) {
+            consoleVect<- "Method Selected: Leis"
             print(consoleVect)
         }
 
         #check beta
-        if ( length(.checkArgs(param[[1]], numeric(length = 1))) > 1) {
+        if ( length(.checkArgs(param[[1]], numeric(length = 1))) > 0) {
             stop("Leis Method selected. Beta must be class numeric of type
                  double")
         }
 
         #creating transition matrix W
-        zeroVect <- numeric(length(sizeVerts)^2) #Make a vector of zeros from which to make W
-        W<-matrix(data = zeroVect, nrow = sizeVerts , ncol = sizeVerts,
+
+        W<-matrix(data = numeric( length( sizeVerts )^2 ), nrow = sizeVerts , ncol = sizeVerts,
                   dimnames = list(AGGverts$name, AGGverts$name))
 
         vertDegree <- numeric(length = sizeVerts) #Will store degree of each vertex
         names(vertDegree) <- AGGverts$name
 
-        consoleVect<-"Calculating degree for vertices"
+
         if (!silent) {
+            consoleVect<-"Calculating degree for vertices"
             print(consoleVect)
         }
         #calculating degree via following procedure
@@ -111,23 +115,18 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
         for (i in 1:sizeVerts) {
 
-            consoleVect<-paste("vertex",i, "of", sizeVerts, sep = " ")
-            if (!silent) {
-                print(consoleVect)
-            }
-
 
             edgeIndex <- as.logical(grepl(HGNCsymb[i],AGGedges$from, fixed = TRUE)
                                     | grepl(HGNCsymb[i],AGGedges$to, fixed = TRUE))
-            #generate a list of genes present in edges including vertex of interest
-            geneList <- c(AGGedges$from[edgeIndex],
+            #generate a character vector of genes present in edges including vertex of interest
+            connectedGenes <- c(AGGedges$from[edgeIndex],
                              AGGedges$to[edgeIndex])
             #reduce to unique elements
-            geneList <- unique(geneList)
+            connectedGenes <- unique(connectedGenes)
             #remove vertex of interest from list
-            geneList <- geneList[-grep(HGNCsymb[i],geneList, fixed = TRUE)]
+            connectedGenes <- connectedGenes[-grep(HGNCsymb[i],connectedGenes, fixed = TRUE)]
 
-            deg <- length(geneList) #degree of vertex of interest
+            deg <- length(connectedGenes) #degree of vertex of interest
 
             vertDegree[grep(HGNCsymb[i],names(vertDegree), fixed = TRUE)] <- deg
 
@@ -135,42 +134,28 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
     #Assigning values to matrix W: See Leiseron et. al 2015 for procedure description
 
-        consoleVect <-  "Constructing matrix W"
+
         if (!silent) {
+            consoleVect <-  "Constructing matrix W"
             print(consoleVect)
         }
 
-        doneEdges <- 0
 
         for (n in 1:sizeVerts) {
 
 
-
-           jElement <- AGGverts$name[n]
-
            #look for directional edges with gene j as the source
-           jEdgeIndex <- as.logical(grepl(jElement, AGGedges$from, fixed = TRUE))
+           jEdgeIndex <- n
 
            #List of receivers of directed edge from j
            jTargetList <- AGGedges$to[jEdgeIndex]
 
-           for (m in 1:length(jTargetList)) {
-               iElement <- jTargetList[m] #retrieve name of target of node j
 
                #W [i (receiver) , j (source)] is equal to 1/degree(j)
-               W[iElement,jElement] <- 1/vertDegree[names(vertDegree) == jElement]
+               W[jTargetList,n] <- 1/vertDegree[names(vertDegree) == jElement]
 
-               doneEdges <- doneEdges + 1
 
-               consoleVect <- paste("Have value 1/deg(j) for",
-                                                   doneEdges,
-                                                   "of", sizeEdges,
-                                                   "assigned to W", sep = " ")
-               if (!silent) {
-                   print(consoleVect)
-               }
 
-           }
 
         } #end construction of W
 
@@ -191,18 +176,17 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
     #======== Part 4 of Leis: calculating matrix E ===================
 
-        consoleVect <- c(consoleVect, "calculating matrix E")
+        consoleVect <- "calculating matrix E"
 
 
         #Make a diagonal matrix D, or vector of heat scores in diagonal form
 
         D <- diag(x = AGGverts$Gene_Score)
-        dimnames(D) <- list(AGGverts$name,AGGverts$name)
 
         #Calculate matrix E (weighted diffusion matrix) as F*D (F postmultiplied
         #by D)
 
-        matrixE <- matrixF%*%D
+        matrixE <- matrixF %*% D
 
     #======== Part 5 of Leis: extracting 'heat' influence from matrix E =====
 
