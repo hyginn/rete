@@ -11,28 +11,27 @@ isHGNCsymbol(x)
 }
 \value{
 A vector of logicals of length x that contains TRUE for every
-          element that is present in the HGNC symbol table and FALSE
-          for all others.
+           element that is present in the HGNC symbol table and FALSE
+           for all others.
 }
 \description{
 Check whether gene symbols given are valid HGNC gene symbols.
 }
 \details{
-\code{isHGNCsymbol} Checks whether the elements of the input vector are
-    valid HGNC gene symbols (case insensitive) by comparing to a subset
-    of existing gene symbols.
+\code{isHGNCsymbol} Checks whether the elements of the input vector are valid
+HGNC gene symbols (case insensitive) by comparing to a subset of existing
+gene symbols.
 
-The subset of symbols used here contains only approved gene
-    symbols of the following locus types:
-  * gene with protein product
-  * immunoglobulin gene
-  * protocadherin
-  * T-cell receptor gene
-  * RNA: long non-coding, micro, ribosomal, transfer, small nuclear
-         and nucleolar, Y and vault
-  * endogenous retrovirus
+The subset of symbols used here contains only approved gene symbols of the
+following locus types: * gene with protein product * immunoglobulin gene *
+protocadherin * T-cell receptor gene * RNA: long non-coding, micro,
+ribosomal, transfer, small nuclear and nucleolar, Y and vault * endogenous
+retrovirus
 
-This function is a closure that contains the HGNC symbol table in its environment. It is produced as part of the .onLoad() tasks. The supporting table is stored in extdata/HGNCsymbols.RDS. The script that was used to generate this table is in scripts/generateHGNCtable.R.
+This function is a closure that contains the HGNC symbol table in its
+environment. It is produced as part of the .onLoad() tasks. The supporting
+table is stored in extdata/HGNCsymbols.RDS. The script that was used to
+generate this table is in scripts/generateHGNCtable.R.
 
 Checking is done in a case-insensitive manner.
 }
