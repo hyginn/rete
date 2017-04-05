@@ -172,99 +172,99 @@ testthat::test_that("Erroneous input -> Error message", {
 
 
     #expect an error thrown if:
-    expect_error(DIFFUSE(AGG, algorithm="Lies" , param <- list(getOption("rete.beta")),
+    testthat::expect_error(DIFFUSE(AGG, algorithm="Lies" , param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
     #algorithm character vector not recognized
-    expect_error(DIFFUSE(AGG, algorithm=1 , param <- list(getOption("rete.beta")),
+    testthat::expect_error(DIFFUSE(AGG, algorithm=1 , param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
     #algorithm is numeric
-    expect_error(DIFFUSE(AGG, algorithm=TRUE , param <- list(getOption("rete.beta")),
+    testthat::expect_error(DIFFUSE(AGG, algorithm=TRUE , param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
     #algorithm is a logical
-    expect_error(DIFFUSE(AGG, algorithm=as.factor("Leis") ,
+    testthat::expect_error(DIFFUSE(AGG, algorithm=as.factor("Leis") ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
     #algorithm is a factor
-    expect_error(DIFFUSE(AGG, algorithm = "Leis" ,
+    testthat::expect_error(DIFFUSE(AGG, algorithm = "Leis" ,
                          param <- list(getOption("rete.alpha")),
                          silent = TRUE, writeLog = TRUE))
     #option does not exist for param
-    expect_error(DIFFUSE(AGG, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list("puppies"),
                          silent = TRUE, writeLog = TRUE))
     #value in param not recognized
-    expect_error(DIFFUSE(AGG, algorithm="Leis" , param <- 0.25,
+    testthat::expect_error(DIFFUSE(AGG, algorithm="Leis" , param <- 0.25,
                          silent = TRUE, writeLog = TRUE))
     #param not in list format
-    expect_error(DIFFUSE(AGG, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = "FALSE", writeLog = TRUE))
     #silent is a character vector
 
-    #expect_error(DIFFUSE(AGG, algorithm="Leis" ,
+    #testthat::expect_error(DIFFUSE(AGG, algorithm="Leis" ,
      #                    param <- list(getOption("rete.beta")),
       #                   silent = as.factor(FALSE), writeLog = FALSE))
     #silent is a factor: test removed
-    expect_error(DIFFUSE(AGG, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = 2, writeLog = TRUE))
     #silent is a double numeric
-    expect_error(DIFFUSE(AGG, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = "TRUE"))
     #writeLog is a character vector
-    expect_error(DIFFUSE(AGG, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = as.factor(TRUE)))
     #writeLog is a factor
-    expect_error(DIFFUSE(AGG, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = 2))
     #writeLog is a double numeric
-    expect_error(DIFFUSE(badAGG1, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG1, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
     #see lines11-21 for description of bad AGG inputs that should cause
     #an error
-    #expect_error(DIFFUSE(badAGG2, algorithm="Leis" ,
+    #testthat::expect_error(DIFFUSE(badAGG2, algorithm="Leis" ,
                          #param <- list(getOption("rete.beta")),
                          #silent = FALSE, writeLog = TRUE))
     #it turns out that iGraph removes edges if you remove their vertices,
     #rendering a test to see what happens when vertices removed unnecessary
 
-    expect_error(DIFFUSE(badAGG3, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG3, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
-    expect_error(DIFFUSE(badAGG4, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG4, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
-    expect_error(DIFFUSE(badAGG5, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG5, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
-    expect_error(DIFFUSE(badAGG6, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG6, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
-    expect_error(DIFFUSE(badAGG7, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG7, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
-    expect_error(DIFFUSE(badAGG8, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG8, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
-    expect_error(DIFFUSE(badAGG9, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG9, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
-    expect_error(DIFFUSE(badAGG10, algorithm="Leis" ,
+    testthat::expect_error(DIFFUSE(badAGG10, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
                          silent = TRUE, writeLog = TRUE))
 
 })
 
-context("Check that edge scores assigned to EGG produced in test match
+testthat::context("Check that edge scores assigned to EGG produced in test match
         those in manually constructed reference")
 
 testthat::test_that("EGG made correctly", {
     EGG<-DIFFUSE(AGG, algorithm = "Leis",
-                 param <- list(getOption("rete.beta")),
+                 param = list(getOption("rete.beta")),
                  silent = TRUE, writeLog = TRUE)
     eggEdges <- igraph::as_data_frame(EGG, what = "edges")
     eggRefEdges<-igraph::as_data_frame(eggRef, what = "edges")
