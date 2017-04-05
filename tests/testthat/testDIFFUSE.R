@@ -265,7 +265,7 @@ testthat::context("Check that edge scores assigned to EGG produced in test match
 testthat::test_that("EGG made correctly", {
     EGG<-DIFFUSE(AGG, algorithm = "Leis",
                  param = list(getOption("rete.beta")),
-                 silent = FALSE, writeLog = TRUE)
+                 silent = TRUE, writeLog = TRUE)
     eggEdges <- igraph::as_data_frame(EGG, what = "edges")
     eggRefEdges<-igraph::as_data_frame(eggRef, what = "edges")
 
