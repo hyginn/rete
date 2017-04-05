@@ -148,14 +148,14 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
 
            #look for directional edges with gene j as the source
-           jEdgeIndex <- n
+
 
            #List of receivers of directed edge from j
-           jTargetList <- AGGedges$to[jEdgeIndex]
+           jTargetList <- AGGedges$to[AGGedges$from == AGGverts$name[n]]
 
 
                #W [i (receiver) , j (source)] is equal to 1/degree(j)
-               W[jTargetList,n] <- 1/vertDegree[names(vertDegree) == jElement]
+               W[jTargetList,n] <- 1/vertDegree[n]
 
 
 
@@ -191,6 +191,8 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
         matrixE <- matrixF %*% D
 
+        dimnames(matrixE) <- list(AGGverts$name, AGGverts$name)
+
     #======== Part 5 of Leis: extracting 'heat' influence from matrix E =====
 
         consoleVect <- c(consoleVect, "Assigning heat/influence scores from E to edges")
@@ -200,10 +202,10 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         #vector of zeros, to be filled with E(i,j) values
 
         for (k in 1:sizeEdges) {
-            j <- AGGedges$from[k]
-            i <- AGGedges$to[k]
+            jEl <- AGGedges$from[k]
+            iEl <- AGGedges$to[k]
 
-            influenceVect[k] <- matrixE[i,j]
+            influenceVect[k] <- matrixE[iEl,jEl] #This is where the error occurs
         }
 
         AGGedges$Influence <- influenceVect
@@ -235,14 +237,15 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
         #write out the function call
         myCall <- character()
-        myCall[1] <- "DIFFUSE("
+        myCall <- paste(myCall,"DIFFUSE(", sep = "")
         # ToDo ... update
-        myCall[2] <- "AGG = AGG" #Don't know what to set this to
-        myCall[3] <- paste("algorithm =", algorithm, sep = " ")
-        myCall[3] <- paste("param =", param, sep = " ")
-        myCall[4] <- paste("silent =", silent, sep = " ")
-        myCall[5] <- paste("writeLog =", writeLog, sep = " ")
-        myCall[6] <- ")"
+        myCall <- paste(myCall,"AGG = AGG,", sep = "") #Don't know what to set this to
+        myCall <- paste(myCall, paste(" algorithm =", algorithm, sep = " "), ",", sep = "")
+        myCall <- paste(myCall, paste(" param =", param, sep = " "), ",", sep = "")
+        myCall <- paste(myCall, " silent =", silent, ",", sep = " ")
+        myCall <- paste(myCall," writeLog =", writeLog, ",", sep = " ")
+        myCall <- paste(myCall, ")" , sep = "")
+
         myNotes <- character()
 
         myNotes <- c(myNotes, sprintf("AGG UUID: %s", attr(AGG, "UUID")))
