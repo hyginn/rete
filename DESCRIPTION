@@ -13,9 +13,9 @@ Imports:
     fastmatch,
     hash,
     igraph,
-    Rcurl,
+    RCurl,
     readr,
-    seqinr
+    seqinr,
     uuid,
     XML
 Suggests:
