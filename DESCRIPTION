@@ -13,8 +13,11 @@ Imports:
     fastmatch,
     hash,
     igraph,
+    RCurl,
     readr,
-    uuid
+    seqinr,
+    uuid,
+    XML
 Suggests:
     testthat
 RoxygenNote: 6.0.1
