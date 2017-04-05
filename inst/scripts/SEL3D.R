@@ -9,6 +9,7 @@
 #' @param convert bool to convert DNA sequences to amino acids, True by default
 #'                NOTE: The user should NOT change convert unless for testing purposes
 #' @param silent bool, set to True to turn off all messages.
+#' @param writeLog bool, default set to TRUE to write a log
 #' @return MT object - dataframe with headers queryid, subjectids, identity, positives,
 #'                     alignment length, mismatches, gapopens, q.start, q.end, s.start, s.end,
 #'                     evalue, bitscore, mlog.evalue, pdb.id
@@ -32,29 +33,31 @@ SEL3D <- function(targetSeq, convert = TRUE, silent = TRUE, writeLog = TRUE) {
     return(getPdbIds(targetSeq, convert = convert, silent = silent, writeLog = writeLog))
 }
 
-getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), convert = TRUE, silent = TRUE, writeLog = TRUE){
-    #getPdbIds
-    #
-    #' \code{getPdbIds} Blasts targetSeq to PDB and returns an MT object
+#getPdbIds
+#
+#' \code{getPdbIds} Blasts targetSeq to PDB and returns an MT object
 
-    #' Details.
-    #'
-    #' @param targetSeq input sequence to be queried, must be cDNA of a length divisible by 3.
-    #' @param startPos start position of the sequence, set to 1 by default, altered in recursive steps
-    #' @param endPos end position of sequence, set to 0, altered to aa length in recursive steps
-    #' @param convert bool to convert DNA sequences to amino acids, True by default
-    #' @param silent bool, set to True to turn off all messages.
-    #' @return MT object - dataframe with headers queryid, subjectids, identity, positives,
-    #'                     alignment length, mismatches, gapopens, q.start, q.end, s.start, s.end,
-    #'                     evalue, bitscore, mlog.evalue, pdb.id
-    #'
-    #'
-    #'
-    #' @examples
-    #' >getPdbIds("AAGTCT")
-    #' >sequence = "ACTGTGACTGTAAATGTT"
-    #' >getPdbIds(sequence)
-    #' >getPdbIds("MGEVST", convert=FALSE)
+#' Details.
+#'
+#' @param targetSeq input sequence to be queried, must be cDNA of a length divisible by 3.
+#' @param startPos start position of the sequence, set to 1 by default, altered in recursive steps
+#' @param endPos end position of sequence, set to 0, altered to aa length in recursive steps
+#' @param convert bool to convert DNA sequences to amino acids, True by default
+#' @param silent bool, set to True to turn off all messages.
+#' @return MT object - dataframe with headers queryid, subjectids, identity, positives,
+#'                     alignment length, mismatches, gapopens, q.start, q.end, s.start, s.end,
+#'                     evalue, bitscore, mlog.evalue, pdb.id
+#'
+#'
+#'
+#' @examples
+#' >getPdbIds("AAGTCT")
+#' >sequence = "ACTGTGACTGTAAATGTT"
+#' >getPdbIds(sequence)
+#' >getPdbIds("MGEVST", convert=FALSE)
+
+getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), convert = TRUE, silent = TRUE, writeLog = TRUE){
+
 
     #check for valid targetSeq
     if(targetSeq =="") {
@@ -80,7 +83,7 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
     } else { AAseq <- targetSeq }
 
 
-    ####### log file arguments
+    #log file arguments
     call_params <- c()
     call_params[1] <- sprintf("sequence run with positions %d to %d ", startPos, endPos)
     call_params[2] <- sprintf("convert: %s ", as.character(convert))
@@ -89,7 +92,7 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
 
     logTitle <- "SEL3D"
 
-    ##local blast
+    #local blast
 
     #we have to generate a file for blastp to work
     write(AAseq, file = "inst/extdata/tmp/sequence.txt", append = FALSE)
@@ -117,9 +120,7 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
     colnames(local_blast_output) <- col_labels
 
 
-    #local blast code
-
-
+    #non local blast
     # if(silent) {
     #   suppressMessages(capture.output(blastOutput <- bio3d::blast.pdb(AAseq)))
     # } else {
@@ -208,6 +209,7 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
         }
     }
 
+    #remove all alignments with any gaps
     finalOutput <- finalOutput[finalOutput$gapopens == 0,]
 
     #no matches were found, print how many were dropped
@@ -297,19 +299,12 @@ getPdbIds <- function(targetSeq, startPos = 1 , endPos = nchar(targetSeq), conve
         }
     }
 
-    #Remove all entries with gap
-    #finalOutput <- finalOutput[finalOutput$gapopens == 0,]
-
     if(writeLog){
         logEvent(eventTitle = logTitle, eventCall = parameters,
                  notes = sprintf("matched %d pdb ids to target sequence", nrow(finalOutput)))
     }
     return(finalOutput)
 }
-#We need to store ranges of the best alignments (as start (st) and end (ed) positions)
-#so we can add that match to the final output without adding segments which overlap
-#in the final format.
-
 #intersectingPositions
 #
 #' \code{intersectingPositions} given a list of ranges and a new range, if the new
