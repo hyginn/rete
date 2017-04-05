@@ -13,7 +13,7 @@
 #' @param param list of parameters for algorithm, defaults to a list containing 'rete.beta',
 #' a globally set option (see documentation for options()). See details section for more information
 #' @param silent if TRUE, suppress printing of process to console
-#' @param noLog if TRUE, suppress logging of run and object metadata to rete's log
+#' @param writeLog if FALSE, suppress logging of run and object metadata to rete's log
 #'
 #' @return  EGG (igraph object with content equivalent to AGG, but with an influence attribute
 #' for edges)
@@ -34,14 +34,14 @@
 #' is reached, where in each column j of matrix F, a vector of probabilities is given for landing
 #' on each element (i) in the column; i.e. element i of column j represents the probability of
 #' reaching node i if a random walk starts from node j. Thus, element E(i,j) represents the
-#' probability of reaching node i from node j when at equilibrium multiplied by the initial
+#' probability of reaching node i from node j when at stationary state multiplied by the initial
 #' 'heat' (gene score) put on node j. For all E(i,j) where there exists a directed edge from
 #' j to i, edge j -> i is equal to the value of E(i,j).
 #'
 #' @export
 
 DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete.beta")),
-                    silent = FALSE, noLog = FALSE) {
+                    silent = FALSE, writeLog = TRUE) {
         startTime <- Sys.time()
 
 
@@ -68,11 +68,11 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         #Check other argmuments
         check1 <- .checkArgs(algorithm,character(length = 1),checkSize = TRUE)
         check2 <- .checkArgs(silent, logical(length = 1), checkSize = TRUE)
-        check3 <- .checkArgs(noLog, logical(length = 1), checkSize = TRUE)
+        check3 <- .checkArgs(writeLog, logical(length = 1), checkSize = TRUE)
         check4 <- .checkArgs(param, list())
 
         if (length(c(check1,check2,check3,check4)) > 0 ) {
-            stop("Error: incorrect argument(s) for algorithm, silent, noLog, and/or param.
+            stop("Error: incorrect argument(s) for algorithm, silent, writeLog, and/or param.
                  See documentation for DIFFUSE function")
         }
 
@@ -226,7 +226,7 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
 
 #==================write the log=====================
 
-    if (!noLog) {
+    if (writeLog) {
 
         if (!silent) {
             consoleVect <- "Writing Log"
@@ -242,7 +242,7 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         myCall[3] <- paste("param =", param, sep = " ")
         myCall[4] <- paste("silent =", silent, sep = " ")
         myCall[5] <- paste("writeLog =", writeLog, sep = " ")
-
+        myCall[6] <- ")"
         myNotes <- character()
 
         myNotes <- c(myNotes, sprintf("AGG UUID: %s", attr(AGG, "UUID")))

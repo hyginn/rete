@@ -173,89 +173,89 @@ testthat::test_that("Erroneous input -> Error message", {
 
     #expect an error thrown if:
     expect_error(DIFFUSE(AGG, algorithm="Lies" , param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     #algorithm character vector not recognized
     expect_error(DIFFUSE(AGG, algorithm=1 , param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     #algorithm is numeric
     expect_error(DIFFUSE(AGG, algorithm=TRUE , param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     #algorithm is a logical
     expect_error(DIFFUSE(AGG, algorithm=as.factor("Leis") ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     #algorithm is a factor
     expect_error(DIFFUSE(AGG, algorithm = "Leis" ,
                          param <- list(getOption("rete.alpha")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     #option does not exist for param
     expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list("puppies"),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     #value in param not recognized
     expect_error(DIFFUSE(AGG, algorithm="Leis" , param <- 0.25,
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     #param not in list format
     expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = "FALSE", noLog = FALSE))
+                         silent = "FALSE", writeLog = TRUE))
     #silent is a character vector
 
     #expect_error(DIFFUSE(AGG, algorithm="Leis" ,
      #                    param <- list(getOption("rete.beta")),
-      #                   silent = as.factor(FALSE), noLog = FALSE))
+      #                   silent = as.factor(FALSE), writeLog = FALSE))
     #silent is a factor: test removed
     expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = 2, noLog = FALSE))
+                         silent = 2, writeLog = TRUE))
     #silent is a double numeric
     expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = "FALSE"))
-    #noLog is a character vector
+                         silent = TRUE, writeLog = "TRUE"))
+    #writeLog is a character vector
     expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = as.factor(FALSE)))
-    #noLog is a factor
+                         silent = TRUE, writeLog = as.factor(TRUE)))
+    #writeLog is a factor
     expect_error(DIFFUSE(AGG, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = 2))
-    #noLog is a double numeric
+                         silent = TRUE, writeLog = 2))
+    #writeLog is a double numeric
     expect_error(DIFFUSE(badAGG1, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     #see lines11-21 for description of bad AGG inputs that should cause
     #an error
     #expect_error(DIFFUSE(badAGG2, algorithm="Leis" ,
                          #param <- list(getOption("rete.beta")),
-                         #silent = FALSE, noLog = FALSE))
+                         #silent = FALSE, writeLog = TRUE))
     #it turns out that iGraph removes edges if you remove their vertices,
     #rendering a test to see what happens when vertices removed unnecessary
 
     expect_error(DIFFUSE(badAGG3, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     expect_error(DIFFUSE(badAGG4, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     expect_error(DIFFUSE(badAGG5, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     expect_error(DIFFUSE(badAGG6, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     expect_error(DIFFUSE(badAGG7, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     expect_error(DIFFUSE(badAGG8, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     expect_error(DIFFUSE(badAGG9, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
     expect_error(DIFFUSE(badAGG10, algorithm="Leis" ,
                          param <- list(getOption("rete.beta")),
-                         silent = TRUE, noLog = FALSE))
+                         silent = TRUE, writeLog = TRUE))
 
 })
 
@@ -265,7 +265,7 @@ context("Check that edge scores assigned to EGG produced in test match
 testthat::test_that("EGG made correctly", {
     EGG<-DIFFUSE(AGG, algorithm = "Leis",
                  param <- list(getOption("rete.beta")),
-                 silent = TRUE, noLog = FALSE)
+                 silent = TRUE, writeLog = TRUE)
     eggEdges <- igraph::as_data_frame(EGG, what = "edges")
     eggRefEdges<-igraph::as_data_frame(eggRef, what = "edges")
 
@@ -279,6 +279,27 @@ testthat::test_that("EGG made correctly", {
     expect_equal(sum(as.numeric(as.logical(edgeIDLogiVect))), length(edgeIDLogiVect))
     expect_equal(sum(as.numeric(as.logical(inflLogiVect))), length(inflLogiVect))
     # for each comparison of columns, we expect all rows to have value of true
+
+
+    #Have we got the log file?
+
+    # correct log file
+    thisLog <- readLines(logName)
+    expect_true(grepl("event \\| title  \\| DIFFUSE",     thisLog[1]))
+
+
+    # call
+    expect_true(grepl("^event \\| call   \\| DIFFUSE\\(", thisLog[3]))
+    expect_true(grepl("algorithm = \"Leis\"",                    thisLog[3]))
+    expect_true(grepl("AGG = \"AGG\"",                       thisLog[3]))
+    expect_true(grepl("param = [[1]][1] 0.25", thisLog[3]))
+    expect_true(grepl("silent = TRUE",                             thisLog[3]))
+    expect_true(grepl("writeLog = TRUE",                           thisLog[3]))
+    expect_true(grepl(")$",                                        thisLog[3]))
+
+    #notes
+
+
 })
 
 #To do: have a way of checking that metadata is assigned correctly
@@ -286,7 +307,7 @@ testthat::test_that("EGG made correctly", {
 testthat::test_that("Metadata assigned correctly", {
     EGG<-DIFFUSE(AGG, algorithm = "Leis",
                  param <- list(getOption("rete.beta")),
-                 silent = TRUE, noLog = FALSE)
+                 silent = TRUE, writeLog = TRUE)
     eggEdges <- igraph::as_data_frame(EGG, what = "edges")
     eggRefEdges<-igraph::as_data_frame(eggRef, what = "edges")
 
@@ -306,14 +327,14 @@ testthat::test_that("DIFFUSE doesn't leak output if silent = TRUE", {
     capture.output(dummy <- DIFFUSE(AGG = AGG, algorithm = "Leis",
                    param = list(getOption("rete.beta")),
                    silent = TRUE,
-                   noLog = FALSE),
+                   writeLog = FALSE),
                    file = testF)
     expect_equal(length(readLines(testF)), 0)
     expect_true(file.remove(testF))
 })
 
 #To do:
-#Come up with a test to see that nothing is written to the log if noLog is TRUE
+#Come up with a test to see that nothing is written to the log if writeLog is TRUE
 
 # ==== BEGIN TEARDOWN AND RESTORE ==============================================
 logName <- unlist(getOption("rete.logfile"))
