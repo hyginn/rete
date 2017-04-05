@@ -36,7 +36,7 @@ findSub <- function(method="Leis",EGG,minOrd,noLog = FALSE,silent = FALSE) {
     #'(assigned threshold for edge removal regardless of method used in generating edge scores) and an
     #'EGGversion, a graph attribute with a character vector of length 1. Unless further changes are made,
     #'EGGversion must be "1.0".
-    #'
+    #'@export
 
 
 
@@ -220,7 +220,7 @@ if (!silent) {
 }
 
 #if (!noLog) { #save log data if we choose noLog = FALSE
-  #  save(logVect, file = logName)
+ #   logWrite(logVect)
 #}
 return(sN)
 
