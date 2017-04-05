@@ -2,15 +2,31 @@
 
 
 
-#Create Test Data
 
-options(rete.beta = 0.25)
+# ==== BEGIN SETUP AND PREPARE =================================================
+# set up tempdir and tempfiles for output files and to be deleted after tests
+OLOG <- as.character(getOption("rete.logfile"))   # save original logfile name
+rete::logFileName(fPath = tempdir(), setOption = TRUE)  # make tempdir() the log dir
+logName <- unlist(getOption("rete.logfile"))
+if (file.exists(logName)) { file.remove(logName)}
+
+if (!is.null(getOption("rete.beta"))) {
+    storeBeta <- getOption ("rete.beta")
+    options("rete.beta" = NULL)
+} else {
+    storeBeta <- NULL
+}
+options("rete.beta" = 0.25)
+# ==== END SETUP AND PREPARE ===================================================
+
+#Creating Test Data for testDIFFUSE
 
 #========== Make AGG ==============
 HGNCsymb<-c("ABC1","DEF2","GHI4","JKL3","LMN5","OPQ6","RST7","UVW8","XYZ9")
 VertScores<-c(10,2,4,6,7,8,2,5,9)
 
-aggVertices<-data.frame(HGNC_symbol=HGNCsymb,Gene_Score=VertScores)
+aggVertices<-data.frame(HGNC_symbol=HGNCsymb,Gene_Score=VertScores,
+                        stringsAsFactors = FALSE)
 
 From<-c("ABC1","ABC1","DEF2","JKL3","DEF2","DEF2","JKL3",
         "GHI4","JKL3","GHI4","GHI4","GHI4","LMN5",
@@ -33,11 +49,10 @@ aggEdges<-data.frame(from=From,to=To,edgeID=edgeID)
 
 AGG<-igraph::graph_from_data_frame(aggEdges, directed = TRUE, vertices = aggVertices)
 
-metaDataAGG <- list(version = "AGG_Version_1.0",
-                                 UUID = "54321",
-                                 input = "gG",
-                                 time = Sys.time())
-attr(AGG,"meta") <- metaDataAGG
+#setup AGG metadata
+attr(AGG, "type") <- "AGG"
+attr(AGG, "version") <- "1.0"
+attr(AGG, "UUID") <- uuid::UUIDgenerate()
 
 #========= Make matrix W =============
 #Creating a reference matrix W to which to compare DIFFUSE output
@@ -114,46 +129,48 @@ aggEdges$Influence[22] <- matERef[8,9] #XYZ9 to UVW8
 
 eggRef <- igraph::graph_from_data_frame(aggEdges, directed = TRUE, vertices= aggVertices)
 
-meta <- list(version = "EGG_Version_1.0",
-             UUID = "12345",
-             input = paste("AGG","uuID",metaDataAGG["UUID"], sep = ""),
-             time = Sys.time())
-attr(eggRef,"meta") <- meta
-
-#=======Make bad AGGs to see if erroneous inputs induce errors =========
-
-#Here, we make a whole bunch of bad AGGs that should induce errors
-
-badAGG1<-AGG #Remove 1st 4 edges; throw error because unused vertices
-badAGG2<-AGG #Remove 1st 4 vertices; throw error because unused edges.
-#Turns out that if you remove vertices, igraph will remove all edges including them
-badAGG3<-AGG #Remove Scores
-badAGG4<-AGG #Remove HGNC symbols from vertices
-badAGG5<-AGG #Insert character vector into one of the 'scores'
-badAGG6<-AGG #Insert logical TRUE into one of the 'scores'
-badAGG7<-AGG #Insert integer "1" for one of the 'scores'
-badAGG8<-AGG #Insert factor "1.5" for one of the 'scores'
-badAGG9<-AGG #Give an EGG version number and other metadata. Don't want somebody mistakenly running EGG
-#through pipelin
-badAGG10<-AGG #Give AGG Edge score attribute. Don't want to run EGG through DIFFUSE again
-
-badAGG1 <- igraph::delete_edges(badAGG1, 1:4)
-badAGG2 <- igraph::delete_vertices(badAGG2, 1:4)
-badAGG3 <- igraph::remove.vertex.attribute(badAGG3,"Gene_Score")
-badAGG4 <- igraph::remove.vertex.attribute(badAGG4,"name")
-badAGG5 <- igraph::vertex_attr(badAGG5,"Gene_Score",V(badAGG5))[3]<-"cow"
-badAGG6 <- igraph::vertex_attr(badAGG6,"Gene_Score",V(badAGG6))[3]<-TRUE
-badAGG7 <- igraph::vertex_attr(badAGG7,"Gene_Score",V(badAGG7))[3]<-as.integer(1)
-badAGG8 <- igraph::vertex_attr(badAGG8,"Gene_Score",V(badAGG8))[3]<-as.factor(1.5)
-badAGG9 <- attr(badAGG9,"meta")<-meta
-badAGG10 <- igraph::vertex_attr(badAGG10,"Influence")<-numeric(length=length(igraph::V(badAGG10)))
-
-
 #======================= Conduct Tests (Finally) ============================
 
-context ("Check that errors are thrown with erroneous input")
+testthat::context ("Check that errors are thrown with erroneous input")
 
 testthat::test_that("Erroneous input -> Error message", {
+
+    #=======Make bad AGGs to see if erroneous inputs induce errors =========
+
+    #Here, we make a whole bunch of bad AGGs that should induce errors
+
+    badAGG1<-AGG #Remove 1st 4 edges; throw error because unused vertices
+    badAGG2<-AGG #Remove 1st 4 vertices; throw error because unused edges.
+    #Turns out that if you remove vertices as done for badAGG2, igraph will
+    #remove all edges including them
+    badAGG3<-AGG #Remove Scores
+    badAGG4<-AGG #Remove HGNC symbols from vertices
+    badAGG5<-AGG #Insert character vector into one of the 'scores'
+    badAGG6<-AGG #Insert logical TRUE into one of the 'scores'
+    badAGG7<-AGG #Insert integer "1" for one of the 'scores'
+    badAGG8<-AGG #Insert factor "1.5" for one of the 'scores'
+    badAGG9<-AGG #Give an EGG version number and other metadata. Don't want somebody mistakenly running EGG
+    #through pipelin
+    badAGG10<-AGG #Give AGG Edge score attribute. Don't want to run EGG through DIFFUSE again
+
+    badAGG1 <- igraph::delete_edges(badAGG1, 1:4)
+    badAGG2 <- igraph::delete_vertices(badAGG2, 1:4)
+    badAGG3 <- igraph::remove.vertex.attribute(badAGG3,"Gene_Score")
+    badAGG4 <- igraph::remove.vertex.attribute(badAGG4,"name")
+    badAGG5 <- igraph::vertex_attr(badAGG5,"Gene_Score", igraph::V(badAGG5))[3] <-"cow"
+    badAGG6 <- igraph::vertex_attr(badAGG6,"Gene_Score", igraph::V(badAGG6))[3] <-TRUE
+    badAGG7 <- igraph::vertex_attr(badAGG7,"Gene_Score", igraph::V(badAGG7))[3] <-as.integer(1)
+    badAGG8 <- igraph::vertex_attr(badAGG8,"Gene_Score", igraph::V(badAGG8))[3] <-as.factor(1.5)
+
+    attr(badAGG9, "type") <- "EGG"
+
+    badAGG10 <- igraph::vertex_attr(badAGG10,"Influence")<-numeric(length=length(igraph::V(badAGG10)))
+
+
+
+
+
+
     #expect an error thrown if:
     expect_error(DIFFUSE(AGG, algorithm="Lies" , param <- list(getOption("rete.beta")),
                          silent = TRUE, noLog = FALSE))
@@ -266,14 +283,25 @@ testthat::test_that("EGG made correctly", {
 
 #To do: have a way of checking that metadata is assigned correctly
 
-#context ("correct metadata assigned")
-#test_that("metadata correctly assigned to EGG", {
+testthat::test_that("Metadata assigned correctly", {
+    EGG<-DIFFUSE(AGG, algorithm = "Leis",
+                 param <- list(getOption("rete.beta")),
+                 silent = TRUE, noLog = FALSE)
+    eggEdges <- igraph::as_data_frame(EGG, what = "edges")
+    eggRefEdges<-igraph::as_data_frame(eggRef, what = "edges")
 
-#})
+    testthat::expect_equal(attr(EGG,"type"), "EGG")
+    testthat::expect_equal(attr(EGG,"version"), "1.0")
+    testthat::expect_equal(.checkArgs(attr(EGG, "UUID"),
+                                      uuid::UUIDgenerate()),
+                           0)
+
+
+})
 
 #Below test was totally plagiarized from diffuseV3.R, but better not to
 #re-engineer the wheel
-test_that("DIFFUSE doesn't leak output if silent = TRUE", {
+testthat::test_that("DIFFUSE doesn't leak output if silent = TRUE", {
     testF <- tempfile()
     capture.output(dummy <- DIFFUSE(AGG = AGG, algorithm = "Leis",
                    param = list(getOption("rete.beta")),
@@ -286,5 +314,18 @@ test_that("DIFFUSE doesn't leak output if silent = TRUE", {
 
 #To do:
 #Come up with a test to see that nothing is written to the log if noLog is TRUE
+
+# ==== BEGIN TEARDOWN AND RESTORE ==============================================
+logName <- unlist(getOption("rete.logfile"))
+if (file.exists(logName)) { file.remove(logName)}
+
+if ( !(is.null(storeBeta))) {
+    getOption("rete.beta") <- storeBeta
+} else {
+    getOption("rete.beta") <- NULL
+}
+
+options("rete.logfile" = OLOG)
+# ==== END  TEARDOWN AND RESTORE ===============================================
 
 #[END]

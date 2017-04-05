@@ -60,7 +60,10 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         if (!(igraph::is.igraph(AGG) && igraph::is.directed(AGG))) {
             stop("Error: AGG must be an iGraph object with directed edges")
         }
-
+        #Check if AGG is in fact an AGG object
+        if (attr(AGG, "type") != "AGG") {
+            stop("Error: input for AGG is not of type AGG")
+        }
 
         #Check other argmuments
         check1 <- .checkArgs(algorithm,character(length = 1),checkSize = TRUE)
@@ -73,8 +76,7 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
                  See documentation for DIFFUSE function")
         }
 
-        #Extract AGG metadata for writing to log
-        metaAGG <- attr(AGG,"meta")
+
            #Assign AGG vertices and edges to data frames
            AGGverts<- igraph::as_data_frame(AGG, "vertices")
            AGGedges<- igraph::as_data_frame(AGG, "edges")
