@@ -1,25 +1,9 @@
 # .importConservation.R
 
-#' Generate a data file containing conservation score and chromosome position
-#' pairs.
-#'
-#' \code{.importConservation} imports conservation scores from a UCSC chromosome
-#' conservation score file. Generate a big matrix (col size 2, row size equal to
-#' the number of rows of the input file) containing conservation score and
-#' chromosome position pairs.
-#'
-#' @param fName The path to the UCSC chromosome conservation score file.
-#' @param outName The path to an output file for the rCNA RDS object.
-#' @param scoringType The type of the conservation score.
-#' @param silent Controls whether writing the result to the global logfile is
-#'   enabled. TRUE by default.
-#' @param writeLog  Return rCNA object of COSMIC CNA data as RDS compressed data frame file.
-
+#' Utility functions from create and extracting UCSC Conservation Scores
 .importConservation <- function(fName,
                                 outName,
-                                scoringType,
-                                silent = FALSE,
-                                writeLog = TRUE) {
+                                silent = FALSE) {
 
     # ==== PARAMETER TYPE VALIDATION ==========================================
 
@@ -27,9 +11,7 @@
     cR <- character()
     cR <- c(cR, .checkArgs(fName,     like = "FILE_E",   checkSize = TRUE))
     cR <- c(cR, .checkArgs(outName,     like = "a",        checkSize = TRUE))
-    cR <- c(cR, .checkArgs(scoringType,     like = "a",        checkSize = TRUE))
-    cR <- c(cR, .checkArgs(silent,       like = logical(1), checkSize = TRUE))
-    cR <- c(cR, .checkArgs(writeLog,     like = logical(1), checkSize = TRUE))
+    cR <- c(cR, .checkArgs(silent,     like = logical(1),        checkSize = TRUE))
 
     if (length(cR) > 0) {
         stop(cR)
@@ -55,19 +37,12 @@
         stop(errorMessage)
     }
 
-    chromosomeSource <- unlist(strsplit(header[chrCol], "="))[2]
     currPos <- as.numeric(unlist(strsplit(header[startCol], "="))[2])
-    currIndex <- 1
-
 
     # Determine the number of lines
-    lineCountFile <- file(fName, open = "r")
+    wcOut <- unlist(strsplit(system(paste("wc -l", fName), intern = TRUE), " +"))
 
-    numLines <- 0
-
-    while ((numLinesRead <- length(readLines(lineCountFile, n = 200000))) > 0) {
-        numLines <- numLines + numLinesRead
-    }
+    numLines <- as.numeric(wcOut[1])
 
     # Check if numLilnes is equal to
     if (numLines == 0) {
@@ -75,90 +50,65 @@
         stop(errorMessage)
     }
 
-    close(lineCountFile)
-
-
-    # Create really big matrix
+    # Create a really big matrix
     chromosomeScores <- matrix(data = 0.0, ncol = 2, nrow = numLines)
 
+    currIndex <- 1
     while (length(entry <- readLines(conservationFile, n = 1)) > 0) {
         if (!silent) {
             .pBar(currIndex, numLines)
         }
         # Read a header line
+        # Scores are from 0.000 to 1.000
+        # So if an entry was more than 5 characters in length, it's assumed to
+        # be a header. Ten just ensures it is a header.
         if (nchar(entry) > 10) {
             header <- unlist(strsplit(entry, " "))
             currPos <- as.integer(unlist(strsplit(header[startCol], "="))[2])
         } else {
             num <- as.integer(as.numeric(entry) * 1000)
-            chromosomeScores[currIndex, 1] <- currPos
-            chromosomeScores[currIndex, 2] <- num
+            chromosomeScores[currIndex, ] <- c(currPos, num)
             currIndex <- currIndex + 1
             currPos <- currPos + 1
         }
     }
 
     if (!silent) {
-        .pBar(numLines - 1, numLines)
         .pBar(numLines, numLines)
     }
 
     close(conservationFile)
 
     # remove extra indices
-    if (chromosomeScores[currIndex, 1] == 0) {
-        currIndex <- currIndex - 1
-    }
-    chromosomeScores <- chromosomeScores[1:currIndex, ]
+    chromosomeScores <- chromosomeScores[1:(currIndex - 1), ]
 
-    # ==== SETUP METADATA ======================================================
-    meta <- list(type = "ChromosomeConservationScore",
-                 version = "1.0",
-                 UUID = uuid::UUIDgenerate(),
-                 chromosome = chromosomeSource,
-                 scoreType = scoringType)
-
-
-    # ==== ATTACH METADATA =====================================================
-
-    for (name in names(meta)) {
-        attr(chromosomeScores, name) <- meta[[name]]
-    }
-
-    # ==== WRITE TO LOG =======================================================
-
-    if (writeLog) {
-
-        myTitle <- ".importConservation"
-
-        # Compile function call record
-        myCall <- character()
-        myCall[1] <- ".importConservaation("
-        myCall[2] <- sprintf("fName = \"%s\", ", fName)
-        myCall[3] <- sprintf("outName = \"%s\", ", outName)
-        myCall[4] <- sprintf("scoringType = \"%s\", ", scoringType)
-        myCall[5] <- sprintf("silent = %s, ", as.character(silent))
-        myCall[6] <- sprintf("writeLog = %s)", as.character(writeLog))
-        myCall <- paste0(myCall, collapse = "")
-
-        # Record progress information
-        myNotes <- character()
-        myNotes <- c(myNotes, sprintf(
-            "Read %s UCSC Conservation scores from file %s.",
-            scoringType, fName))
-        myNotes <- c(myNotes, sprintf(
-            "Wrote Chromosome Conservation score to %s.", outName))
-
-        # indicate output object name(s)
-        myOutput = c("ChromosomeConservationScore")
-
-        # send info to log file
-        logEvent(eventTitle = myTitle,
-                 eventCall = myCall,
-                 notes = myNotes,
-                 output = myOutput
-        )
-    }
     saveRDS(chromosomeScores, outName)
     rm(chromosomeScores)
+}
+
+
+# This is with the assumption that the geneStart, geneEnd are actually found in
+# the chromosome data.
+# This is also with an assumption that the there are no weird behaviour:
+# start <- 1, end <- 100 but there is no data say from 20-30
+# This can occur from multiple header lines in the UCSC chromosome score
+# file.
+.fetchConservationScores <- function(chromosomeScores,
+                                   geneStart,
+                                   geneEnd,
+                                   cdsStarts,
+                                   cdsEnds) {
+    startIndex <- which(chromosomeScores[, 1] == geneStart)
+    endIndex <- which(chromosomeScores[, 1] == geneEnd)
+    extractedScores <- chromosomeScores[startIndex:endIndex, ]
+
+    out <- matrix(nrow = 0, ncol = 2)
+    # Assuming length(cdsStart) = length(cdsEnd)
+    for (i in 1:length(cdsStarts)) {
+        exonStart <- cdsStarts[i] - geneStart + 1
+        exonEnd <- exonStart + (cdsEnds[i] - cdsStarts[i])
+        exonScores <- extractedScores[exonStart:exonEnd, ]
+        out <- rbind(out, exonScores)
+    }
+    return(out)
 }
