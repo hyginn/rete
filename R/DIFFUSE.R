@@ -97,9 +97,10 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         }
 
         #creating transition matrix W
+        HGNCsymb<-AGGverts$name #get a vector of AGG vertex names
 
         W<-matrix(data = numeric( length( sizeVerts )^2 ), nrow = sizeVerts , ncol = sizeVerts,
-                  dimnames = list(AGGverts$name, AGGverts$name))
+                  dimnames = list(HGNCsymb, HGNCsymb))
 
         vertDegree <- numeric(length = sizeVerts) #Will store degree of each vertex
         names(vertDegree) <- AGGverts$name
@@ -111,7 +112,7 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
         }
         #calculating degree via following procedure
 
-        HGNCsymb<-AGGverts$name #get a vector of AGG vertex names
+
 
         for (i in 1:sizeVerts) {
 
@@ -216,30 +217,53 @@ DIFFUSE <- function(AGG = NULL, algorithm = "Leis", param = list(getOption("rete
            finish <- Sys.time()
 
         #setup metadata
-           meta <- list(version = "EGG_Version_1.0",
-                        UUID = uuid::UUIDgenerate(),
-                        input = paste("AGGuuID",metaAGG["UUID"][[1]], sep = ""),
-                        time = finish)
-          attr(EGG,"meta") <- meta
+            attr(EGG , "type") <- "EGG"
+            attr(EGG , "version") <- "1.0"
+            attr(EGG , "UUID") <- uuid::UUIDgenerate()
+
+
 #==================write the log=====================
 
     if (!noLog) {
-        consoleVect <- "Writing Log"
+
         if (!silent) {
-            print(consoleVect[length(consoleVect)])
+            consoleVect <- "Writing Log"
+            print(consoleVect)
         }
 
-        logVect <- paste("DIFFUSE started at", startTime, sep = "")
-        logVect <- c(logVect, "Finished at", finish, sep = "")
-        logVect <- c(logVect,paste("returned EGG object with", sizeEdges, "edges and",
-                                   sizeVerts, "vertices", sep = " "))
-        logVect <- c(logVect,"UUID and attributes",as.character(meta))
-        #logMessage(logVect) need to include the method of logging this information
+        #write out the function call
+        myCall <- character()
+        myCall[1] <- "DIFFUSE("
+        # ToDo ... update
+        myCall[2] <- "AGG = AGG" #Don't know what to set this to
+        myCall[3] <- paste("algorithm =", algorithm, sep = " ")
+        myCall[3] <- paste("param =", param, sep = " ")
+        myCall[4] <- paste("silent =", silent, sep = " ")
+        myCall[5] <- paste("writeLog =", writeLog, sep = " ")
+
+        myNotes <- character()
+
+        myNotes <- c(myNotes, sprintf("AGG UUID: %s", attr(AGG, "UUID")))
+
+        myNotes <- c(myNotes, sprintf("EGG UUID: %s", attr(EGG, "UUID")))
+
+        myNotes <- c(myNotes, paste("start time", startTime, sep = " "))
+
+        myNotes <- c(myNotes, paste("end time", finish, sep = " "))
+
+        logEvent( eventTitle = "DIFFUSE",
+                  eventCall = myCall,
+                  input = character(), #put object name of AGG here?
+                  notes = myNotes,
+                  output = c("EGG"))
+
     }
 
-          consoleVect <- "Finished, returning EGG"
+
           if (!silent) {
-              print(consoleVect[length(consoleVect)])
+              consoleVect <- "Finished, returning EGG"
+              print(consoleVect)
+
           }
 
            return(EGG)
