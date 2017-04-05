@@ -1,71 +1,183 @@
-#bs> rememeber to add setup/teardown blocks to the file
+OLOG <- as.character(getOption("rete.logfile"))
+logFileName(fPath = tempdir(), setOption = TRUE)
+logName <- unlist(getOption("rete.logfile"))
+if (file.exists(logName)) {file.remove(logName)}
 
-#Check fName input is correct
-expect_error(fName = NULL || fName = c("a", "b", "c", "d") || "nosuchtext.txt" ||, raise error)
-#bs> don't need to check 4 if you want to check > 1
-#Check drop unmapped
-expect_error(dropUnmapped = NULL, raise error)
-#Check silent
-expect_error(silent = NULL, raise error)
-#chek write log
-expect_error(writeLog = NULL, rasie error)
-#bs> check that after all ht efailed parameter tests no log-file was created
-#bs> remember to confirm the actual error message, not just that an error was thrown
+# ==== END SETUPS AND PREPARE ===================
 
+# ==== importNet.MITAB ==========================
 
-
-
-
-test_that(importNet.MITAB creates gG from MITAB data){
-  ##fName containing only 5 valid vertices... I dont know how this will be done?
-#bs> Can you grep out a few records relating to our test-dataset?
+test_that("importNet.MITAB() rejects erroneus parameters", {
+  fN <- "core.psimitab"
   
+  # === fName
+  
+  expect_error(
+    gG <- importNet.MITAB(fName = NULL,
+                          cutoffType = "xN",
+                          silent = TRUE),
+    '.checkArgs> "fName" mode error')
+
+  expect_error(
+    gG <- importNet.MITAB(fName = c("file_A", "file_B"),
+                          cutoffType = "xN",
+                          silent = TRUE),
+    '.checkArgs> "fName" length error')
+  
+  expect_error(
+    gG <- importNet.MITAB(fName = "noSuch.txt", 
+                          cutoffType = "xN",
+                          silent = TRUE),
+    '.checkArgs> "fName" error: file "noSuch.txt" does not exist.')
+  
+  # ==== dropUnmapped
+  
+  expect_error(
+    gG <- importNet.MITAB(fName = fN,
+                          cutffType = "xN",
+                          dropUnmapped = NULL,
+                          silent = TRUE),
+    '.checkArgs> "dropUnmapped" mode error')
+  
+  expect_error(
+    gG <- importNet.MITAB(fName = fN,
+                          cutoffType = "xN",
+                          silent = NULL),
+    '.checkArgs> "silent" mode error')
+  
+  expect_error(
+    gG <- importNet.MITAB(fNAme = fN,
+                          cutoffType = "xN",
+                          silent = TRUE,
+                          writeLog = NULL),
+    '.checkArgs> "writeLog" mode error')
+  
+  expect_false(file.exists(logName))
+
+}
+
+
+
+# bs>  importNet.STRING is the wrong function name.
+importNet.MITAB <- function(fName,
+                             cutoffType = "xN",
+                             val,
+                             experimentType = getOptions("rete.defaultPPI"),
+                             taxID = "9606",
+                             silent = FALSE,
+                             writeLog = FALSE) {
+
+})
+
+test_that("importNet.MITAB() correctly calculates scores", {
+  fN <- "core.psimitab"
+  g
+})
+
+
+
+test_that("importNet.MITAB() produces gG from MITAB data", {
+  unlink(logName) # Deleting previous log file?
+  fN <- system.file("extdata", "core_snippet.psimitab", package="rete")
+  gG <- importNet.MITAB(fName = fN,
+                        cuttoffType = "xN",
+                        dropUnmapped = TRUE,
+                        silent = TRUE,
+                        weriteLog = TRUE)
   expect_equal(igraph::vcount(gG), 5)
   expect_equal(igraph::ecount(gG), 4)
   
-  #Check correct meta data
-  check gG type
-  check gG version
-  check UUID
+  expect_equal(attr(gG, "type"), "gG")
+  expect_equal(attr(gG, "version"), "1.0")
+  expect_equal(.checkArgs(attr(gG, "UUID"), "UUID"), character())
   
-  #Check log file
-  Check if log file created correctly
+  # bs>  Careful you are making an assumption that any previous testing did not
+  # bs>  create a logfile already. Beter to delete it explicitly in this block.
+  thisLog <- readlines(logName)
+  expect_true(grepl("event \\| title \\| importNet.MITAB",     thisLog[1]))
+  expect_true(grepl("event \\| time",                          thisLog[2]))
   
-  #check calls
-  check call
-  check fname
-  check val
-  check cutofftype
-  check taxID
-  check dropUnmapped
-  check silent
-  check writelog
-  check event note
-  check edgges selectM
-  check gG vertices and edges
-  check gG
-  check event output
-  check class
-  check type
+  expect_true(grepl("^event \\| call \\| importNet.MITAB \\(", thisLog[3]))
+  expect_true(grepl(paste0("fName = \"", fN, "\""),            thisLog[3]))
+  expect_true(grepl("cutoffType = \"xN\"",                     thisLog[3]))
+  expect_true(grepl("val = 10",                             thisLog[3]))
+  expect_true(grepl("taxID = \"9606\"",                        thisLog[3]))
+  expect_true(grepl("dropUnmapped = FALSE",                    thisLog[3]))
+  expect_true(grepl("silent = TRUE",                           thisLog[3]))
+  expect_true(grepl("writeLog = TRUE",                         thisLog[3]))
+  expect_true(grepl(")$",                                      thisLog[3]))
   
-  #check leaks
-  check no loak output if silent
+  expect_true(grepl("event | note | read 4 edges from file.",  thisLog[4]))
+  expect_true(grepl("Selected 4 edges via cutooff.",           thisLog[5]))
+  expect_true(grepl("gG object has 5 vertices and 4 edges.",   thisLog[6]))
+  # ====== CHECK DROPPED AND ID TRANSLATIONS
+  expect_true(grepl("2 geneID can not be mapped to HGNC",      thisLog[7]))
+  expect_true(grepl("20% of genes could not be mapped",        thisLog[8]))
+  # ======================================================================
+  expect_true(grepl("\"gG\"",                                  thisLog[9]))
+  expect_true(all(grepl("event \| output \\| attribute \\|", thisLog[10:13])))
+  expect_true(grepl("class | \"igraph\"",                      thisLog[10]))
+  expect_true(grepl("type | \"gG\"",                           thisLog[11]))
+  expect_true(grepl("version | \"1.0\"",                       thisLog[12]))
+  expect_true(grepl("UUID",                                    thisLog[13]))
+  expect_true(grepl("event | end",                             thisLog[14]))
+  expect_true(grepl("^$",                                      thisLog[15]))
+  })
 
-#bs> check that calculated scores are correct
-#bs> check that selections by value / number quartile ...  work
-#bs> check that ID translation works
-    
-#bs> check that unmapped IDs are correctly dropped if requested
-#bs> check that symmetric edges are correctly added if requested
-#bs> check that edges that don't match requested methods are properly removed
-
-#bs> check that number of unmapped IDs was correctly reported
-#bs> check that edges added as symmetric edges are properly reported
-#bs> check that edges removed via method selection are properly reported
-
-#bs> check that resulting graph is weighted, directed and simple
-    
-    
-    
+  test_that("importNet.MITAB() does not leak output if silent = TRUE", {
+    fN <- "core.psimitab"
+    testF <- tempfile()
+    capture.output(gG <- importNet.MITAB(fName = fN,
+                                         cutoffType = "xN",
+                                         dropUnmapped = FALSE,
+                                         silent = TRUE,
+                                         writeLog = FALSE),
+                   file = testF)
+    expect_equal(length(readLines(testF)), 0)
+    expect_true(file.remove(testF))
+  })
   
-}
+  
+# ==== LOOK HERE ============================================================================  
+  test_that("importNet.MITAB() follows the designated cutoff", {
+    fN <- system.file("extdata", "core_snippet.psimitab", package="rete")
+    
+    val <- 5 # Top 5 highest scores
+    gG <- importNet.MITAB(fName = fN,
+                          cutoffType = "xN",
+                          dropUnmapped = TRUE,
+                          silent = TRUE,
+                          writeLog = FALSE)
+    
+
+    expect_true(gorder(gG), 5) # Check quantity of vertices 
+    expect_true(E(gG)$weights[1], 0.190986) # Check weight of first edge
+    expect_true(is.simple(gG) && is_connected(gG) && is.weighted(gG)) #Check is graph is simple, 
+                                                                      # connected and weighted
+
+    val <- 0.45 # Edges fall into 0.45 quartile
+    gG <- importNet.MITAB(fName = fN,
+                          cutoffType = "xQ",
+                          val,
+                          dropUnmapped = TRUE,
+                          silent = TRUE,
+                          writeLog = FALSE)
+    expect_true(gorder(gG), 5) # Check quantity of vertices 
+    
+    val <- 0.25 # Edges with weight >= 0.25
+    gG <- importNet.MITAB(fName = fN,
+                          cutoffType = "xS",
+                          val,
+                          dropUnmapped = TRUE,
+                          silent = TRUE,
+                          writeLog = FALSE)
+    expect_true(gorder(gG), 5) # Check quantity of vertices 
+  })
+  
+# ==== HERE ================================================================================
+  
+logName <- unlist(getOption("rete.logfile"))
+if (file.exists(logName)) { file.remove(logName)}
+options("rete.logfile" = OLOG)
+  
+# [END]  
