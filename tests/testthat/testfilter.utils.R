@@ -54,22 +54,37 @@ test_that("Patient correctly extracted from barcode", {
 })
 
 test_that("Sample type correctly extracted from barcode", {
-    expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA-A3-3307-01A-01R-0864-07", separator="-"),
-        c(type='T', code='01', vial='A'))
+    types <- .filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.01A.01R.0864.07")
+    expect_equal(types$type[1], 'T')
+    expect_equal(types$code[1], '01')
+    expect_equal(types$vial[1], 'A')
 
-    expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA.A3.3307.01B.01R.0864.07", separator="."),
-        c(type='T', code='01', vial='B'))
+    types <- .filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.01B.01R.0864.07")
+    expect_equal(types$type[[1]], 'T')
+    expect_equal(types$code[[1]], '01')
+    expect_equal(types$vial[[1]], 'B')
 
-    expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA.A3.3307.01A.01R.0864.07"), c(type='T', code='01', vial='A'))
+    types <- .filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.11A.01R.0864.07")
+    expect_equal(types$type[[1]], 'N')
+    expect_equal(types$code[[1]], '11')
+    expect_equal(types$vial[[1]], 'A')
 
-    expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA.A3.3307.11A.01R.0864.07"), c(type='N', code='11', vial='A'))
+    types <- .filter.utils.sampleTypeFromBarcode(
+        "TCGA.A3.3307.20C.01R.0864.07")
+    expect_equal(types$type[[1]], 'C')
+    expect_equal(types$code[[1]], '20')
+    expect_equal(types$vial[[1]], 'C')
 
-    expect_equal(.filter.utils.sampleTypeFromBarcode(
-        "TCGA.A3.3307.20A.01R.0864.07"), c(type='C', code='20', vial='A'))
+    types <- .filter.utils.sampleTypeFromBarcode(c(
+        "TCGA.A3.3307.01A.01R.0864.07",
+        "TCGA.A3.3307.20C.01R.0864.07"
+        ))
+    expect_equal(types$type, c('T', 'C'))
+    expect_equal(types$code, c('01', '20'))
+    expect_equal(types$vial, c('A','C'))
 
     expect_error(.filter.utils.sampleTypeFromBarcode(
         "TCGA.A3.3307.00C.01R.0864.07"))
