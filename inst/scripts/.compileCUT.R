@@ -1,3 +1,5 @@
+# Pseudo code
+
 .compileCUT <- function() {
     # Generate something to associate a codon to an amino acid
     # Was thinking of manually generating a hash table with keys of codons and
