@@ -67,8 +67,8 @@ GOannotation <- function(fNameGO, fNameGOA, FGDAG="GDAG.RDS", FGg="Gg.RDS", sile
     # infer children list
     # for each key in the hashtable:
     #     add its own GO id with vector named "name" to the parent's children vector
-    #     check if the terms with empty parent vector are three, which are GO:0003674, GO:0005575, and GO:0008150
-    #     report error if the check failed
+    #     check if the terms with empty parent vector are only GO:0003674, GO:0005575, and GO:0008150
+    #     report error if the check found other GO terms
 
     # compute distance and prune leaves
     # initialize a vector for leaves
