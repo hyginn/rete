@@ -117,11 +117,8 @@ score <- function(gX, GeneData, outputName = "gH.rds", silent = FALSE, writeLog 
             background_silent <- 0
             background_mis_nons <- 0
 
-            print(paste0("simulation: ", i))
-
 
             for(j in 1:num_people){
-                print(paste0("dude: ", j))
 
                 for(cod in split_seq){
                     if(rpois(1, lambda = 0.01) == 0){ # could use codon_mutation_freq as lambda (this is a closer
