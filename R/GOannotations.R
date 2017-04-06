@@ -28,12 +28,12 @@ GOannotation <- function(fNameGO, fNameGOA, FGDAG="GDAG.RDS", FGg="Gg.RDS", sile
     # Download GOA data (GOA)
     # ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/HUMAN/
 
-    # Pseudocode begins
     # Packages for using readGAF, GOA files
     # source("https://bioconductor.org/biocLite.R")
     # biocLite("mgsa")
     # biocLite("GO.db")
 
+    # Pseudocode begins
     # GOA <- readGAF(fNameGOA) store all annotations in a object
     # create a hashtable, hashTable <- hash::hash()
 
