@@ -122,7 +122,7 @@ name: node7
 namespace: biological_process
 def: "1" 
 synonym: "mitochondrial inheritance" EXACT []
-is_a: GO:0000003 ! biological process
+is_a: GO:0000006 ! biological process
 
 [Term]
 id: GO:0000008
