@@ -1,134 +1,286 @@
-myGeneData <- list()
-myGeneData[["A2ML1"]] <- structure(list(sym = "A2ML1",
-                                        name = "alpha-2-macroglobulin like 1",
-                                        UniProt = "A8K2U0", RefSeq = "NM_144670", assembly = "GRCh38",
-                                        chr = 12L, strand = "+", geneStart = 8822472L, geneEnd = 8887001L,
-                                        cdsStarts = c(8822652L, 8823182L, 8823720L, 8829727L, 8834662L,
-                                                      8835507L, 8836255L, 8837440L, 8838336L, 8839113L, 8841369L,
-                                                      8843134L, 8845442L, 8846077L, 8847549L, 8848720L, 8849669L,
-                                                      8850160L, 8851784L, 8852210L, 8854128L, 8854780L, 8855509L,
-                                                      8857164L, 8857507L, 8857946L, 8860881L, 8861135L, 8863794L,
-                                                      8867842L, 8868230L, 8868537L, 8869135L, 8874425L, 8874971L,
-                                                      NA), cdsEnds = c(8822713L, 8823365L, 8823882L, 8829779L,
-                                                                       8834682L, 8835666L, 8836339L, 8837566L, 8838450L, 8839222L,
-                                                                       8841536L, 8843361L, 8845502L, 8846222L, 8847698L, 8848914L,
-                                                                       8849759L, 8850274L, 8852012L, 8852336L, 8854249L, 8854831L,
-                                                                       8855592L, 8857340L, 8857588L, 8858102L, 8860955L, 8861297L,
-                                                                       8864008L, 8868057L, 8868357L, 8868627L, 8869203L, 8874527L,
-                                                                       8875011L, NA), map = NULL, cds = paste0(
-                                                                           "ATGTGGGCTCAGCTCCTTCTAGGAATGTTGGCCCTATCACCAGCCATTGCAGAAGAACTTCCA",
-                                                                           "AACTACCTGGTGACATTACCAGCCCGGCTAAATTTCCCCTCCGTTCAGAAGGTTTGTTTGGAC",
-                                                                           "CTGAGCCCTGGGTACAGTGATGTTAAATTCACGGTTACTCTGGAGACCAAGGACAAGACCCAG",
-                                                                           "AAGTTGCTAGAATACTCTGGACTGAAGAAGAGGCACTTACATTGTATCTCCTTTCTTGTACCA",
-                                                                           "CCTCCTGCTGGTGGCACAGAAGAAGTGGCCACAATCCGGGTGTCGGGAGTTGGAAATAACATC",
-                                                                           "AGCTTTGAGGAGAAGAAAAAGGTTCTAATTCAGAGGCAGGGGAACGGCACCTTTGTACAGACT",
-                                                                           "GACAAACCTCTCTACACCCCAGGGCAGCAAGTGTATTTCCGCATTGTCACCATGGATAGCAAC",
-                                                                           "TTCGTTCCAGTGAATGACAAGTACTCCATGGTGGAACTACAGGATCCAAATAGCAACAGGATT",
-                                                                           "GCACAGTGGCTGGAAGTGGTACCTGAGCAAGGCATTGTAGACCTGTCCTTCCAACTGGCACCA",
-                                                                           "GAGGCAATGCTGGGCACCTACACTGTGGCAGTGGCTGAGGGCAAGACCTTTGGTACTTTCAGT",
-                                                                           "GTGGAGGAATATGTGCTGCCGAAGTTTAAGGTGGAAGTGGTGGAACCCAAGGAGTTATCAACG",
-                                                                           "GTGCAGGAATCTTTCTTAGTAAAAATTTGTTGTAGGTACACCTATGGAAAGCCCATGCTAGGG",
-                                                                           "GCAGTGCAGGTATCTGTGTGTCAGAAGGCAAATACTTACTGGTATCGAGAGGTGGAACGGGAA",
-                                                                           "CAGCTTCCTGACAAATGCAGGAACCTCTCTGGACAGACTGACAAAACAGGATGTTTCTCAGCA",
-                                                                           "CCTGTGGACATGGCCACCTTTGACCTCATTGGATATGCGTACAGCCATCAAATCAATATTGTG",
-                                                                           "GCTACTGTTGTGGAGGAAGGGACAGGTGTGGAGGCCAATGCCACTCAGAATATCTACATTTCT",
-                                                                           "CCACAAATGGGATCAATGACCTTTGAAGACACCAGCAATTTTTACCATCCAAATTTCCCCTTC",
-                                                                           "AGTGGGAAGATAAGAGTTAGGGGCCATGATGACTCCTTCCTCAAGAACCATCTAGTGTTTCTG",
-                                                                           "GTGATTTATGGCACAAATGGAACCTTCAACCAGACCCTGGTTACTGATAACAATGGCCTAGCT",
-                                                                           "CCCTTTACCTTGGAGACATCCGGTTGGAATGGGACAGACGTTTCTCTGGAGGGAAAGTTTCAA",
-                                                                           "ATGGAAGACTTAGTATATAATCCGGAACAAGTGCCACGTTACTACCAAAATGCCTACCTGCAC",
-                                                                           "CTGCGACCCTTCTACAGCACAACCCGCAGCTTCCTTGGCATCCACCGGCTAAACGGCCCCTTG",
-                                                                           "AAATGTGGCCAGCCCCAGGAAGTGCTGGTGGATTATTACATCGACCCGGCCGATGCAAGCCCT",
-                                                                           "GACCAAGAGATCAGCTTCTCCTACTATTTAATAGGGAAAGGAAGTTTGGTGATGGAGGGGCAG",
-                                                                           "AAACACCTGAACTCTAAGAAGAAAGGACTGAAAGCCTCCTTCTCTCTCTCACTGACCTTCACT",
-                                                                           "TCGAGACTGGCCCCTGATCCTTCCCTGGTGATCTATGCCATTTTTCCCAGTGGAGGTGTTGTA",
-                                                                           "GCTGACAAAATTCAGTTCTCAGTCGAGATGTGCTTTGACAATCAGGTTTCCCTTGGCTTCTCC",
-                                                                           "CCCTCCCAGCAGCTTCCAGGAGCAGAAGTGGAGCTGCAGCTGCAGGCAGCTCCCGGATCCCTG",
-                                                                           "TGTGCGCTCCGGGCGGTGGATGAGAGTGTCTTACTGCTTAGGCCAGACAGAGAGCTGAGCAAC",
-                                                                           "CGCTCTGTCTATGGGATGTTTCCATTCTGGTATGGTCACTACCCCTATCAAGTGGCTGAGTAT",
-                                                                           "GATCAGTGTCCAGTGTCTGGCCCATGGGACTTTCCTCAGCCCCTCATTGACCCAATGCCCCAA",
-                                                                           "GGGCATTCGAGCCAGCGTTCCATTATCTGGAGGCCCTCGTTCTCTGAAGGCACGGACCTTTTC",
-                                                                           "AGCTTTTTCCGGGACGTGGGCCTGAAAATACTGTCCAATGCCAAAATCAAGAAGCCAGTAGAT",
-                                                                           "TGCAGTCACAGATCTCCAGAATACAGCACTGCTATGGGTGCAGGCGGTGGTCATCCAGAGGCT",
-                                                                           "TTTGAGTCATCAACTCCTTTACATCAAGCAGAGGATTCTCAGGTCCGCCAGTACTTCCCAGAG",
-                                                                           "ACCTGGCTCTGGGATCTGTTTCCTATTGGTAACTCGGGGAAGGAGGCGGTCCACGTCACAGTT",
-                                                                           "CCTGACGCCATCACCGAGTGGAAGGCGATGAGTTTCTGCACTTCCCAGTCAAGAGGCTTCGGG",
-                                                                           "CTTTCACCCACTGTTGGACTAACTGCTTTCAAGCCGTTCTTTGTTGACCTGACTCTCCCTTAC",
-                                                                           "TCAGTAGTCCGTGGGGAATCCTTTCGTCTTACTGCCACCATCTTCAATTACCTAAAGGATTGC",
-                                                                           "ATCAGGGTTCAGACTGACCTGGCTAAATCGCATGAGTACCAGCTAGAATCATGGGCAGATTCT",
-                                                                           "CAGACCTCCAGTTGTCTCTGTGCTGATGACGCAAAAACCCACCACTGGAACATCACAGCTGTC",
-                                                                           "AAATTGGGTCACATTAACTTTACTATTAGTACAAAGATTCTGGACAGCAATGAACCATGTGGG",
-                                                                           "GGCCAGAAGGGGTTTGTTCCCCAAAAGGGCCGAAGTGACACGCTCATCAAGCCAGTTCTCGTC",
-                                                                           "AAACCTGAGGGAGTCCTGGTGGAGAAGACACACAGCTCATTGCTGTGCCCAAAAGGAAAGGTG",
-                                                                           "GCATCTGAATCTGTCTCCCTGGAGCTCCCAGTGGACATTGTTCCTGACTCGACCAAGGCTTAT",
-                                                                           "GTTACGGTTCTGGGAGACATTATGGGCACAGCCCTGCAGAACCTGGATGGTCTGGTGCAGATG",
-                                                                           "CCCAGTGGCTGTGGCGAGCAGAACATGGTCTTGTTTGCTCCCATCATCTATGTCTTGCAGTAC",
-                                                                           "CTGGAGAAGGCAGGGCTGCTGACGGAGGAGATCAGGTCTCGGGCAGTGGGTTTCCTGGAAATA",
-                                                                           "GGGTACCAGAAGGAGCTGATGTACAAACACAGCAATGGCTCATACAGTGCCTTTGGGGAGCGA",
-                                                                           "GATGGAAATGGAAACACATGGCTGACAGCGTTTGTCACAAAATGCTTTGGCCAAGCTCAGAAA",
-                                                                           "TTCATCTTCATTGATCCCAAGAACATCCAGGATGCTCTCAAGTGGATGGCAGGAAACCAGCTC",
-                                                                           "CCCAGTGGCTGCTATGCCAACGTGGGAAATCTCCTTCACACAGCTATGAAGGGTGGTGTTGAT",
-                                                                           "GATGAGGTCTCCTTGACTGCGTATGTCACAGCTGCATTGCTGGAGATGGGAAAGGATGTAGAT",
-                                                                           "GACCCAATGGTGAGTCAGGGTCTACGGTGTCTCAAGAATTCGGCCACCTCCACGACCAACCTC",
-                                                                           "TACACACAGGCCCTGTTGGCTTACATTTTCTCCCTGGCTGGGGAAATGGACATCAGAAACATT",
-                                                                           "CTCCTTAAACAGTTAGATCAACAGGCTATCATCTCAGGAGAATCCATTTACTGGAGCCAGAAA",
-                                                                           "CCTACTCCATCATCGAACGCCAGCCCTTGGTCTGAGCCTGCGGCTGTAGATGTGGAACTCACA",
-                                                                           "GCATATGCATTGTTGGCCCAGCTTACCAAGCCCAGCCTGACTCAAAAGGAGATAGCGAAGGCC",
-                                                                           "ACTAGCATAGTGGCTTGGTTGGCCAAGCAACACAATGCATATGGGGGCTTCTCTTCTACTCAG",
-                                                                           "GATACTGTAGTTGCTCTCCAAGCTCTTGCCAAATATGCCACTACCGCCTACATGCCATCTGAG",
-                                                                           "GAGATCAACCTGGTTGTAAAATCCACTGAGAATTTCCAGCGCACATTCAACATACAGTCAGTT",
-                                                                           "AACAGATTGGTATTTCAGCAGGATACCCTGCCCAATGTCCCTGGAATGTACACGTTGGAGGCC",
-                                                                           "TCAGGCCAGGGCTGTGTCTATGTGCAGACGGTGTTGAGATACAATATTCTCCCTCCCACAAAT",
-                                                                           "ATGAAGACCTTTAGTCTTAGTGTGGAAATAGGAAAAGCTAGATGTGAGCAACCGACTTCACCT",
-                                                                           "CGATCCTTGACTCTCACTATTCACACCAGTTATGTGGGGAGCCGTAGCTCTTCCAATATGGCT",
-                                                                           "ATTGTGGAAGTGAAGATGCTATCTGGGTTCAGTCCCATGGAGGGCACCAATCAGTTACTTCTC",
-                                                                           "CAGCAACCCCTGGTGAAGAAGGTTGAATTTGGAACTGACACACTTAACATTTACTTGGATGAG",
-                                                                           "CTCATTAAGAACACTCAGACTTACACCTTCACCATCAGCCAAAGTGTGCTGGTCACCAACTTG",
-                                                                           "AAACCAGCAACCATCAAGGTCTATGACTACTACCTACCAGATGAACAGGCAACAATTCAGTAT",
-                                                                           "TCTGATCCCTGTGAATGA"),
-                                        phastCons = NULL, phyloP = NULL, xyzMap = NULL, xyz = NULL),
-                                   .Names = c("sym",
-                                              "name", "UniProt", "RefSeq", "assembly", "chr", "strand", "geneStart",
-                                              "geneEnd", "cdsStarts", "cdsEnds", "map", "cds", "phastCons",
-                                              "phyloP", "xyzMap", "xyz"))
+# importPDB.R
 
-myGeneData[["A1BG"]] <- structure(list(sym = "A1BG",
-                                       name = "alpha-1-B glycoprotein",
-                                       UniProt = "P04217", RefSeq = "NM_130786", assembly = "GRCh38",
-                                       chr = 19L, strand = "-", geneStart = 58345178L, geneEnd = 58353499L,
-                                       cdsStarts = c(58353404L, 58353292L, 58352928L, 58352283L,
-                                                     58351391L, 58350370L, 58347353L, 58347022L), cdsEnds = c(58353437L,
-                                                                                                              58353327L, 58353197L, 58352555L, 58351687L, 58350651L, 58347640L,
-                                                                                                              58347029L), map = NULL, cds = paste0(
-                                                                                                                  "ATGTCCATGCTCGTGGTCTTTCTCTTGCTGTGGGGTGTCACCTGGGGCCCAGTG",
-                                                                                                                  "ACAGAAGCAGCCATATTTTATGAGACGCAGCCCAGCCTGTGGGCAGAGTCCGAAT",
-                                                                                                                  "CACTGCTGAAACCCTTGGCCAATGTGACGCTGACGTGCCAGGCCCACCTGGAGAC",
-                                                                                                                  "TCCAGACTTCCAGCTGTTCAAGAATGGGGTGGCCCAGGAGCCTGTGCACCTTGAC",
-                                                                                                                  "TCACCTGCCATCAAGCACCAGTTCCTGCTGACGGGTGACACCCAGGGCCGCTACC",
-                                                                                                                  "GCTGCCGCTCGGGCTTGTCCACAGGATGGACCCAGCTGAGCAAGCTCCTGGAGCT",
-                                                                                                                  "GACAGGGCCAAAGTCCTTGCCTGCTCCCTGGCTCTCGATGGCGCCAGTGTCCTGG",
-                                                                                                                  "ATCACCCCCGGCCTGAAAACAACAGCAGTGTGCCGAGGTGTGCTGCGGGGTGTGA",
-                                                                                                                  "CTTTTCTGCTGAGGCGGGAGGGCGACCATGAGTTTCTGGAGGTGCCTGAGGCCCA",
-                                                                                                                  "GGAGGATGTGGAGGCCACCTTTCCAGTCCATCAGCCTGGCAACTACAGCTGCAGC",
-                                                                                                                  "TACCGGACCGATGGGGAAGGCGCCCTCTCTGAGCCCAGCGCTACTGTGACCATTG",
-                                                                                                                  "AGGAGCTCGCTGCACCACCACCGCCTGTGCTGATGCACCATGGAGAGTCCTCCCA",
-                                                                                                                  "GGTCCTGCACCCTGGCAACAAGGTGACCCTCACCTGCGTGGCTCCCCTGAGTGGA",
-                                                                                                                  "GTGGACTTCCAGCTACGGCGCGGGGAGAAAGAGCTGCTGGTACCCAGGAGCAGCA",
-                                                                                                                  "CCAGCCCAGATCGCATCTTCTTTCACCTGAACGCGGTGGCCCTGGGGGATGGAGG",
-                                                                                                                  "TCACTACACCTGCCGCTACCGGCTGCATGACAACCAAAACGGCTGGTCCGGGGAC",
-                                                                                                                  "AGCGCGCCGGTCGAGCTGATTCTGAGCGATGAGACGCTGCCCGCGCCGGAGTTCT",
-                                                                                                                  "CCCCGGAGCCGGAGTCCGGCAGGGCCTTGCGGCTGCGGTGCCTGGCGCCCCTGGA",
-                                                                                                                  "GGGCGCGCGCTTCGCCCTGGTGCGCGAGGACAGGGGCGGGCGCCGCGTGCACCGT",
-                                                                                                                  "TTCCAGAGCCCCGCTGGGACCGAGGCGCTCTTCGAGCTGCACAACATTTCCGTGG",
-                                                                                                                  "CTGACTCCGCCAACTACAGCTGCGTCTACGTGGACCTGAAGCCGCCTTTCGGGGG",
-                                                                                                                  "CTCCGCGCCCAGCGAGCGCTTGGAGCTGCACGTGGACGGACCCCCTCCCAGGCCT",
-                                                                                                                  "CAGCTCCGGGCGACGTGGAGTGGGGCGGTCCTGGCGGGCCGAGATGCCGTCCTGC",
-                                                                                                                  "GCTGCGAGGGACCCATCCCCGACGTCACCTTCGAGCTGCTGCGCGAGGGCGAGAC",
-                                                                                                                  "GAAGGCCGTGAAGACGGTCCGCACCCCCGGGGCCGCGGCGAACCTCGAGCTGATC",
-                                                                                                                  "TTCGTGGGGCCCCAGCACGCCGGCAACTACAGGTGCCGCTACCGCTCCTGGGTGC",
-                                                                                                                  "CCCACACCTTCGAATCGGAGCTCAGCGACCCTGTGGAGCTCCTGGTGGCAGAAAGCTGA"),
-                                       phastCons = NULL, phyloP = NULL, xyzMap = NULL, xyz = NULL),
-                                  .Names = c("sym",
-                                             "name", "UniProt", "RefSeq", "assembly", "chr", "strand", "geneStart",
-                                             "geneEnd", "cdsStarts", "cdsEnds", "map", "cds", "phastCons",
-                                             "phyloP", "xyzMap", "xyz"))
+#' Populate a GeneData object with the 3D coordinates of each gene.
+#'
+#' \code{importPDB} Recieves a data frame with rownames being PDB-ID/chain, and
+#'                  columns being the first and last residue for which 3D
+#'                  coordinates have been mapped.
+#'
+#' @section Read pattern PDB file:
+#'   Reads a PDB file using bio3d::read.pdb(), retrieves the actual sequence
+#'   from the coordinate record (column $atom), and converts this sequence
+#'   into an AAstring of 1-letter amino acid codes.
+#'
+#'  @section Obtain start & end indices:
+#'    Retrieves the start and end indices of the alignment for the subject
+#'    abd pattern sequences from GeneData$xyzMap
+#'
+#' @section Populate GeneData object:
+#'   Fetches data from PDB files and creates a data frame to be attached to
+#'   GeneData$xyz, with one row for each residue matched. This section includes
+#'   the following subsections:
+#'
+#'   @section Residue ID & AA type:
+#'     Fetches the residue ID and amino acid type of the each residue matched.
+#'     residue ID is the position of the amino acid within the actual sequence
+#'     and amino acid type is the 1-letter amino acid code of the residue.
+#'
+#'   @section Sidechain centroid:
+#'     Calculates the sidechain centroid of each residue by fetching and
+#'     averaging over all x,y,z coordinates of atoms making up the sidechain of
+#'     the residue matched in the pattern sequence.
+#'
+#'   @section Alpha carbon centroid:
+#'     Calculates the alpha carbon centroid of each residue by fecthing the
+#'     x, y, z coordinates of the alpha carbon of the residue matched in the
+#'     pattern sequence.
+#'
+#' @param XYZMap the $xyzMap column of a GeneData object that contains PDB-ID/chain of
+#'                  aligned sequences and the the first and last residue for which 3D
+#'                  coordinates have been mapped.
+#' @param silent logical. Whether output will be to console will be suppressed.
+#'                  Default FALSE.
+#' @param writeLog logical. Whether an event entry for the log file is to be
+#'                  written. Default TRUE.
+#' @return <description>.
+#'
+#' @family <optional description of family>
+#'
+#' @return N/A. This function is invoked for its side effect of writing 3D
+#'   coordinates to a GeneData object.
+#'
+#' @seealso \code{\link{SEL3D}} Blasts input sequence and return MT object with
+#'   match information.
+#'
+#' @examples
+#' importPDB(myGeneData)
+
+importPDB <- function(XYZMap, silent = FALSE, writeLog = TRUE){
+    # Check input sanity:
+    if (mode(XYZMap) != "list" ||
+        mode(silent) != "logical" ||
+        mode(writeLog) != "logical"){
+        stop("Invalid input!")
+    }
+
+    if (!silent){ cat("Populating 3D coordinates of a gene...\n") }
+    # For pdb.IDs matched to this gene:
+    for (row in rownames(XYZMap)){
+        if (!silent){ cat("\tFetching data for", XYZMap[row, "pdb.id"], "\n") }
+        # Get the pdb.id and chain.id of this match.
+        pdbIDchainID <- strsplit(XYZMap[row, "pdb.id"], "_")[[1]]
+        pdbID <- pdbIDchainID[1]
+        chainID <- pdbIDchainID[2]
+
+        #=====================READ PATTERN PDB FILE============================
+        # Download the PDB file.
+        pattern <- bio3d::read.pdb(pdbID, verbose = FALSE)
+        # Extract the desired chain and get its aa sequence.
+        chainAAIndices <- atom.select(pattern,
+                                      "calpha",
+                                      chain = chainID,
+                                      value = TRUE)
+        patternAA <- AAString(paste(aa321(chainAAIndices$atom$resid),
+                                            collapse = ""))
+
+
+        #**********************************************************************
+        #* From this point on, the code is not tested for its accuracy or     *
+        #* results and needs further improvements/testing/validation.         *
+        #**********************************************************************
+
+        #=====================OBTAIN START & END INDICES=======================
+        # Retrieve the start (s) and end (e) indices for the pattern &
+        #   subject sequences:
+        pStart <- XYZMap$q.start
+        pEnd <- XYZMap$q.end
+        sStart <- XYZMap$s.start
+        sEnd <- XYZMap$s.end
+
+        #=====================POPULATE GENEDATA OBJECT=========================
+        # Create a data frame with number of matched residues rows.
+        nMatch <- pEnd - pStart + 1
+        DF <- data.frame("ResID" = numeric(nMatch),
+                         "AA Type" = numeric(nMatch),
+                         "Sidechain Centroid" = list(x = numeric(nMatch),
+                                                     y = numeric(nMatch),
+                                                     z = numeric(nMatch)),
+                         "C.alpha Centroid" = list(x = numeric(nMatch),
+                                                   y = numeric(nMatch),
+                                                   z = numeric(nMatch)),
+                         stringsAsFactors = FALSE)
+
+        # For all matched residues:
+        for (n in 1:nMatch){
+            if (!silent){
+                cat("\t\tFetching data for macthing residue", n, "\n")
+            }
+            # Find the position (residue number) of the aligned residues in
+            # the pattern & subject sequences.
+            pResNo <- pStart + n - 1
+            sResNo <- sStart + n - 1
+
+            # Row name will be the index of the residue in the subject:
+            #   - I had to add "res" to the beginning of each rowname since
+            #     R was giving me an error for having duplicate row names:
+            #    -> Error in `row.names<-.data.frame`(`*tmp*`, value = value):
+            #       duplicate 'row.names' are not allowed"
+            rownames(DF)[n] <- paste0("res", sResNo)
+
+            #=================RESIDUE ID & AA TYPE=============================
+            # Resid is the index of the residue in the subject:
+            resID <- sResNo
+            # Amino acid types are the 1-letter code of the aa:
+            aaType <- toString(patternAA[pResNo])
+
+            #=================SIDECHAIN CENTROID===============================
+            # First, we need to find the {residue number + insert code} of the
+            #   residue in the PDB file. To do this, we create a vector of all
+            #   _resno's_ and _insertion codes_ in the PDB file. Then we simply
+            #   subset the pResNo value from the two vector.
+            #     - This precedure assumes that there are no missing PDB data
+            #       for any residue.
+            #     - {value = True} causes _atom.select_ to return a pdb object
+            #       instead of indices.
+            pdbResNoVector <- atom.select(pattern,
+                                          "calpha",
+                                          value=TRUE,
+                                          verbose = FALSE)$atom$resno
+            pdbinsertVector <- atom.select(pattern,
+                                           "calpha",
+                                           value=TRUE,
+                                           verbose = FALSE)$atom$insert
+            pdbResNo <- pdbResNoVector[pResNo]
+            pdbInsert <- pdbinsertVector[pResNo]
+
+            # Subset the sidechain atoms; do not include hydrogen atoms:
+            #   - sidechainInd$atom is a vector of indices.
+            sidechainInd <- bio3d::combine.select(bio3d::atom.select(pattern,
+                                                                     "sidechain",
+                                                                     chain = chainID,
+                                                                     resno = pdbResNo,
+                                                                     insert = pdbInsert),
+                                                  bio3d::atom.select(pattern,
+                                                                     "noh"),
+                                                  verbose = FALSE)
+            sidechain <- pattern$atom[sidechainInd$atom,]
+            # calculate the sidechain centroid:
+            sidechainXYZ <- list(x = mean(sideChain$x),
+                                 y = mean(sideChain$y),
+                                 z = mean(sideChain$z))
+
+            #=================ALPHA CARBON CENTROID============================
+            # subset the alpha carbon:
+            #  - {value = True} causes _atom.select_ to return a pdb object
+            #    instead of indices.
+            C.alpha <- bio3d::atom.select(pattern,
+                                          "calpha",
+                                          chain = chainID,
+                                          resno = pdbResNo,
+                                          insert = pdbInsert,
+                                          value = TRUE)
+            # get the x, y, z coordinates of the alpha carbon:
+            C.alphaXYZ <- list(x = C.alpha$atom$x,
+                               y = C.alpha$atom$y,
+                               z = C.alpha$atom$z)
+
+            #==================================================================
+            # Place the data in the data frame
+            DF[n,] <- c(resID, aaType, sidechainXYZ, C.alphaXYZ)
+        }
+
+        # Add the data frame to the list of data frames in GeneData$3D.
+        # the index in the list will be of format <pdbID_chainID>.
+        GeneData$xyz[paste0(PDB_ID, "_", chain_ID)] <- DF
+    }
+
+    if(writeLog) {
+        myTitle <- "importPDB"
+
+        # Compile function call record
+        myCall <- character()
+        myCall[1] <- "importPDB("
+        myCall[2] <- sprintf("XYZMap = \"%s\", ", XYZMap)
+        myCall[3] <- sprintf("silent = %s, ", as.character(silent))
+        myCall[4] <- sprintf("writeLog = %s)", as.character(writeLog))
+        myCall <- paste0(myCall, collapse = "")
+
+        # Record progress information
+        myNotes <- character()
+        myNotes <- c(myNotes, sprintf("Read xyzMap from file: %s", XYZMap))
+        myNotes <- c(myNotes, sprintf("Populated 3D coordinates for %s genes",
+                                      length(GeneData$xyz)))
+
+        # indicate output object name(s)
+        myOutput = c("GeneData")
+
+        # send info to log file
+        logEvent(eventTitle = myTitle,
+                 eventCall = myCall,
+                 notes = myNotes,
+                 output = myOutput)
+    }
+}
+
+#=============================SCRIPT===========================================
+#=============================STOP & SAVE======================================
+# Provide a mechanism to stop:
+# REFERENCE:
+#   http://stackoverflow.com/questions/38755283/break-loop-with-keyboard-input-r
+# Requires library(tcltk2)
+PROGRESSFILE <- "inst/tmp/PROGRESSFILE.rds"
+win1 <- tktoplevel()
+butStop <- tkbutton(win1, text = "Stop",
+                    command = function() {
+                        assign("stoploop", TRUE, envir = .GlobalEnv)
+                        tkdestroy(win1)
+                    })
+
+butSave <- tkbutton(win1, text = "Pause & Save",
+                    command = function() {
+                        assign("stoploop", TRUE, envir = .GlobalEnv)
+                        print("Finishing the current gene...")
+                        saveRDS(genes, file = PROGRESSFILE)
+                        print("A progress file has been created under inst/tmp/")
+                        saveRDS(GeneData, "inst/extdata/GeneData.rds")
+                        tkdestroy(win1)
+                    })
+
+tkgrid(butStop)
+tkgrid(butSave)
+stoploop <- FALSE
+
+# Load the GeneData object.
+myGeneData <- readRDS("inst/extdata/GeneData.rds")
+
+#=============================(LOAD & CONTINUE)/START==========================
+# Check if there exists a saved progress file from before.
+if (file.exists("inst/tmp/genes.rds")){
+    genes <- read.RDS(PROGRESSFILE)
+} else {
+    genes <- names(myGeneData)
+}
+
+#=============================RUN IMPORTPDB()==================================
+while (length(genes > 0) && !stoploop){
+    # The current gene is always the first element of the list.
+    # This element will be removed from the list of genes at the end of
+    #   each iteration of the while loop. This is necessary for pausing
+    #   the process and continuing it later.
+    currentGene <- genes[[1]]
+    XYZMap <- myGeneData[[currentGene]]$xyzMap
+
+    importPDB(XYZMap)
+
+    # Remove the current gene from the list of genes.
+    genes[[1]] <- NULL
+}
+
+# Save the GeneData object:
+saveRDS(GeneData, "inst/extdata/GeneData.rds")
+
+# Remove the genes.rds file (if it exists) after 3D coordinates of
+# all genes have been populated.
+if (file.exists(PROGRESSFILE)){ file.remove(PROGRESSFILE) }
+
+
