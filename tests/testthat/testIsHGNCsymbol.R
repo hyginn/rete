@@ -5,6 +5,7 @@ context("test the closure isHGNCsymbol()")
 test_that("expected input is correctly handled", {
     expect_equal(isHGNCsymbol(), logical())
     expect_equal(isHGNCsymbol(NULL), logical())
+    expect_false(isHGNCsymbol(""))
     expect_false(isHGNCsymbol(0))
     expect_true(isHGNCsymbol("A1BG"))                    # First in table
     expect_true(isHGNCsymbol("a1bg"))                    # Case insensitive
