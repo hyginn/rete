@@ -48,13 +48,11 @@ importCNA.GISTIC2<- function(fFHG, dCNA, silent = FALSE, writeLog = TRUE){
     # read and write files in vector
     # commented out part that would handle multiple files at one time
 
-    #for (f in 1:numFiles){
-        #read file into tab delimited table
-        #temp <- read.delim(fFHG)
-        temp <- readr::read_delim(file = fFHG,
-                                  delim = "\t", col_names =TRUE,
-                                  col_types = c(col_character(),col_integer(),
-                                                col_character(), col_double()))
+
+    temp <- readr::read_delim(file = fFHG,
+                        delim = "\t", col_names =TRUE,
+                        col_types = c(col_character(),col_integer(),
+                        col_character(), col_double()))
         # check file
         if (colnames(temp)[1] != "Gene Symbol"){
             stop("Not a valid file")
