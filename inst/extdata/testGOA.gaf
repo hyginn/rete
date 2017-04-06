@@ -1,0 +1,9 @@
+!gaf-version: 2.1
+!
+IntAct	EBI	gene1_human		GO:0000001	PMID:1	IDA		F	transcription factor 1	GENE1	protein_complex	taxon:9606	20141218	UCL
+IntAct	EBI	gene2_human		GO:0000002	PMID:2	IDA		F	transcription factor 1	GENE2	protein_complex	taxon:9606	20141218	UCL
+IntAct	EBI	gene3_human		GO:0000003	PMID:3	IDA		F	transcription factor 1	GENE3	protein_complex	taxon:9606	20141218	UCL
+IntAct	EBI	gene4_human		GO:0000004	PMID:4	IDA		F	transcription factor 1	GENE4	protein_complex	taxon:9606	20141218	UCL
+IntAct	EBI	gene5_human		GO:0000005	PMID:5	IDA		F	transcription factor 1	GENE5	protein_complex	taxon:9606	20141218	UCL
+IntAct	EBI	gene6_human		GO:0000006	PMID:6	IDA		F	transcription factor 1	GENE6	protein_complex	taxon:9606	20141218	UCL
+IntAct	EBI	gene8_human		GO:0000008	PMID:8	IDA		F	transcription factor 1	GENE8	protein_complex	taxon:9606	20141218	UCL
