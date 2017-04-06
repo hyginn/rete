@@ -46,7 +46,7 @@ for (i in length(nrows(symmetric_interactions))){
         ## that have this method are removed from the symmetic_interactions dataframe
         if (experimental$is_symmetric_method_experimental[x] != TRUE){
             nonsymmetric_interactions = which(symmetric_interactions$method == symmetric_interactions$method[i])
-            symmetric_interactions = symmetric_interactions[nonsymmetric_interactions, ]
+            symmetric_interactions = symmetric_interactions[-nonsymmetric_interactions, ]
         }
     }
     ## if the interaction method is a type of inference method, then we search our list of all
@@ -57,7 +57,7 @@ for (i in length(nrows(symmetric_interactions))){
         ## that have this method are removed from the symmetic_interactions dataframe
         if (inference$is_symmetric_method_experimental[x] != TRUE){
             nonsymmetric_interactions = which(symmetric_interactions$method == symmetric_interactions$methos[i])
-            symmetric_interactions = symmetric_interactions[nonsymmetric_interactions, ]
+            symmetric_interactions = symmetric_interactions[-nonsymmetric_interactions, ]
         }
     }
     ## if the interaction method is a type of interaction_prediction method, then we search our list of all
@@ -68,7 +68,7 @@ for (i in length(nrows(symmetric_interactions))){
         ## that have this method are removed from the symmetic_interactions dataframe
         if (interaction_prediction$is_symmetric_method_experimental[x] != TRUE){
             nonsymmetric_interactions = which(symmetric_interactions$method == symmetric_interactions$method[i])
-            symmetric_interactions = symmetric_interactions[nonsymmetric_interactions, ]
+            symmetric_interactions = symmetric_interactions[-nonsymmetric_interactions, ]
         }
     }
     ## if the method is not experimental, inference, or interaction_prediction method, then
@@ -76,7 +76,7 @@ for (i in length(nrows(symmetric_interactions))){
     ## remove all interactions with this method
     else{
         nonsymmetric_interactions = which(symmetric_interactions$method == symmetric_interactions$method[i])
-        symmetric_interactions = symmetric_interactions[nonsymmetric_interactions, ]
+        symmetric_interactions = symmetric_interactions[-nonsymmetric_interactions, ]
     }
 }
 
