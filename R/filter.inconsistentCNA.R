@@ -6,7 +6,7 @@
 #' genes whose expression is not consistently increased or decreased, then
 #' removes them from the dataset.
 #'
-#' @param rCNA The rCNA RDS file that contains the CNAs to consider
+#' @param rCNAfile The rCNA RDS file that contains the CNAs to consider
 #' @param fNames A vector of filenames to filter
 #' @param dOut The local path to a directory to output the filtered files
 #' @param filterFile The filename to output the list of genes removed

@@ -8,6 +8,8 @@ filter.inconsistentCNA(rCNAfile, fNames, dOut, filterFile, iT = 0.75,
   silent = FALSE, noLog = FALSE)
 }
 \arguments{
+\item{rCNAfile}{The rCNA RDS file that contains the CNAs to consider}
+
 \item{fNames}{A vector of filenames to filter}
 
 \item{dOut}{The local path to a directory to output the filtered files}
@@ -19,8 +21,6 @@ filter.inconsistentCNA(rCNAfile, fNames, dOut, filterFile, iT = 0.75,
 \item{silent}{Whether or not to write progress information to console, default: FALSE}
 
 \item{noLog}{Whether or not to log results, default: FALSE}
-
-\item{rCNA}{The rCNA RDS file that contains the CNAs to consider}
 }
 \value{
 The list of filtered genes

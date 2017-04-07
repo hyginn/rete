@@ -248,9 +248,9 @@ test_that("A full run of the main function", {
     outSNV <- .filter.utils.outputFilename(dOut, basename(rSNVName))
     outCNA <- .filter.utils.outputFilename(dOut, basename(rCNAName))
 
-    removed <- filter.lowExpressionGenes(exprName,
+    removed <- filter.lowExpressionGenes(exprName, wlName,
         rCNA=c(rCNAName), rSNV=c(rSNVName),
-        dOut, wlName, rT=3, pT=0.7, silent=TRUE, noLog=TRUE)
+        dOut, rT=3, pT=0.7, silent=TRUE, writeLog=FALSE)
 
     expect_equal(length(removed), 1)
     expect_equal(removed, c('TF2'))

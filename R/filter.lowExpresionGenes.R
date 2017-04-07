@@ -4,19 +4,29 @@
 #' expressed in the provided RNAseq files.
 #'
 #' @param exprData The normalized Firehose RNAseq files to scan for expression levels
+#' @param whitelist The name of the file that contains genes to preserve
 #' @param rCNA The rCNA RDS files to filter out lower expression genes
 #' @param rCNA The rSNV text files to filter out lower expression genes
 #' @param dOut The local path to a directory to output the filtered files
-#' @param whitelist The name of the file that contains genes to preserve
 #' @param rT The minimum number of reads for genes to keep.  Default: 3
 #' @param pT The percentage of samples that must have at least rT reads.  Default: 0.7
 #' @param silent Whether or not to write progress information to console, default: FALSE
 #' @param noLog Whether or not to log results, default: FALSE
 #' @return The list of filtered genes
-filter.lowExpressionGenes <- function(exprData, rCNA, rSNV, dOut, whitelist,
+filter.lowExpressionGenes <- function(exprData, whitelist, rCNA, rSNV, dOut,
     rT=3, pT=0.7,
-    silent=FALSE, noLog=FALSE
+    silent=FALSE, writeLog=TRUE
 ) {
+    # check logical arguments
+    err <- .checkArgs(silent, like = logical(1))
+    if (length(err) > 0) {
+        stop(err)
+    }
+    err <- .checkArgs(writeLog, like = logical(1))
+    if (length(err) > 0) {
+        stop(err)
+    }
+
     # check numeric arguments
     err <- .checkArgs(rT, like = numeric(1))
     if (length(err) > 0) {
@@ -49,14 +59,27 @@ filter.lowExpressionGenes <- function(exprData, rCNA, rSNV, dOut, whitelist,
     .filter.utils.fileReadable(rCNA)
 
     # generate pre-whitelist list of genes to remove
+    if (!silent) {
+        cat("Loading expression data from files:", exprData)
+    }
     rawRemove <- .filter.lowExpressionGenes.processExpressionData(
         exprData, rT, pT)
 
     # read whitelist file
+    if (!silent) {
+        cat("Reading whitelist data from file:", whitelist)
+    }
     toKeep <- readLines(con=whitelist)
 
     # remove whitelist entries from removal list
+    if (!silent) {
+        cat("Removing whitelist genes from the removal list")
+    }
     toRemove <- rawRemove[!(rawRemove %in% toKeep)]
+    if (!silent) {
+        cat("Raw removal list:", length(rawRemove), "genes, filter list:",
+            length(toRemove), "genes")
+    }
 
 ##    # save filter list
 ##    filter <- tempfile()
@@ -68,16 +91,62 @@ filter.lowExpressionGenes <- function(exprData, rCNA, rSNV, dOut, whitelist,
     # Filter out selected genes 
     for (target in rCNA) {
         fName <- basename(target)
+        if (!silent) {
+            cat("Filtering rCNA file", target)
+        }
         .filter.utils.filterrCNA(target, fName, toRemove)
     }
     for (target in rSNV) {
         fName <- basename(target)
+        if (!silent) {
+            cat("Filtering rSNV file", target)
+        }
         .filter.utils.filterrSNV(target, fName, toRemove)
     }
 
     # cleanup files
     setwd(currDir)
 ##    unlink(filter)
+
+    if (writeLog) {
+        myTitle <- "filter.lowExpressionGenes"
+
+        # Compile function call record
+        myCall <- character()
+        myCall[1] <- "filter.lowExpressionGenes("
+        myCall[2] <- sprintf("exprData = \"%s\", ", exprData)
+        myCall[3] <- sprintf("whitelist = \"%s\", ", whitelist)
+        myCall[4] <- sprintf("rCNA = \"%s\", ", rCNA)
+        myCall[5] <- sprintf("rSNV = \"%s\", ", rSNV)
+        myCall[6] <- sprintf("dOut = \"%s\", ", dOut)
+        myCall[7] <- sprintf("rT = %s, ", as.character(rT))
+        myCall[8] <- sprintf("pT = %s, ", as.character(pT))
+        myCall[9] <- sprintf("silent = %s, ", as.character(silent))
+        myCall[10] <- sprintf("writeLog = %s)", as.character(writeLog))
+        myCall <- paste0(myCall, collapse = "")
+
+        # indicate input object name(s)
+        myInput <- c("exprData", "whitelist", "rSNV", "rCNA")
+
+        # Record progress information
+        myNotes <- character()
+        myNotes <- c(myNotes, sprintf("Found %s genes with low expression",
+            length(rawRemove)))
+        myNotes <- c(myNotes, sprintf("Whitelist contained %s genes", 
+            length(toKeep)))
+        myNotes <- c(myNotes, sprintf("Final removal list conatined %s genes", 
+            length(toRemove)))
+
+        # indicate output object name(s)
+        myOutput = c("dOut")
+
+        # send info to log file
+        logEvent(eventTitle = myTitle,
+                 eventCall = myCall,
+                 input = myInput,
+                 notes = myNotes,
+                 output = myOutput)
+    }
 
     return(toRemove)
 }
