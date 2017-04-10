@@ -91,6 +91,7 @@ testthat::test_that("bad input", {
 testthat::test_that("It works", {
 ########## ToDo (bs):  "It works" is not a good descriptor for a test
     importCNA.GISTIC2("inst/extdata/devCNA.txt","inst/extdata/dCNA", FALSE, FALSE)
+########## ToDo (bs):  This file was not among the committed assets
 ########## ToDo (bs):  Don't write output there!
     expect_equal(readRDS("inst/extdata/dCNA/rCNA1.rds"),
         readRDS('tests/testthat/dCNA/devCNA.txt.rds'))
